@@ -1,8 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
+import { toUserResponse } from '../user/dto/user.response';
+import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
-import { OtpRequest } from './dto/auth.request';
+import { OtpRequest, VerifyOtpRequest } from './dto/auth.request';
+import { VerifyOtpResponse } from './dto/auth.response';
 import { OtpToken } from './entities/otp-token.entity';
 
 @Injectable()
@@ -44,6 +47,18 @@ export class AuthService {
         );
       }
 
+      // Make the old OTP tokens invalid.
+      await this.otpTokenRepository.update(
+        {
+          user: { id: user.id },
+          is_used: false,
+          expires_at: MoreThan(new Date()),
+        },
+        {
+          is_used: true,
+        },
+      );
+
       // Generate a random OTP.
       const otp = this.generateOtp();
 
@@ -81,6 +96,58 @@ export class AuthService {
       // resources that the query runner is using.
       await queryRunner.release();
     }
+  }
+
+  /**
+   * Verifies an OTP that was sent to the user's email address.
+   *
+   * @param request - The request body containing the email and OTP to verify.
+   * @returns A promise that resolves with an object containing the user data and a boolean indicating whether the user is new or existing.
+   * @throws UnauthorizedException if the OTP is invalid, expired, or has already been used.
+   */
+  async verifyOtp(request: VerifyOtpRequest): Promise<VerifyOtpResponse> {
+    // Log the incoming OTP verification request for debugging purposes.
+    this.logger.debug(`AuthService.verifyOtp: ${JSON.stringify(request)}`);
+
+    // Attempt to find an OTP token associated with the given email and OTP code.
+    // Ensure that the OTP has not expired by checking the expiration date.
+    const otpToken = await this.otpTokenRepository.findOne({
+      relations: ['user'], // Include user data in the result.
+      where: {
+        user: { email: request.email }, // Look for a user with the specified email.
+        otpCode: request.otp, // Look for the specified OTP code.
+        expires_at: MoreThan(new Date()), // Ensure the OTP has not expired.
+      },
+    });
+
+    // If no OTP token is found or the OTP has already been used or expired, log a warning and throw an error.
+    if (!otpToken || otpToken.is_used || otpToken.expires_at < new Date()) {
+      this.logger.warn(`Failed OTP verification for email: ${request.email}`);
+      throw new UnauthorizedException('OTP salah atau sudah kadaluarsa');
+    }
+
+    // Mark the found OTP as used to prevent reuse.
+    await this.markOtpAsUsed(otpToken.user);
+
+    // Determine if the user is new or existing and return appropriate response.
+    // If the user's profile is completed, return the user data and mark isNewUser as false.
+    // Otherwise, mark isNewUser as true.
+    return otpToken.user.is_profile_completed
+      ? { isNewUser: false, user: toUserResponse(otpToken.user) }
+      : { isNewUser: true };
+  }
+
+  async markOtpAsUsed(user: User) {
+    return await this.otpTokenRepository.update(
+      {
+        user: { id: user.id },
+        is_used: false,
+        expires_at: MoreThan(new Date()),
+      },
+      {
+        is_used: true,
+      },
+    );
   }
 
   generateOtp() {

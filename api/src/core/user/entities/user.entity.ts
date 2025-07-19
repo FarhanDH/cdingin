@@ -34,9 +34,6 @@ export class User {
   role: RoleEnum;
 
   @Column({ default: false })
-  is_verified: boolean;
-
-  @Column({ default: false })
   is_profile_completed: boolean;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })

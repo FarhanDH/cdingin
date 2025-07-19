@@ -19,7 +19,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async createEmailEntity(email: string): Promise<User> {
+  createEmailEntity(email: string): User {
     return this.userRepository.create({ email });
   }
 }

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -17,6 +18,7 @@ export class OtpToken {
   user: Relation<User>;
 
   @Column({ type: 'varchar', length: 4 })
+  @Index()
   otpCode: string;
 
   @Column({ type: 'timestamp with time zone' })
