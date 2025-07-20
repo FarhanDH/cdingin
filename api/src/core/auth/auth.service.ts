@@ -1,12 +1,15 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
-import { toUserResponse } from '../user/dto/user.response';
+import { toUserResponse, UserResponse } from '../user/dto/user.response';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { OtpRequest, VerifyOtpRequest } from './dto/auth.request';
-import { VerifyOtpResponse } from './dto/auth.response';
+import { JwtPayload, VerifyOtpResponse } from './dto/auth.response';
 import { OtpToken } from './entities/otp-token.entity';
+import { CreateCustomerProfileRequest } from '../user/dto/user.request';
+import { JwtService } from '@nestjs/jwt';
+import { configuration } from '~/common/configuration';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +17,7 @@ export class AuthService {
     @InjectRepository(OtpToken)
     private readonly otpTokenRepository: Repository<OtpToken>,
     private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   private readonly logger = new Logger(AuthService.name);
@@ -129,12 +133,54 @@ export class AuthService {
     // Mark the found OTP as used to prevent reuse.
     await this.markOtpAsUsed(otpToken.user);
 
+    // Generate JWT tokens for the user.
+    const tokens = await this.generateJwtTokens(otpToken.user);
+
     // Determine if the user is new or existing and return appropriate response.
     // If the user's profile is completed, return the user data and mark isNewUser as false.
     // Otherwise, mark isNewUser as true.
     return otpToken.user.is_profile_completed
-      ? { isNewUser: false, user: toUserResponse(otpToken.user) }
+      ? { isNewUser: false, user: { ...toUserResponse(otpToken.user), tokens } }
       : { isNewUser: true };
+  }
+
+  async registerCustomerProfile(
+    request: CreateCustomerProfileRequest,
+  ): Promise<UserResponse> {
+    const user = await this.userService.registerCustomerProfile(request);
+    // Generate JWT tokens for the user.
+    const tokens = await this.generateJwtTokens(user);
+
+    return { ...toUserResponse(user), tokens };
+  }
+
+  private async generateJwtTokens(user: User): Promise<UserResponse['tokens']> {
+    const jwtPayload: JwtPayload = {
+      sub: user.id,
+      // jti: generateUniqueId(14),
+      fullName: user.full_name,
+      // iat: Date.now(),
+      iss: configuration().jwtConstants.issuer,
+      role: user.role,
+    };
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(jwtPayload, {
+        expiresIn: `${configuration().jwtConstants.accessTokenExpiresIn}s`,
+        secret: configuration().jwtConstants.secretAccessToken,
+      }),
+      this.jwtService.signAsync(jwtPayload, {
+        expiresIn: `${configuration().jwtConstants.refreshTokenExpiresIn}s`,
+        secret: configuration().jwtConstants.secretRefreshToken,
+      }),
+    ]);
+
+    return {
+      accessToken,
+      expiresIn: configuration().jwtConstants.accessTokenExpiresIn,
+      refreshToken,
+      refreshExpiresIn: configuration().jwtConstants.refreshTokenExpiresIn,
+    };
   }
 
   async markOtpAsUsed(user: User) {

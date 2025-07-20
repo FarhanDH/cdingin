@@ -7,7 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class CreateCustomerRequest {
+export class CreateCustomerProfileRequest {
   @IsEmail({}, { message: 'Email tidak valid' })
   email: string;
 
@@ -23,4 +23,6 @@ export class CreateCustomerRequest {
   phoneNumber: string;
 }
 
-export class UpdateUserRequest extends PartialType(CreateCustomerRequest) {}
+export class UpdateUserRequest extends PartialType(
+  CreateCustomerProfileRequest,
+) {}

@@ -10,12 +10,14 @@ export class UserResponse {
   role: RoleEnum;
   createdAt: Date;
   updatedAt: Date;
-  //   tokens?: {
-  //     accessToken: string;
-  //     expiresIn: number;
-  //     refreshToken: string;
-  //     refreshExpiresIn: number;
-  //   };
+  tokens?: AccessRefreshTokens;
+}
+
+export class AccessRefreshTokens {
+  accessToken: string;
+  expiresIn: number;
+  refreshToken: string;
+  refreshExpiresIn: number;
 }
 
 export const toUserResponse = (user: User): UserResponse => ({
