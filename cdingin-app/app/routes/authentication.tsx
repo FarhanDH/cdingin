@@ -20,7 +20,6 @@ export default function Authentication() {
   // Step 1: Email
   const handleEmailSubmit = async (data: { email: string }) => {
     try {
-      console.log(import.meta.env.VITE_API_URL);
       setLoading(true);
       // Call /email/send-otp API
       await axios.post(
@@ -41,7 +40,10 @@ export default function Authentication() {
       setStep('otp');
     } catch (error) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message);
+        setError(
+          error.response?.data?.message ??
+            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+        );
         throw new Error(error.response?.data.message);
       }
     } finally {
@@ -77,7 +79,10 @@ export default function Authentication() {
       }
     } catch (error) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message);
+        setError(
+          error.response?.data?.message ??
+            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+        );
         // Vibrate the device
         if (navigator.vibrate) {
           navigator.vibrate([200]);
@@ -96,7 +101,10 @@ export default function Authentication() {
       });
     } catch (error) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message);
+        setError(
+          error.response?.data?.message ??
+            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+        );
         throw new Error(error.response?.data.message);
       }
     }
@@ -129,7 +137,10 @@ export default function Authentication() {
       navigate('/orders');
     } catch (error) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message);
+        setError(
+          error.response?.data?.message ??
+            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+        );
         throw new Error(error.response?.data.message);
       }
     } finally {
