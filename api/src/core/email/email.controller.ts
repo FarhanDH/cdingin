@@ -1,12 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { OtpRequest } from '../auth/dto/auth.request';
-import { AuthService } from '../auth/auth.service';
-import { EmailService } from './email.service';
+import { Body, Controller, Options, Post } from '@nestjs/common';
 import { ApiResponse } from '~/common/api-response.dto';
+import { OtpRequest } from '../auth/dto/auth.request';
+import { EmailService } from './email.service';
 
 @Controller('email')
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
+
+  @Options('send-otp')
+  optionsHandler() {
+    // Handle preflight request for CORS
+    return {
+      message: 'CORS preflight request handled',
+    };
+  }
 
   @Post('send-otp')
   /**

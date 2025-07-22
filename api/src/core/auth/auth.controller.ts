@@ -17,7 +17,14 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse<VerifyOtpResponse>> {
     const data = await this.authService.verifyOtp(request);
+    console.log(data);
 
+    if (!data.user?.tokens) {
+      return {
+        message: 'OTP verified successfully',
+        data,
+      };
+    }
     // Set access token and refresh token in cookies
     response.cookie('accessToken', data.user.tokens.accessToken, {
       httpOnly: true,
