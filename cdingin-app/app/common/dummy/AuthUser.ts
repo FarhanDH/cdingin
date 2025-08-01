@@ -1,4 +1,4 @@
-import type { AuthUser } from '../AuthUser.type';
+import type { AuthUser } from '../../types/auth.type';
 
 export const authUserDummy: AuthUser = {
   isNewUser: true,

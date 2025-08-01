@@ -7,7 +7,7 @@ import EmailStep from '~/authentication/email-step';
 import NameStep from '~/authentication/name-step';
 import OtpStep from '~/authentication/otp-step';
 import PhoneStep from '~/authentication/phone-step';
-import type { AuthUser } from '~/common/AuthUser.type';
+import type { AuthUser } from '~/types/auth.type';
 import Spinner from '~/components/ui/spinner';
 
 export default function Authentication() {
@@ -42,7 +42,7 @@ export default function Authentication() {
       if (error instanceof AxiosError) {
         setError(
           error.response?.data?.message ??
-            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+            'Yah, kayaknya ada yang salah. Coba lagi nanti, ya',
         );
         throw new Error(error.response?.data.message);
       }
@@ -81,7 +81,7 @@ export default function Authentication() {
       if (error instanceof AxiosError) {
         setError(
           error.response?.data?.message ??
-            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+            'Yah, kayaknya ada yang salah. Coba lagi nanti, ya',
         );
         // Vibrate the device
         if (navigator.vibrate) {
@@ -103,7 +103,7 @@ export default function Authentication() {
       if (error instanceof AxiosError) {
         setError(
           error.response?.data?.message ??
-            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+            'Yah, kayaknya ada yang salah. Coba lagi nanti, ya',
         );
         throw new Error(error.response?.data.message);
       }
@@ -139,7 +139,7 @@ export default function Authentication() {
       if (error instanceof AxiosError) {
         setError(
           error.response?.data?.message ??
-            'Yah, kayaknya ada yang salah coba lagi nanti, ya',
+            'Yah, kayaknya ada yang salah. Coba lagi nanti, ya',
         );
         throw new Error(error.response?.data.message);
       }

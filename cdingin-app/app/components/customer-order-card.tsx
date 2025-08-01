@@ -5,17 +5,18 @@ export default function CustomerOrderCard() {
     <div className="border-b-[1.3px] bg-white overflow-hidden pl-4 py-3 cursor-pointer transition duration-50 ease-in transform hover:bg-gray-50 active:bg-gray-100">
       {/* Top section */}
       <button className="w-full text-start cursor-pointer">
-        <div className="flex justify-between border-b-[1.3px] mb-3 ">
+        <div className="flex justify-between border-b-[1.3px] mb-2 pb-2">
           {/* Left section */}
-          <div className="mb-4 borer border-amber-">
+          <div className="">
             <h1 className="font-medium text-md">#S38297</h1>
             <h2 className="text-gray-600">25 Januari 2020</h2>
+            <p className="text-gray-600 text-sm">Rumah</p>
           </div>
           {/* Right section: align to end */}
-          <div className="mb-4 flex flex-col items-end space-y-2 mr-4">
-            <ChevronRight size={18} color="#333" className="ml-21 mt-1" />
+          <div className="flex flex-col items-end space-y-2 mr-4">
+            <ChevronRight size={18} color="#888" className="mt-1" />
             {/* <p className="text-gray-700 text-xs mr-4 mb-3">Sedang Dikerjakan</p> */}
-            <span className="px-3 rounded-sm text-xs text-white text-center bg-[#FF8A00] flex items-center h-7">
+            <span className="px-3 mt-2 rounded-sm text-xs text-white text-center bg-[#FF8A00] flex items-center h-7">
               Lagi Dikerjain
             </span>
           </div>

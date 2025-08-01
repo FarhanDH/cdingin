@@ -24,7 +24,7 @@ export default function OrderTabStatus({
           onClick={() => onTabChange(tab.id)}
           className={`hover:cursor-pointer px-6 py-2 rounded-md text-sm font-medium transition-colors ${
             activeTab === tab.id
-              ? 'bg-[#09A3C9] text-white w-200'
+              ? 'bg-secondary text-white w-200'
               : ' text-gray-500 hover:bg-gray-200'
           }`}
         >

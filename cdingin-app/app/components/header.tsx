@@ -20,13 +20,13 @@ export default function Header({
     <div
       className={`${
         isSticky ? 'sticky' : ''
-      } top-0 bg-white z-100 px-4 pt-4 pb-2 border-b-gray-300 ${
+      } top-0 bg-white px-4 pt-4 pb-2 border-b-gray-300 z-40 ${
         showBorder && 'border-b'
       }`}
     >
       <div className={`flex items-center justify-between mb-2`}>
         <div
-          className={`flex items-center ${
+          className={`flex items-center space-x-2 ${
             showSidebar ? 'justify-between' : 'justify-start gap-3'
           }`}
         >
@@ -35,9 +35,7 @@ export default function Header({
               <ArrowLeft size={24} className="text-gray-500" />
             </Link>
           )}
-          <h1 className={`text-[20px] font-semibold ${showBack && 'mb-4'}`}>
-            {title}
-          </h1>
+          <h1 className={`text-[20px] font-semibold `}>{title}</h1>
         </div>
         {/* {showSidebar && <Menu size={26} className="text-gray-500" />} */}
       </div>

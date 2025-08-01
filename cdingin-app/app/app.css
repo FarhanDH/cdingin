@@ -64,7 +64,7 @@ body {
   --popover-foreground: oklch(0.145 0 0);
   --primary: #057895;
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: #09a3c9;
+  --secondary: #01a2c6;
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -124,6 +124,19 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+@keyframes slide-right-loop {
+  0%,
+  100% {
+    transform: translateX(-25%);
+  }
+  50% {
+    transform: translateX(25%);
+  }
+}
+.animate-slide-right-loop {
+  animation: slide-right-loop 1.5s ease-in-out infinite;
 }
 
 @layer base {
