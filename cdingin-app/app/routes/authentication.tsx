@@ -7,20 +7,24 @@ import EmailStep from '~/authentication/email-step';
 import NameStep from '~/authentication/name-step';
 import OtpStep from '~/authentication/otp-step';
 import PhoneStep from '~/authentication/phone-step';
-import type { AuthUser } from '~/types/auth.type';
+import type { UserResponse } from '~/types/auth.type';
 import Spinner from '~/components/ui/spinner';
+import { useAuth } from '~/contexts/auth.context';
+import { set } from 'date-fns';
 
 export default function Authentication() {
   const [step, setStep] = useState<'email' | 'otp' | 'name' | 'phone'>('email');
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { checkAuthStatus } = useAuth();
 
   // Step 1: Email
   const handleEmailSubmit = async (data: { email: string }) => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
       // Call /email/send-otp API
       await axios.post(
         `${import.meta.env.VITE_API_URL}/email/send-otp`,
@@ -54,6 +58,7 @@ export default function Authentication() {
   // Step 2: OTP
   const handleOtpSubmit = async (data: { otp: string }) => {
     try {
+      setLoading(true);
       // Response: { isNewUser, user }
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/verify-otp`,
@@ -61,6 +66,7 @@ export default function Authentication() {
           email: user?.user.email,
           otp: data.otp,
         },
+        { withCredentials: true },
       );
       // If not new, go to order page
       // If new, go to name step
@@ -75,6 +81,7 @@ export default function Authentication() {
       } else {
         setUser({ user: response.data.data.user, isNewUser: false });
         // Navigate to orders page
+        await checkAuthStatus();
         navigate('/orders');
       }
     } catch (error) {
@@ -121,6 +128,8 @@ export default function Authentication() {
 
   // Step 4: Phone
   const handlePhoneSubmit = async (data: { phone: string }) => {
+    setLoading(true);
+    setError('');
     try {
       // Call /auth/register-customer-profile API
       const response = await axios.post(
@@ -130,9 +139,12 @@ export default function Authentication() {
           fullName: user?.user.fullName,
           phoneNumber: data.phone,
         },
+        { withCredentials: true },
       );
 
       setUser({ ...response.data });
+      await checkAuthStatus();
+
       // Navigate to orders page
       navigate('/orders');
     } catch (error) {

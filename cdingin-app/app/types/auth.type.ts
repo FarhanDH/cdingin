@@ -1,4 +1,4 @@
-export type AuthUser = {
+export type UserResponse = {
   isNewUser?: boolean;
   user: {
     id?: string;
@@ -15,3 +15,10 @@ export type AuthUser = {
     refreshToken: string;
   };
 };
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  user: UserResponse['user'] | null;
+  isLoading: boolean;
+  checkAuthStatus: () => Promise<void>;
+}

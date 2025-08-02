@@ -1,5 +1,3 @@
-// summary.step.tsx
-
 import {
   AlertCircle,
   ArrowRightIcon,
@@ -37,6 +35,25 @@ import type {
   OrderFormData,
   OrderStep,
 } from '~/types/order.types';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '~/components/ui/drawer';
+import { id } from 'date-fns/locale';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '~/components/ui/sheet';
+import { set } from 'date-fns';
 
 interface SummaryStepProps {
   formData: Partial<OrderFormData>;
@@ -55,15 +72,15 @@ export default function SummaryStep({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [isLimitAlertOpen, setIsLimitAlertOpen] = useState(false);
   const [unitToDelete, setUnitToDelete] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [tempDate, setTempDate] = useState<Date | undefined>();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const totalQuantity =
     formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
+    if (tempDate) {
       setSelectedDate(date);
       setIsCalendarOpen(false);
     }
@@ -98,7 +115,7 @@ export default function SummaryStep({
 
   return (
     <>
-      <Header title="Detail Pesananmu" isSticky showBorder={false} showBack />
+      <Header title="Detail Pesananmu" isSticky showBorder={false} />
       <div className="">
         <div className="flex flex-col bg-gray-50 min-h-screen">
           {/* Service Address */}
@@ -207,7 +224,7 @@ export default function SummaryStep({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer"
+                          className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                           onClick={() => handleDecreaseQuantity(unit)}
                         >
                           <Minus className="w-4 h-4" />
@@ -218,7 +235,7 @@ export default function SummaryStep({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer"
+                          className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                           onClick={() => handleIncreaseQuantity(unit)}
                         >
                           <Plus className="w-4 h-4" />
@@ -269,29 +286,15 @@ export default function SummaryStep({
           </div>
           <div className="flex gap-2">
             {/* Calender input button */}
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="h-12 w-12 p-0 rounded-full border border-primary flex items-center justify-center active:scale-95 cursor-pointer"
-                >
-                  <CalendarRange className="text-primary w-6 h-6" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  // Tambahan: Nonaktifkan tanggal yang sudah lewat
-                  disabled={(date) =>
-                    date < new Date(new Date().setDate(new Date().getDate()))
-                  }
-                  autoFocus
-                  className="w-full"
-                />
-              </PopoverContent>
-            </Popover>
+            <button
+              type="button"
+              className="h-12 w-12 p-0 rounded-full border border-primary flex items-center justify-center active:scale-95 cursor-pointer"
+              onClick={() => {
+                setIsCalendarOpen(true);
+              }}
+            >
+              <CalendarRange className="text-primary w-6 h-6" />
+            </button>
 
             {/* Confirm Button */}
             <Button
@@ -335,6 +338,43 @@ export default function SummaryStep({
         </div>
       </div>
 
+      {/* Calender Drawer */}
+      <Drawer open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+        <DrawerContent className="max-w-lg mx-auto rounded-t-3xl">
+          <DrawerHeader>
+            <DrawerTitle className="text-xl font-semibold">
+              Kapan mau service?
+            </DrawerTitle>
+            <Calendar
+              mode="single"
+              required
+              selected={selectedDate}
+              onSelect={setTempDate}
+              // Disable past dates
+              disabled={(date) =>
+                date < new Date(new Date().setDate(new Date().getDate()))
+              }
+              ISOWeek
+              locale={id}
+              autoFocus
+              className={`w-full border rounded-lg `}
+            />
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button
+              onClick={() => {
+                handleDateSelect(tempDate);
+              }}
+              disabled={!tempDate}
+              variant={'default'}
+              className="w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95"
+            >
+              Set jadwal
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
       {/* Alerts */}
       <>
         {/* Limit Unit Alert */}
@@ -352,7 +392,7 @@ export default function SummaryStep({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <div className="flex justify-end gap-5">
-                <AlertDialogAction className="w-20  cursor-pointer active:scale-95">
+                <AlertDialogAction className="w-20 cursor-pointer active:scale-95">
                   Oke, Siap
                 </AlertDialogAction>
               </div>

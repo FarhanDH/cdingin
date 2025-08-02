@@ -1,6 +1,6 @@
-import type { AuthUser } from '../../types/auth.type';
+import type { UserResponse } from '../../types/auth.type';
 
-export const authUserDummy: AuthUser = {
+export const authUserDummy: UserResponse = {
   isNewUser: true,
   user: {
     id: 'dummy-id',

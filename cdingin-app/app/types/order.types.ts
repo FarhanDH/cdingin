@@ -31,3 +31,20 @@ export type OrderFormData = {
   note?: string;
   serviceDate: Date;
 };
+
+export type AcUnitDto = {
+  acTypeId: string;
+  acCapacity: string;
+  brand: string;
+  quantity: number;
+};
+
+export type CreateOrderRequestDto = {
+  acProblems: string[];
+  serviceLocation: string;
+  propertyType: string;
+  floor: number;
+  acUnits: AcUnitDto[];
+  serviceDate: Date;
+  note?: string;
+};
