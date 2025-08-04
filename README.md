@@ -26,15 +26,15 @@ To establish the foundational structure of the application, enabling Customers t
 
 - [x] Initialize NestJS project structure.
 - [x] Configure database connection to PostgreSQL using TypeORM.
-- [] Create `User` and `Order` entities (database tables).
-- [] Implement JWT for authentication and create a guard to protect routes.
-- [] Implement `OrdersModule`.
+- [x] Create `User` and `Order` entities (database tables).
+- [x] Implement JWT for authentication and create a guard to protect routes.
+- [x] Implement `OrdersModule`.
 
 #### Frontend (ReactJS)
 
 - [x] Initialize ReactJS project.
-- [] Create pages: `Multi Step Authentication`, `CreateOrderPage`, `MyOrdersPage`.
-- [] Develop an API service layer to communicate with the backend.
+- [x] Create pages: `Multi Step Authentication`, `CreateOrderPage`, `MyOrdersPage`.
+- [x] Develop an API service layer to communicate with the backend.
 
 ---
 
@@ -48,7 +48,7 @@ To establish the foundational structure of the application, enabling Customers t
 | 2   | OTP Form           | User inputs valid OTP within time limit                       | System verifies OTP and redirects to order page or profile form if new user    |
 | 3   | OTP Form           | User inputs wrong or expired OTP                              | System shows error message: "OTP is invalid or expired"                        |
 | 4   | Profile Form       | New customer fills in name and phone number after OTP success | System saves profile and redirects to order page                               |
-| 5   | Complaint Form     | Customer writes the service complaint (e.g., "AC leaking")    | Complaint is saved and proceeds to next step                                   |
+| 5   | Problem Form       | Customer writes the service ac problem (e.g., "AC leaking")   | Problem is saved and proceeds to next step                                     |
 | 6   | Location Form      | Customer fills in service location                            | Location is saved and proceeds to next step                                    |
 | 7   | AC Type Form       | Customer selects AC type and number of units                  | AC data is saved and proceeds to next step                                     |
 | 8   | Building Type Form | Customer selects building type and floor location             | Building info is saved and proceeds to next step                               |
