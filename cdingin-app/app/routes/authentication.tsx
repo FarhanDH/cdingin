@@ -3,14 +3,14 @@ import axios, { AxiosError } from 'axios';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import EmailStep from '~/authentication/email-step';
 import NameStep from '~/authentication/name-step';
 import OtpStep from '~/authentication/otp-step';
 import PhoneStep from '~/authentication/phone-step';
-import type { UserResponse } from '~/types/auth.type';
 import Spinner from '~/components/ui/spinner';
 import { useAuth } from '~/contexts/auth.context';
-import { set } from 'date-fns';
+import type { UserResponse } from '~/types/auth.type';
 
 export default function Authentication() {
   const [step, setStep] = useState<'email' | 'otp' | 'name' | 'phone'>('email');
@@ -82,6 +82,41 @@ export default function Authentication() {
         setUser({ user: response.data.data.user, isNewUser: false });
         // Navigate to orders page
         await checkAuthStatus();
+
+        if (response.data.data.user.role === 'customer') {
+          toast(
+            `Halo halo, ${response.data.data.user.fullName?.split(' ')[0]}`,
+            {
+              style: {
+                backgroundColor: '#585858',
+                color: '#fff',
+                opacity: '0.7',
+                borderRadius: '20px',
+                padding: '10px',
+                fontSize: '16px',
+                justifyContent: 'center',
+              },
+            },
+          );
+        } else {
+          toast(
+            `Orderan siap disikat, ${
+              response.data.data.user.fullName?.split(' ')[0]
+            }`,
+            {
+              style: {
+                backgroundColor: '#585858',
+                color: '#fff',
+                opacity: '0.7',
+                borderRadius: '20px',
+                padding: '10px',
+                fontSize: '16px',
+                justifyContent: 'center',
+              },
+            },
+          );
+        }
+
         navigate('/orders');
       }
     } catch (error) {
@@ -145,6 +180,17 @@ export default function Authentication() {
       setUser({ ...response.data });
       await checkAuthStatus();
 
+      toast(`Halo halo, ${response.data.data.user.fullName?.split(' ')[0]}`, {
+        style: {
+          backgroundColor: '#585858',
+          color: '#fff',
+          opacity: '0.7',
+          borderRadius: '20px',
+          padding: '10px',
+          fontSize: '16px',
+          justifyContent: 'center',
+        },
+      });
       // Navigate to orders page
       navigate('/orders');
     } catch (error) {

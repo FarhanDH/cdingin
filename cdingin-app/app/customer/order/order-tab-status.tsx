@@ -1,15 +1,4 @@
-export interface TabItem {
-  id: 'proses' | 'selesai' | 'dibatalkan'; // For Customer
-  // id: 'Hari ini' | 'Besok' | 'Mendatang'; // For Technician
-  label: string;
-  active?: boolean;
-}
-
-interface OrderTabsProps {
-  tabs: TabItem[];
-  activeTab: string;
-  onTabChange: (tabId: 'proses' | 'selesai' | 'dibatalkan') => void;
-}
+import type { OrderTabsProps } from '~/types/order.types';
 
 export default function OrderTabStatus({
   tabs,
@@ -22,11 +11,17 @@ export default function OrderTabStatus({
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`hover:cursor-pointer px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`hover:cursor-pointer px-6 py-2 text-sm text-gray-500 font-medium transition-colors ${
             activeTab === tab.id
-              ? 'bg-secondary text-white w-200'
-              : ' text-gray-500 hover:bg-gray-200'
+              ? 'border-b-2 border-secondary text-secondary'
+              : // 'bg-secondary text-white'
+                'hover:border-b-2 hover:border-gray-200'
           }`}
+          // className={`hover:cursor-pointer px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+          //   activeTab === tab.id
+          //     ? 'bg-secondary text-white w-200'
+          //     : ' text-gray-500 hover:bg-gray-200'
+          // }`}
         >
           {tab.label}
         </button>

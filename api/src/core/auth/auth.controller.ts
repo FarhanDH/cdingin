@@ -17,7 +17,6 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ): Promise<ApiResponse<VerifyOtpResponse>> {
     const data = await this.authService.verifyOtp(request);
-    console.log(data);
 
     if (!data.user?.tokens) {
       return {

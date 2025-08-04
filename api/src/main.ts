@@ -1,9 +1,10 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { configuration } from './common/configuration';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
 import { join } from 'path';
+import { AppModule } from './app.module';
+import { configuration } from './common/configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -24,6 +25,8 @@ async function bootstrap() {
       ? configuration().frontendUrl
       : 'http://localhost:5173';
 
+  app.use(cookieParser());
+
   app.enableCors({
     origin: frontendUrl,
     methods: 'GET, HEAD, PUT, POST, DELETE, OPTIONS, PATCH',
@@ -33,7 +36,7 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api');
-  console.log('CORS allowed origin:', frontendUrl);
+  logger.log(`CORS allowed origin: ${frontendUrl}`);
 
   app.useStaticAssets(join(__dirname, '..', 'src/core/email/templates/assets'));
   app.setBaseViewsDir(join(__dirname, '..', 'src/core/email/templates'));

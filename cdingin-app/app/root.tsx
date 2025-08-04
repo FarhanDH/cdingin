@@ -1,16 +1,11 @@
-import {
-  isRouteErrorResponse,
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from 'react-router';
-
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { Route } from './+types/root';
 import './app.css';
 import { AuthProvider } from './contexts/auth.context';
 import NotFoundPage from './pages/not-found';
+import { Toaster } from 'sonner';
+import { StyledEngineProvider } from '@mui/material/styles';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
 export const links: Route.LinksFunction = () => [
   { rel: 'icon', href: '/icon-192x192.png' },
@@ -34,9 +29,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <style>
+          @import
+          url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+        </style>
       </head>
-      <body className="border-2 border-grey-500 min-h-screen max-w-lg mx-auto">
-        {children}
+      <body>
+        <div className="min-h-screen max-w-lg mx-auto border-2 border-gray-100">
+          {children}
+        </div>
+        <Toaster
+          position="top-center"
+          className="bg-gray-100 text-center text-lg"
+        />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -46,9 +51,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
+    <StyledEngineProvider enableCssLayer>
+      <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </StyledEngineProvider>
   );
 }
 

@@ -12,7 +12,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<UserResponse | null>(null);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuthStatus = async () => {
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook untuk mempermudah penggunaan context
+// Custom hook to use context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

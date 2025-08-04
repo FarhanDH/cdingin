@@ -11,5 +11,6 @@ export default [
   route('', 'components/protected-route.tsx', [
     route('/orders', 'routes/customer-orders.tsx'),
     route('/order/new', 'routes/new-order.tsx'),
+    route('/order/:orderId', 'routes/customer-order-detail.tsx'),
   ]),
 ] satisfies RouteConfig;

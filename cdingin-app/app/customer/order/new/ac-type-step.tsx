@@ -7,11 +7,25 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogOverlay,
+  AlertDialogPortal,
   AlertDialogTitle,
 } from '~/components/ui/alert-dialog';
 import { Button } from '~/components/ui/button';
 import type { AcUnitDetail } from '~/types/order.types';
 import AcUnitCard from './ac-unit-card';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import {
+  DialogActions,
+  DialogContentText,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
+import { set } from 'date-fns';
 
 interface AcTypeStepProps {
   initialAcUnits: AcUnitDetail[];
@@ -97,80 +111,92 @@ export default function AcTypeStep({
   };
 
   return (
-    <>
-      {/* Limit Unit Alert */}
-      <AlertDialog
-        open={isTotalUnitLimitAlertOpen}
-        onOpenChange={setIsTotalUnitLimitAlertOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="text-start">
-              <AlertDialogTitle>Wah, Banyak Banget AC-nya! 😱</AlertDialogTitle>
-              <AlertDialogDescription>
-                Maaf, untuk saat ini dibatesin 10 unit AC dulu, ya.
-              </AlertDialogDescription>
-            </div>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <div className="flex justify-end gap-5">
-              <AlertDialogAction className="w-20  cursor-pointer active:scale-95">
-                Oke, Siap
-              </AlertDialogAction>
-            </div>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+    <div className="bg-white min-h-screen">
       <Header title="Detail Unit AC" isSticky />
-      <div className="p-4 pb-40 bg-white">
-        {acUnits.length === 0 && (
-          <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
-            <p className="text-gray-600">Anda belum menambahkan unit AC.</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Klik tombol di bawah untuk tambah unit AC.
-            </p>
-          </div>
-        )}
 
-        {acUnits.map((unit, index) => (
-          <AcUnitCard
-            key={unit.id}
-            unit={unit}
-            index={index}
-            onUpdate={handleUpdateUnit}
-            onRemove={handleRemoveUnit}
-          />
-        ))}
+      <main>
+        <div className="p-4 pb-40 bg-white">
+          {acUnits.length === 0 && (
+            <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
+              <p className="text-gray-600">Anda belum menambahkan unit AC.</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Klik tombol di bawah untuk tambah unit AC.
+              </p>
+            </div>
+          )}
 
-        <Button
-          variant="outline"
-          className="w-full mt-4 text-secondary border-secondary cursor-pointer"
-          onClick={handleAddUnit}
-        >
-          {acUnits.length === 0
-            ? '[+] Tambah Tipe AC'
-            : '[+] Tambah Tipe AC Lain'}
-        </Button>
-      </div>
+          {acUnits.map((unit, index) => (
+            <AcUnitCard
+              key={unit.id}
+              unit={unit}
+              index={index}
+              onUpdate={handleUpdateUnit}
+              onRemove={handleRemoveUnit}
+            />
+          ))}
 
-      {/* Navigation Buttons */}
-      <div className="w-full p-4 gap-2 flex fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border pr-5">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          className="w-1/2 h-12 rounded-full text-md text-primary border-primary cursor-pointer"
-        >
-          Kembali
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={isNextDisabled}
-          className="w-1/2 h-12 rounded-full text-md font-semibold cursor-pointer"
-        >
-          Lanjut
-        </Button>
-      </div>
-    </>
+          <Button
+            variant="outline"
+            className="w-full mt-4 text-secondary border-secondary cursor-pointer active:scale-95"
+            onClick={handleAddUnit}
+          >
+            {acUnits.length === 0
+              ? '[+] Tambah Tipe AC'
+              : '[+] Tambah Tipe AC Lain'}
+          </Button>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="w-full p-4 gap-2 flex fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border pr-5">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="w-1/2 h-12 rounded-full text-md text-primary border-primary cursor-pointer"
+          >
+            Kembali
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isNextDisabled}
+            className="w-1/2 h-12 rounded-full text-md font-semibold cursor-pointer"
+          >
+            Lanjut
+          </Button>
+        </div>
+      </main>
+
+      {/* Limit Unit Alert */}
+      <Dialog
+        open={isTotalUnitLimitAlertOpen}
+        onClose={() => setIsTotalUnitLimitAlertOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <div className="flex flex-col -space-y-3">
+          <DialogTitle
+            id="alert-dialog-title"
+            className="text-base font-semibold"
+          >
+            Wah, Banyak Banget AC-nya! 😱
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText
+              id="alert-dialog-description"
+              className="text-sm font"
+            >
+              Maaf, untuk saat ini dibatesin 10 unit AC dulu, ya.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setIsTotalUnitLimitAlertOpen(false)}
+              className="cursor-pointer active:scale-95 rounded-sm"
+            >
+              Oke, siap
+            </Button>
+          </DialogActions>
+        </div>
+      </Dialog>
+    </div>
   );
 }

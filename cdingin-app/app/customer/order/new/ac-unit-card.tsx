@@ -100,12 +100,16 @@ export default function AcUnitCard({
             }
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full cursor-pointer">
             <SelectValue placeholder="Pilih Tipe AC" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="w-full">
             {acTypes.map((acType) => (
-              <SelectItem key={acType.id} value={acType.id}>
+              <SelectItem
+                key={acType.id}
+                value={acType.id}
+                className="cursor-pointer"
+              >
                 <img
                   className="inline-block mr-2 w-6 h-6"
                   src={acType.icon}
@@ -130,12 +134,12 @@ export default function AcUnitCard({
             value={unit.pk}
             onValueChange={(value) => onUpdate(unit.id, 'pk', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full cursor-pointer">
               <SelectValue placeholder="Pilih PK" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-full">
               {pkOptions.map((pk) => (
-                <SelectItem key={pk} value={pk}>
+                <SelectItem key={pk} value={pk} className="cursor-pointer">
                   {pk}
                 </SelectItem>
               ))}
@@ -152,12 +156,16 @@ export default function AcUnitCard({
             value={unit.brand}
             onValueChange={(value) => onUpdate(unit.id, 'brand', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full cursor-pointer">
               <SelectValue placeholder="Pilih Merek" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="w-full">
               {brandOptions.map((brand) => (
-                <SelectItem key={brand} value={brand}>
+                <SelectItem
+                  key={brand}
+                  value={brand}
+                  className="cursor-pointer"
+                >
                   {brand}
                 </SelectItem>
               ))}

@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { RoleEnum } from '~/common/enums/role.enum';
 import { OtpToken } from '~/core/auth/entities/otp-token.entity';
+import { Order } from '~/core/order/entities/order.entity';
 
 @Entity('users')
 export class User {
@@ -20,6 +21,9 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
+
+  @OneToMany(() => Order, (order) => order.customer)
+  orders: Relation<Order>[];
 
   @Column({ type: 'varchar', length: 15, unique: true, nullable: true })
   phone_number: string;

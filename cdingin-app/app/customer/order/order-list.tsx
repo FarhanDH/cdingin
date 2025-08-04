@@ -1,52 +1,83 @@
+import Fab from '@mui/material/Fab';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@radix-ui/react-dialog';
+import axios from 'axios';
 import { PlusIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import CustomerOrderCard from '~/components/customer-order-card';
-import Header from '~/components/header';
-import OrderTabStatus, { type TabItem } from './order-tab-status';
 import { useNavigate } from 'react-router';
-import { Dialog, DialogContent } from '@radix-ui/react-dialog';
+import threeTechniciansImage from '~/assets/three-technicians.png';
+import Header from '~/components/header';
 import Spinner from '~/components/ui/spinner';
-
-const orderData: number[] = [1, 2, 3, 4, 5, 6, 7, 8];
+import CustomerOrderCard from '~/customer/order/order-card';
+import type { OrderItem, OrderTab, TabItem } from '~/types/order.types';
+import OrderTabStatus from './order-tab-status';
 
 export default function CustomerOrderList() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    'proses' | 'selesai' | 'dibatalkan'
-  >('proses');
-  useEffect(() => {}, []);
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<OrderTab>('progress');
+
+  // Fetch orders data for each activeTab changing
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/orders`,
+          {
+            params: {
+              status: activeTab,
+            },
+            withCredentials: true,
+          },
+        );
+
+        setOrders(response.data.data);
+      } catch (error) {
+        console.error(`Gagal mengambil pesanan untuk tab ${activeTab}:`, error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [activeTab]);
 
   const handleActionButton = async () => {
-    // Handle action button click
-
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call loading
+    setIsNavigating(true);
     navigate('/order/new');
   };
 
   const tabs: TabItem[] = [
-    { id: 'proses', label: 'Proses' },
-    { id: 'selesai', label: 'Selesai' },
-    { id: 'dibatalkan', label: 'Dibatalkan' },
+    { id: 'progress', label: 'Proses' },
+    { id: 'completed', label: 'Selesai' },
+    { id: 'cancelled', label: 'Dibatalkan' },
   ];
 
   return (
     <div>
-      {loading && (
+      {(isNavigating || isLoading) && (
         <div
           className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-50 ${
-            loading ? 'bg-black/50' : ''
+            isLoading ? 'bg-black/50' : ''
           }`}
         >
-          <Dialog open={loading} modal>
+          <Dialog open={isLoading} modal>
             <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
+              <DialogTitle></DialogTitle>
+              <DialogDescription></DialogDescription>
               <Spinner size={30} />
             </DialogContent>
           </Dialog>
         </div>
       )}
       <div>
+        {/* Header */}
         <Header isSticky={true} title="Daftar Pesanan">
           <OrderTabStatus
             tabs={tabs}
@@ -54,25 +85,53 @@ export default function CustomerOrderList() {
             onTabChange={setActiveTab}
           />
         </Header>
-        <div className="">
-          {orderData.length === 0 ? (
-            <h1 className="text-center justify-center flex items-center text-gray-500">
-              Belum ada pesanan
-            </h1>
-          ) : (
-            orderData.map((item) => <CustomerOrderCard key={item} />)
-          )}
-        </div>
+
+        {/* Order List */}
+        {orders.length === 0 ? (
+          <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
+            <img
+              src={threeTechniciansImage}
+              alt={threeTechniciansImage}
+              className="w-80 max-w-lg mb-6"
+            />
+            <h1 className="font-semibold text-lg">Masih sepi di sini!</h1>
+            <p className="text-sm text-gray-500 font-light">
+              Cuci, pasang, bongkar, dan servis AC? Semuanya bisa di sini.
+              Cobain, yuk!
+            </p>
+          </div>
+        ) : (
+          orders.map((order) => (
+            <CustomerOrderCard key={order.id} order={order} />
+          ))
+        )}
 
         {/* FLoating Action Button */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto z-50 h-0">
+        <div className="fixed bottom-20 left-0 right-4 max-w-lg mx-auto z-50 h-0">
           <div className="flex justify-end items-end pb-10 pl-12 h-0">
-            <button
+            <Fab
+              size="large"
+              // aria-label="add"
+              onClick={handleActionButton}
+              sx={{
+                backgroundColor: '#057895',
+                ':hover': {
+                  backgroundColor: '#057895',
+                },
+                ':active': {
+                  backgroundColor: '#057895',
+                },
+              }}
+              className="bg-primary"
+            >
+              <PlusIcon className="text-white" />
+            </Fab>
+            {/* <button
               className="w-15 h-15 bg-primary text-white flex justify-center items-center rounded-xl cursor-pointer active:bg-[#004A5A] hover:bg-primary/90 mr-4.5 mb-15 shadow-md shadow-neutral-500"
               onClick={handleActionButton}
             >
               <PlusIcon size={26} />
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

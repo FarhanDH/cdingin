@@ -5,20 +5,42 @@ export type OrderStep =
   | 'property-type'
   | 'summary';
 
-// Tipe untuk detail satu jenis AC
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'technician_on_the_way'
+  | 'on_working'
+  | 'waiting_payment'
+  | 'completed'
+  | 'cancelled';
+
+export interface TabItem {
+  id: 'progress' | 'completed' | 'cancelled'; // For Customer
+  // id: 'Hari ini' | 'Besok' | 'Mendatang'; // For Technician
+  label: string;
+  active?: boolean;
+}
+
+export interface OrderTabsProps {
+  tabs: TabItem[];
+  activeTab: string;
+  onTabChange: (tabId: 'progress' | 'completed' | 'cancelled') => void;
+}
+
+export type OrderTab = 'progress' | 'selesai' | 'dibatalkan';
+
 export type AcUnitDetail = {
-  id: string; // Sebaiknya gunakan UUID yang unik
+  id: string;
   acType: {
     id: string;
     name: string;
-    icon: string; // Simpan path icon sebagai string
+    icon: string;
   } | null;
   pk: string;
   brand: string;
   quantity: number;
 };
 
-// Tipe untuk keseluruhan data form pesanan
 export type OrderFormData = {
   problems: string[];
   location: string;
@@ -47,4 +69,45 @@ export type CreateOrderRequestDto = {
   acUnits: AcUnitDto[];
   serviceDate: Date;
   note?: string;
+};
+
+export type OrderItem = {
+  id: string;
+  problems: string[];
+  status: OrderStatus;
+  serviceLocation: string;
+  serviceDate: Date;
+  propertyType: string;
+  propertyFloor: string;
+  note?: string;
+  customer: {
+    id: string;
+    fullName: string;
+    phone: string;
+  };
+  acUnits: {
+    id: number;
+    acTypeName: string;
+    acCapacity: string;
+    brand: string;
+    quantity: number;
+  }[];
+  totalUnits: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export const getStatusLabel = (status: OrderStatus) => {
+  const statusMap: Record<OrderStatus, { text: string; color: string }> = {
+    pending: { text: 'Menunggu Konfirmasi', color: 'bg-[#9CA3AF]' },
+    confirmed: { text: 'Dalam Antrean', color: 'bg-[#3B82F6]' },
+    technician_on_the_way: { text: 'Teknisi OTW', color: 'bg-[#0EA5E9]' },
+    on_working: { text: 'Lagi Dikerjain', color: 'bg-[#F59E0B]' },
+    waiting_payment: { text: 'Tunggu Bayar', color: 'bg-[#FB923C]' },
+    completed: { text: 'Selesai', color: 'bg-[#10B981]' },
+    cancelled: { text: 'Dibatalkan', color: 'bg-[#EF4444]' },
+  };
+  return (
+    statusMap[status] || { text: 'Status Tidak Dikenal', color: 'bg-gray-700' }
+  );
 };

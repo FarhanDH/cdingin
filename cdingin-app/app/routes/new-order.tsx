@@ -2,16 +2,22 @@ import { Dialog, DialogContent } from '@radix-ui/react-dialog';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import technicianImg from '~/assets/technician-smile-phone-nobg.png';
 import { Button } from '~/components/ui/button';
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from '~/components/ui/drawer';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '~/components/ui/sheet';
 import Spinner from '~/components/ui/spinner';
 import AcTypeStep from '~/customer/order/new/ac-type-step';
 import LocationStep from '~/customer/order/new/location-step';
@@ -23,16 +29,6 @@ import type {
   OrderFormData,
   OrderStep,
 } from '~/types/order.types';
-import technicianImg from '~/assets/technician-smile-phone-nobg.png';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '~/components/ui/sheet';
 
 // Definisikan urutan step agar mudah dikelola
 const steps: OrderStep[] = [
@@ -267,7 +263,7 @@ export default function NewOrder() {
           </Dialog>
         </div>
       )}
-      {!isSuccess && renderStep()}
+      <main>{!isSuccess && renderStep()}</main>
 
       {/* Success Drawer if order created */}
       <Sheet open={isSuccess}>
@@ -302,31 +298,6 @@ export default function NewOrder() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
-
-      {/* <Drawer open={isSuccess} onOpenChange={setIsSuccess} closeThreshold={1}>
-        <DrawerContent className="max-w-lg mx-auto">
-          <DrawerHeader>
-            <img
-              src={technicianImg}
-              alt="success-image"
-              className="w-50 mx-auto"
-            />
-            <DrawerTitle className="text-lg">
-              Sip, order kamu udah masuk
-            </DrawerTitle>
-            <DrawerDescription>Tunggu teknisi konfirmasi, ya</DrawerDescription>
-          </DrawerHeader>
-          <DrawerFooter>
-            <Button
-              onClick={() => navigate('/orders')}
-              variant={'default'}
-              className="w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95"
-            >
-              Oke, siap
-            </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer> */}
     </div>
   );
 }

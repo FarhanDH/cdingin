@@ -7,6 +7,8 @@ import { AppLoggerMiddleware } from './common/loggers/logger.middleware';
 import { UserModule } from './core/user/user.module';
 import { AuthModule } from './core/auth/auth.module';
 import { EmailModule } from './core/email/email.module';
+import { OrderModule } from './core/order/order.module';
+import { AcUnitModule } from './core/ac-unit/ac-unit.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { EmailModule } from './core/email/email.module';
     UserModule,
     AuthModule,
     EmailModule,
+    OrderModule,
+    AcUnitModule,
   ],
   controllers: [AppController],
 })

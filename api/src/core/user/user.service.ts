@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCustomerProfileRequest } from './dto/user.request';
 import { User } from './entities/user.entity';
+import { toUserResponse, UserResponse } from './dto/user.response';
 
 @Injectable()
 export class UserService {
@@ -38,6 +39,15 @@ export class UserService {
 
   async getByEmail(email: string): Promise<User> {
     return this.userRepository.findOne({ where: { email } });
+  }
+
+  async getById(id: string): Promise<User> {
+    return await this.userRepository.findOne({ where: { id } });
+  }
+
+  async getMe(id: string): Promise<UserResponse> {
+    const data = await this.getById(id);
+    return toUserResponse(data);
   }
 
   async insertEmail(email: string): Promise<User> {
