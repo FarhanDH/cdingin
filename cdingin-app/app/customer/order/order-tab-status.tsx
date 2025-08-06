@@ -1,6 +1,6 @@
 import type { OrderTabsProps } from '~/types/order.types';
 
-export default function OrderTabStatus({
+export default function CustomerOrderTab({
   tabs,
   activeTab,
   onTabChange,

@@ -13,15 +13,19 @@ import threeTechniciansImage from '~/assets/three-technicians.png';
 import Header from '~/components/header';
 import Spinner from '~/components/ui/spinner';
 import CustomerOrderCard from '~/customer/order/order-card';
-import type { OrderItem, OrderTab, TabItem } from '~/types/order.types';
-import OrderTabStatus from './order-tab-status';
+import type {
+  OrderItem,
+  CustomerOrderTabType,
+  CustomerTabItem,
+} from '~/types/order.types';
+import CustomerOrderTab from './order-tab-status';
 
 export default function CustomerOrderList() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<OrderTab>('progress');
+  const [activeTab, setActiveTab] = useState<CustomerOrderTabType>('progress');
 
   // Fetch orders data for each activeTab changing
   useEffect(() => {
@@ -53,7 +57,7 @@ export default function CustomerOrderList() {
     navigate('/order/new');
   };
 
-  const tabs: TabItem[] = [
+  const tabs: CustomerTabItem[] = [
     { id: 'progress', label: 'Proses' },
     { id: 'completed', label: 'Selesai' },
     { id: 'cancelled', label: 'Dibatalkan' },
@@ -79,7 +83,7 @@ export default function CustomerOrderList() {
       <div>
         {/* Header */}
         <Header isSticky={true} title="Daftar Pesanan">
-          <OrderTabStatus
+          <CustomerOrderTab
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={setActiveTab}

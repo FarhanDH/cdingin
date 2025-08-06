@@ -1,10 +1,11 @@
 import { configDotenv } from 'dotenv';
 import { DataSource } from 'typeorm';
+import { SeederOptions } from 'typeorm-extension';
 import { DataSourceOptions } from 'typeorm/data-source/DataSourceOptions';
 import { configuration } from '~/common/configuration';
 
 configDotenv({ path: '.env' });
-export const dataSourceOptions: DataSourceOptions = {
+export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   type: 'postgres',
   host: configuration().database.host,
   port: configuration().database.port,
@@ -21,6 +22,8 @@ export const dataSourceOptions: DataSourceOptions = {
     // `src/core/database/migrations/*.ts`, // enable when seeding and migrations
   ],
   logger: 'simple-console',
+  seeds: ['dist/**/*.seed.js'],
+
   // logging: true, // remove when production
   // synchronize: false, // remove when production use migrations instead of synchronize
   // ssl: true, // remove when work on local

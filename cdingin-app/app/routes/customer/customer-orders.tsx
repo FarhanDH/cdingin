@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import { Bell, ListOrdered, PersonStanding } from 'lucide-react';
 import CustomerOrderList from '~/customer/order/order-list';
 
-export default function CustomerOrder() {
+export default function CustomerOrders() {
   return (
     <Box sx={{ pb: 7 }}>
       <CustomerOrderList />

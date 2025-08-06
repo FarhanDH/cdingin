@@ -17,7 +17,7 @@ const NotFoundPage = () => {
         </p>
         <Button
           className="mt-8 px-9 py-5 cursor-pointer active:scale-95"
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/')}
         >
           Kembali
         </Button>

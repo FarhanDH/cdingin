@@ -1,12 +1,13 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  Request,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Request,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from '~/common/api-response.dto';
 import { Roles } from '~/common/decorators/roles.decorator';
@@ -18,51 +19,114 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateOrderRequestDto } from './dto/order.request';
 import { OrderResponse } from './dto/order.response';
 import { OrderService } from './order.service';
+import { OrderDateFilter } from '~/common/enums/order-date.enum';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+    constructor(private readonly orderService: OrderService) {}
 
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(RoleEnum.CUSTOMER)
-  @Post()
-  async create(
-    @Request() request: RequestWithUser,
-    @Body() createOrderDto: CreateOrderRequestDto,
-  ): Promise<ApiResponse<OrderResponse>> {
-    const data = await this.orderService.create(request.user, createOrderDto);
-    return {
-      message: 'Order created successfully',
-      data,
-    };
-  }
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Post()
+    async createForCustomer(
+        @Request() request: RequestWithUser,
+        @Body() createOrderDto: CreateOrderRequestDto,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.createForCustomer(
+            request.user,
+            createOrderDto,
+        );
+        return {
+            message: 'Order created successfully',
+            data,
+        };
+    }
 
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(RoleEnum.CUSTOMER)
-  @Get()
-  async getAll(
-    @Request() request: RequestWithUser,
-    @Query('status')
-    status?: keyof typeof OrderStatusEnum | 'progress',
-  ): Promise<ApiResponse<OrderResponse[]>> {
-    const data = await this.orderService.getAll(request.user, status);
-    return {
-      message: 'Orders fetched successfully',
-      data,
-    };
-  }
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Get()
+    async getAllForCustomer(
+        @Request() request: RequestWithUser,
+        @Query('status')
+        status?: OrderStatusEnum | 'progress',
+    ): Promise<ApiResponse<OrderResponse[]>> {
+        const data = await this.orderService.getAllForCustomer(
+            request.user,
+            status,
+        );
+        return {
+            message: 'Orders fetched successfully',
+            data,
+        };
+    }
 
-  @UseGuards(JwtGuard, RolesGuard)
-  @Roles(RoleEnum.CUSTOMER)
-  @Get(':id')
-  async getOneByCustomerId(
-    @Request() request: RequestWithUser,
-    @Param('id') id: string,
-  ): Promise<ApiResponse<OrderResponse>> {
-    const data = await this.orderService.getOneByCustomerId(request.user, id);
-    return {
-      message: 'Order fetched successfully',
-      data,
-    };
-  }
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.TECHNICIAN)
+    @Get('technician')
+    async getAllForTechnician(
+        @Request() request: RequestWithUser,
+        @Query('service-date') serviceDate?: OrderDateFilter,
+    ): Promise<ApiResponse<OrderResponse[]>> {
+        const data = await this.orderService.getAllForTechnician(
+            request.user,
+            serviceDate,
+        );
+        return {
+            message: 'Orders fetched successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.TECHNICIAN)
+    @Get('technician/:id')
+    async getOneByIdForTechnician(
+        @Request() request: RequestWithUser,
+        @Param('id') id: string,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.getOneByIdForTechnician(
+            request.user,
+            id,
+        );
+        return {
+            message: 'Order fetched successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.TECHNICIAN)
+    @Patch(':id/status')
+    async updateStatusByIdForTechnician(
+        @Request() request: RequestWithUser,
+        @Param('id') id: string,
+        @Body('status') status: OrderStatusEnum,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.updateStatusByIdForTechnician(
+            request.user,
+            id,
+            status,
+        );
+        return {
+            message: 'Order status updated successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Get(':id')
+    async getOneByIdForCustomer(
+        @Request() request: RequestWithUser,
+        @Param('id') id: string,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.getOneByIdForCustomer(
+            request.user,
+            id,
+        );
+        return {
+            message: 'Order fetched successfully',
+            data,
+        };
+    }
 }

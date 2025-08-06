@@ -22,6 +22,9 @@ export class Order {
   @ManyToOne(() => User, (user) => user.orders)
   customer: Relation<User>;
 
+  @ManyToOne(() => User, (user) => user.orders)
+  technician: Relation<User>;
+
   @Column({ type: 'varchar', array: true })
   ac_problems: string[];
 

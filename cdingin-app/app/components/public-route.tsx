@@ -3,7 +3,7 @@ import Spinner from './ui/spinner';
 import { Navigate, Outlet } from 'react-router';
 
 export default function PublicRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   // Wait until auth status clear
   if (isLoading) {
     return (
@@ -15,7 +15,11 @@ export default function PublicRoute() {
 
   // If user Authenticated
   if (isAuthenticated) {
-    // Redirect to the /orders
+    // Redirect to the /technician/orders if user is technician
+    if (user?.role === 'technician') {
+      return <Navigate to="/technician/orders" replace />;
+    }
+    // Redirect to the /orders if user is customer
     return <Navigate to="/orders" replace />;
   }
 
