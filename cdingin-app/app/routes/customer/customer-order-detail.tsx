@@ -5,19 +5,37 @@ import { useParams } from "react-router";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
+import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
-
-const statusSteps = ["confirmed", "on_working", "completed", "cancelled"];
 
 export default function CustomerOrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();
     const [order, setOrder] = useState<OrderItem | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const { text: statusText, color: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
+
+    const fetchOrderDetail = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setOrder(response.data.data);
+            setIsLoading(false);
+        } catch (error) {
+            setError("Gagal mengambil detail pesanan");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!orderId) return;
@@ -200,10 +218,10 @@ export default function CustomerOrderDetail() {
                 <div>
                     {order.status === "pending" && (
                         <Button
-                            variant={"destructive"}
-                            className="w-full py-6 text-base text-md font-semibold cursor-pointer active:scale-95"
+                            // variant={"destructive"}
+                            className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 text-md font-semibold cursor-pointer active:scale-95 rounded-full"
                             onClick={() => {
-                                // Handle order cancellation
+                                setIsCancelSheetOpen(true);
                             }}
                         >
                             Batalkan pesanan
@@ -211,6 +229,18 @@ export default function CustomerOrderDetail() {
                     )}
                 </div>
             </div>
+
+            {/* Show Order sheet when cancel button clicked */}
+            <CancelOrderSheet
+                isOpen={isCancelSheetOpen}
+                onClose={() => setIsCancelSheetOpen(false)}
+                orderId={order.id}
+                actor="customer"
+                onSuccess={() => {
+                    setIsCancelSheetOpen(false);
+                    fetchOrderDetail();
+                }}
+            />
         </div>
     );
 }

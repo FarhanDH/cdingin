@@ -19,7 +19,10 @@ import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { JwtPayload } from '../auth/dto/auth.response';
 import { UserService } from '../user/user.service';
-import { CreateOrderRequestDto } from './dto/order.request';
+import {
+    CancelOrderRequestDto,
+    CreateOrderRequestDto,
+} from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
 
@@ -244,6 +247,104 @@ export class OrderService {
             return toOrderResponse(order);
         } catch (error) {
             this.logger.error(`Error updating order status: ${error.message}`);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async cancelByIdForCustomer(
+        user: JwtPayload,
+        orderId: string,
+        request: CancelOrderRequestDto,
+    ): Promise<OrderResponse> {
+        this.logger.debug(
+            `OrderService.cancelByIdForCustomer(user: ${JSON.stringify(
+                user,
+            )}, orderId: ${orderId}, request: ${JSON.stringify(request)})`,
+        );
+        try {
+            // Get order by order id and customer id
+            const order = await this.orderRepository.findOne({
+                where: { id: orderId, customer: { id: user.sub } },
+                relations: {
+                    ac_units: true,
+                    customer: true,
+                },
+            });
+            if (!order) {
+                this.logger.warn(`Order with id ${orderId} not found`);
+                throw new NotFoundException(
+                    `Order with id ${orderId} not found`,
+                );
+            }
+
+            // is status order still pending
+            if (order.status !== OrderStatusEnum.PENDING) {
+                this.logger.warn(
+                    `Order with id ${orderId} is not in pending status`,
+                );
+                throw new Error(
+                    `Order with id ${orderId} is not in pending status`,
+                );
+            }
+
+            // Update order data
+            order.status = OrderStatusEnum.CANCELLED;
+            order.cancellation_reason = request.reason;
+            order.cancellation_note = request.note;
+            order.cancelled_by = {
+                id: user.sub,
+                role: user.role,
+                fullName: user.fullName,
+            };
+
+            await this.orderRepository.save(order);
+            return toOrderResponse(order);
+        } catch (error) {
+            this.logger.error(`Error canceling order: ${error.message}`);
+            throw new InternalServerErrorException(error.message);
+        }
+    }
+
+    async cancelByIdForTechnician(
+        user: JwtPayload,
+        orderId: string,
+        request: CancelOrderRequestDto,
+    ): Promise<OrderResponse> {
+        this.logger.debug(
+            `OrderService.cancelByIdForTechnician(user: ${JSON.stringify(
+                user,
+            )}, orderId: ${orderId}, request: ${JSON.stringify(request)})`,
+        );
+        try {
+            // Get order by order id
+            const order = await this.orderRepository.findOne({
+                where: { id: orderId },
+                relations: {
+                    ac_units: true,
+                    customer: true,
+                },
+            });
+            if (!order) {
+                this.logger.warn(`Order with id ${orderId} not found`);
+                throw new NotFoundException(
+                    `Order with id ${orderId} not found`,
+                );
+            }
+
+            // Update order data
+            order.status = OrderStatusEnum.CANCELLED;
+            order.cancellation_reason = request.reason;
+            order.cancellation_note = request.note;
+            order.cancelled_by = {
+                id: user.sub,
+                role: user.role,
+                fullName: user.fullName,
+            };
+
+            await this.orderRepository.save(order);
+            return toOrderResponse(order);
+        } catch (error) {
+            this.logger.error(`Error canceling order: ${error.message}`);
             throw new InternalServerErrorException(error.message);
         }
     }

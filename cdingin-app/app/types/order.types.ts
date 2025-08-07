@@ -97,6 +97,13 @@ export type OrderItem = {
         brand: string;
         quantity: number;
     }[];
+    cancellationReason?: string;
+    cancellationNote?: string;
+    cancelledBy?: {
+        id: string;
+        role: string;
+        fullName: string;
+    };
     totalUnits: number;
     createdAt: Date;
     updatedAt: Date;

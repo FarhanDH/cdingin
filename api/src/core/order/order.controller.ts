@@ -16,7 +16,10 @@ import { RoleEnum } from '~/common/enums/role.enum';
 import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { CreateOrderRequestDto } from './dto/order.request';
+import {
+    CancelOrderRequestDto,
+    CreateOrderRequestDto,
+} from './dto/order.request';
 import { OrderResponse } from './dto/order.response';
 import { OrderService } from './order.service';
 import { OrderDateFilter } from '~/common/enums/order-date.enum';
@@ -109,6 +112,44 @@ export class OrderController {
         );
         return {
             message: 'Order status updated successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.TECHNICIAN)
+    @Patch('technician/:id/cancel')
+    async cancelByIdForTechnician(
+        @Request() request: RequestWithUser,
+        @Param('id') id: string,
+        @Body() cancelOrderDto: CancelOrderRequestDto,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.cancelByIdForTechnician(
+            request.user,
+            id,
+            cancelOrderDto,
+        );
+        return {
+            message: 'Order canceled successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Patch(':id/cancel')
+    async cancelByIdForCustomer(
+        @Request() request: RequestWithUser,
+        @Param('id') id: string,
+        @Body() cancelOrderDto: CancelOrderRequestDto,
+    ): Promise<ApiResponse<OrderResponse>> {
+        const data = await this.orderService.cancelByIdForCustomer(
+            request.user,
+            id,
+            cancelOrderDto,
+        );
+        return {
+            message: 'Order canceled successfully',
             data,
         };
     }

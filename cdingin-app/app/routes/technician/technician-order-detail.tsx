@@ -21,6 +21,7 @@ import {
 import { Button } from "~/components/ui/button";
 import Spinner from "~/components/ui/spinner";
 import SwipeButton from "~/components/ui/swipe-button";
+import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import {
     getStatusLabel,
@@ -46,11 +47,29 @@ export default function CustomerOrderDetail() {
     const [order, setOrder] = useState<OrderItem | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [isRejectAlertOpen, setIsRejectAlertOpen] = useState(false);
+    const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { text: statusText, color: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
+
+    const fetchOrderDetail = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders/technician/${orderId}`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setOrder(response.data.data);
+            setIsLoading(false);
+        } catch (error) {
+            setError("Gagal mengambil detail pesanan");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!orderId) return;
@@ -170,8 +189,7 @@ export default function CustomerOrderDetail() {
                     action: () => updateOrderStatus("on_working"),
                 };
             case "on_working":
-                // Di sini Anda mungkin perlu navigasi ke halaman pembuatan tagihan
-                // Untuk sekarang, kita buat placeholder
+                // navigasi ke halaman pembuatan tagihan
                 return {
                     text: "Geser untuk Buat Tagihan",
                     action: () => {
@@ -189,21 +207,12 @@ export default function CustomerOrderDetail() {
         updateOrderStatus("confirmed");
     };
 
-    const handleConfirmReject = () => {
-        setIsRejectAlertOpen(false);
-        updateOrderStatus("cancelled");
-    };
-
-    if (isLoading) {
-        return <h1>Loading...</h1>;
-    }
-
     if (error) {
         return <h1>{error}</h1>;
     }
 
     if (!order) {
-        return <h1>Order not found</h1>;
+        return <h1>Order gak ketemu</h1>;
     }
 
     return (
@@ -238,7 +247,7 @@ export default function CustomerOrderDetail() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 justify-end">
+                        <div className="flex flex-col items-end text-end gap-2 justify-end">
                             {/* Order status badge */}
                             <span
                                 className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
@@ -261,6 +270,29 @@ export default function CustomerOrderDetail() {
                             </button>
                         </div>
                     </div>
+
+                    {/* Cancellation detail */}
+                    {order.status === "cancelled" && (
+                        <div className="ml-13">
+                            <p className="text-gray-700 text-sm">
+                                Dibatalkan oleh{" "}
+                                {order.cancelledBy?.role === "customer"
+                                    ? "pelanggan"
+                                    : "teknisi"}
+                            </p>
+                            <p className="text-gray-900 font-medium text-sm">
+                                Alasan dibatalkan:
+                            </p>
+                            <p className="text-gray-900 font-medium text-sm">
+                                {order.cancellationReason}
+                            </p>
+                            {order.cancellationNote && (
+                                <p className="text-gray-900 font-medium text-sm">
+                                    {order.cancellationNote}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Service Address */}
@@ -386,6 +418,14 @@ export default function CustomerOrderDetail() {
                     </div>
                     <div className="flex justify-between items-center mb-1">
                         <div className="text-sm text-gray-700">
+                            Tanggal service
+                        </div>
+                        <div className="text-sm text-gray-700">
+                            {formattedDate(order.serviceDate)}
+                        </div>
+                    </div>
+                    <div className="flex justify-between items-center mb-1">
+                        <div className="text-sm text-gray-700">
                             Waktu pemesanan
                         </div>
                         {/* Created time */}
@@ -393,14 +433,17 @@ export default function CustomerOrderDetail() {
                             {formattedDate(order.createdAt, true)}
                         </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-700">
-                            Tanggal service
+
+                    {order.updatedAt !== order.createdAt && (
+                        <div className="flex justify-between items-center mb-1">
+                            <div className="text-sm text-gray-700">
+                                Waktu diperbarui
+                            </div>
+                            <div className="text-sm text-gray-700">
+                                {formattedDate(order.updatedAt, true)}
+                            </div>
                         </div>
-                        <div className="text-sm text-gray-700">
-                            {formattedDate(order.serviceDate)}
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -411,15 +454,21 @@ export default function CustomerOrderDetail() {
                         <Button
                             variant={"destructive"}
                             className="w-1/2 py-6 text-base text-md font-semibold cursor-pointer active:scale-95"
-                            onClick={() => setIsRejectAlertOpen(true)}
+                            onClick={() => setIsCancelSheetOpen(true)}
                         >
                             Tolak
                         </Button>
                         <Button
                             className="w-1/2 py-6 text-base text-md font-semibold cursor-pointer active:scale-95"
+                            disabled={isUpdating}
                             onClick={handleAcceptOrder}
                         >
-                            Terima
+                            {/* Terima */}
+                            {isUpdating ? (
+                                <Spinner size={20} className="text-primary" />
+                            ) : (
+                                "Terima"
+                            )}
                         </Button>
                     </div>
                 )}
@@ -432,39 +481,17 @@ export default function CustomerOrderDetail() {
                 )}
             </div>
 
-            {/* Reject alert dialog */}
-            <AlertDialog
-                open={isRejectAlertOpen}
-                onOpenChange={setIsRejectAlertOpen}
-            >
-                <AlertDialogContent className="max-w-lg mx-auto">
-                    <AlertDialogHeader className="text-start">
-                        <AlertDialogTitle>
-                            <h1 className="text-base font-semibold">
-                                Yakin mau ditolak?
-                            </h1>
-                        </AlertDialogTitle>
-                        {/* <AlertDialogDescription className="text-sm">
-                            This action cannot be undone. This will permanently
-                            delete your account and remove your data from our
-                            servers.
-                        </AlertDialogDescription> */}
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <div className="flex gap-4 justify-end">
-                            <AlertDialogCancel className="border-primary text-primary active:scale-95 cursor-pointer">
-                                Gak jadi
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                                className="bg-destructive text-white active:scale-95 cursor-pointer hover:bg-destructive/80"
-                                onClick={handleConfirmReject}
-                            >
-                                Iya, batalin
-                            </AlertDialogAction>
-                        </div>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            {/* Show Order sheet when cancel button clicked */}
+            <CancelOrderSheet
+                isOpen={isCancelSheetOpen}
+                onClose={() => setIsCancelSheetOpen(false)}
+                orderId={order.id}
+                actor="technician"
+                onSuccess={() => {
+                    setIsCancelSheetOpen(false);
+                    fetchOrderDetail();
+                }}
+            />
         </div>
     );
 }
