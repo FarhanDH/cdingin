@@ -9,6 +9,7 @@ import { AuthModule } from './core/auth/auth.module';
 import { EmailModule } from './core/email/email.module';
 import { OrderModule } from './core/order/order.module';
 import { AcUnitModule } from './core/ac-unit/ac-unit.module';
+import { ScheduleModule } from './core/schedule/schedule.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AcUnitModule } from './core/ac-unit/ac-unit.module';
     EmailModule,
     OrderModule,
     AcUnitModule,
+    ScheduleModule,
   ],
   controllers: [AppController],
 })

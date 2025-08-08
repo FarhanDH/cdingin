@@ -1,4 +1,5 @@
 import {
+    ConflictException,
     Injectable,
     InternalServerErrorException,
     Logger,
@@ -8,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { addDays, endOfDay, startOfDay } from 'date-fns';
 import {
     Between,
+    DataSource,
     FindOptionsWhere,
     In,
     MoreThanOrEqual,
@@ -34,51 +36,134 @@ export class OrderService {
         @InjectRepository(AcUnit)
         private readonly acUnitRepository: Repository<AcUnit>,
         private readonly userService: UserService,
+        private readonly dataSource: DataSource,
     ) {}
 
     private readonly logger = new Logger(OrderService.name);
 
+    /**
+     * Creates a new order for a customer, including AC unit details, within a transaction.
+     * Checks for schedule availability before creating the order.
+     * @param user - The JWT payload of the authenticated customer.
+     * @param createOrderDto - The data transfer object containing details for the new order.
+     * @returns A promise that resolves to the created order response.
+     */
     async createForCustomer(
         user: JwtPayload,
         createOrderDto: CreateOrderRequestDto,
     ): Promise<OrderResponse> {
         this.logger.debug(
-            `OrderService.create: ${JSON.stringify(createOrderDto)}`,
+            `OrderService.createForCustomer: ${JSON.stringify(createOrderDto)}`,
         );
 
-        const userEntity = await this.userService.getById(user.sub);
+        // Start Transaction
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
 
-        const order = this.orderRepository.create({
-            ac_problems: createOrderDto.acProblems,
-            service_location: createOrderDto.serviceLocation,
-            property_type: createOrderDto.propertyType,
-            property_floor: createOrderDto.floor.toString(),
-            service_date: createOrderDto.serviceDate,
-            note: createOrderDto.note,
-            customer: userEntity,
-        });
+        try {
+            // Check schedule availability
+            // Convert the service date string from the DTO to a Date object.
+            const serviceDate = new Date(createOrderDto.serviceDate);
+            // Get the start of the day for the service date.
+            const dayStart = startOfDay(serviceDate);
+            // Get the end of the day for the service date.
+            const dayEnd = endOfDay(serviceDate);
 
-        const createdOrder = await this.orderRepository.save(order);
+            // Query the database to sum the quantity of AC units booked for the given service date.
+            // It excludes orders that are cancelled or completed to only count active bookings.
+            // The query uses a raw SQL query to join 'orders' with 'ac_units' and sum the quantities.
+            const scheduleCheck = await queryRunner.manager
+                .createQueryBuilder(Order, 'orders')
+                .select('SUM(ac_units.quantity)', 'totalUnitsBooked')
+                .innerJoin('orders.ac_units', 'ac_units')
+                .where('orders.service_date BETWEEN :dayStart AND :dayEnd', {
+                    dayStart,
+                    dayEnd,
+                })
+                .andWhere('orders.status NOT IN (:...statuses)', {
+                    statuses: [
+                        OrderStatusEnum.CANCELLED,
+                        OrderStatusEnum.COMPLETED,
+                    ],
+                })
+                .getRawOne();
 
-        const acUnits = createOrderDto.acUnits.map((acUnit): AcUnit => {
-            return this.acUnitRepository.create({
-                orders: createdOrder,
-                ac_type_name: acUnit.acTypeId,
-                ac_capacity: acUnit.acCapacity,
-                brand: acUnit.brand,
-                quantity: acUnit.quantity,
+            // Parse the total units booked from the database result, defaulting to 0 if null.
+            const totalUnitsBooked =
+                parseInt(scheduleCheck?.totalUnitsBooked, 10) || 0;
+            // Calculate the total quantity of AC units in the new order being created.
+            const totalUnitsInNewOrder = createOrderDto.acUnits.reduce(
+                (acc, acUnit) => acc + acUnit.quantity,
+                0,
+            );
+
+            // If slot unavailable, cancel transaction and throw an exception
+            // Check if adding the new order's AC units would exceed the maximum capacity (10 units).
+            if (totalUnitsBooked + totalUnitsInNewOrder > 10) {
+                this.logger.warn(
+                    `Slot for ${serviceDate} is full. Cannot create new order.`,
+                );
+
+                throw new ConflictException(
+                    'Jadwal udah penuh. Silakan pilih tanggal lain.',
+                );
+            }
+
+            // If slot available, continue to process create order
+            // Ensure all save operations using queryRunner.manager
+            // Create a new Order entity with the provided details and associate it with the customer.
+            const newOrder = queryRunner.manager.create(Order, {
+                customer: {
+                    id: user.sub,
+                },
+                ac_problems: createOrderDto.acProblems,
+                service_location: createOrderDto.serviceLocation,
+                property_type: createOrderDto.propertyType,
+                property_floor: createOrderDto.floor.toString(),
+                service_date: createOrderDto.serviceDate,
+                note: createOrderDto.note,
             });
-        });
 
-        await this.acUnitRepository.save(acUnits);
-        const orderWithAcUnits = await this.orderRepository.findOne({
-            where: { id: createdOrder.id },
-            relations: {
-                ac_units: true,
-                customer: true,
-            },
-        });
-        return toOrderResponse(orderWithAcUnits);
+            // Save the new order to the database within the transaction.
+            const savedOrder = await queryRunner.manager.save(newOrder);
+
+            // Save related AC Unit
+            // Map the AC unit details from the DTO to new AcUnit entities, linking them to the newly saved order.
+            const acUnitsToSave = createOrderDto.acUnits.map((acUnit) =>
+                queryRunner.manager.create(AcUnit, {
+                    orders: savedOrder, // Relate to created new order
+                    ac_type_name: acUnit.acTypeId,
+                    ac_capacity: acUnit.acCapacity,
+                    brand: acUnit.brand,
+                    quantity: acUnit.quantity,
+                }),
+            );
+            // Save all the associated AC unit entities to the database within the transaction.
+            await queryRunner.manager.save(acUnitsToSave);
+
+            // Commit transaction
+            // If all operations are successful, commit the transaction to make changes permanent.
+            await queryRunner.commitTransaction();
+
+            // Get new order for response
+            const completeOrder = await this.orderRepository.findOne({
+                where: { id: savedOrder.id },
+                relations: {
+                    ac_units: true,
+                    customer: true,
+                },
+            });
+            return toOrderResponse(completeOrder);
+        } catch (error) {
+            // Rollback transaction
+            await queryRunner.rollbackTransaction();
+            this.logger.error(error);
+            throw new InternalServerErrorException(error.message);
+        } finally {
+            // Release query runner
+            await queryRunner.release();
+        }
     }
 
     async getAllForCustomer(

@@ -9,7 +9,7 @@ import {
     NotepadTextIcon,
     Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -35,6 +35,16 @@ import type {
 } from "~/types/order.types";
 import "../../../app.css";
 import cashImage from "../../../assets/cash.png";
+import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
+import axios from "axios";
+import { toast } from "sonner";
+import { customToastStyle } from "~/routes/technician/technician-order-detail";
+import {
+    DAILY_UNIT_LIMIT,
+    type AvailabilityData,
+} from "~/types/schedule.types";
+import CustomDay from "~/components/ui/custom-day";
+import Spinner from "~/components/ui/spinner";
 
 interface SummaryStepProps {
     formData: Partial<OrderFormData>;
@@ -54,10 +64,12 @@ export default function SummaryStep({
     const [isLimitAlertOpen, setIsLimitAlertOpen] = useState(false);
     const [unitToDelete, setUnitToDelete] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+    const [availability, setAvailability] = useState<AvailabilityData[]>([]);
+    const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
     const [tempDate, setTempDate] = useState<Date | undefined>();
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-    const totalQuantity =
+    const totalQuantityInCart =
         formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
 
     const handleDateSelect = (date: Date | undefined) => {
@@ -67,7 +79,71 @@ export default function SummaryStep({
         }
     };
 
-    // Fungsi untuk menangani klik tombol minus
+    const handleOpenCalendar = () => {
+        fetchAvailability(); // Fetch the latest schedule ONLY when the calendar is opened
+        setIsCalendarOpen(true);
+    };
+
+    const fetchAvailability = useCallback(async () => {
+        setIsLoadingAvailability(true);
+        try {
+            // Ambil jadwal untuk bulan ini dan bulan depan
+            const today = new Date();
+            const startDate = format(startOfMonth(today), "yyyy-MM-dd");
+            const endDate = format(
+                endOfMonth(addMonths(today, 1)),
+                "yyyy-MM-dd"
+            );
+
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/schedules/availability`,
+                {
+                    params: {
+                        "start-date": startDate,
+                        "end-date": endDate,
+                    },
+                    withCredentials: true,
+                }
+            );
+            setAvailability(response.data.data);
+        } catch (error) {
+            console.error("Gagal mengambil data jadwal:", error);
+            toast("Gagal mengambil data tanggal", customToastStyle);
+        } finally {
+            setIsLoadingAvailability(false);
+        }
+    }, []); // function is created only once
+
+    // useMemo to calculate disabled dates based on availability AND the current cart total
+    const disabledDates = useMemo(() => {
+        return (
+            availability
+                // A date is disabled if the booked units + units in cart > limit
+                .filter(
+                    (day) =>
+                        day.totalUnitsBooked + totalQuantityInCart >
+                        DAILY_UNIT_LIMIT
+                )
+                .map((day) => new Date(day.date))
+        ); // Convert back to Date object
+    }, [availability, totalQuantityInCart]);
+
+    useEffect(() => {
+        if (selectedDate) {
+            const isStillAvailable = !disabledDates.some(
+                (disabledDate) =>
+                    disabledDate.getTime() === selectedDate.getTime()
+            );
+            if (!isStillAvailable) {
+                setSelectedDate(undefined); // Invalidate the date
+                toast(
+                    "Jadwal gak tersedia. Silakan pilih tanggal lagi, ya",
+                    customToastStyle
+                );
+            }
+        }
+    }, [totalQuantityInCart, disabledDates, selectedDate]);
+
     const handleDecreaseQuantity = (unit: AcUnitDetail) => {
         if (unit.quantity > 1) {
             // Jika kuantitas masih di atas 1, langsung update
@@ -80,7 +156,7 @@ export default function SummaryStep({
     };
 
     const handleIncreaseQuantity = (unit: AcUnitDetail) => {
-        if (totalQuantity >= 10) {
+        if (totalQuantityInCart >= 10) {
             setIsLimitAlertOpen(true);
         } else {
             onUpdateQuantity(unit.id, unit.quantity + 1);
@@ -309,9 +385,7 @@ export default function SummaryStep({
                             <button
                                 type="button"
                                 className="h-12 w-12 p-0 rounded-full border border-primary flex items-center justify-center active:scale-95 cursor-pointer"
-                                onClick={() => {
-                                    setIsCalendarOpen(true);
-                                }}
+                                onClick={handleOpenCalendar}
                             >
                                 <CalendarRange className="text-primary w-6 h-6" />
                             </button>
@@ -374,23 +448,47 @@ export default function SummaryStep({
                         <DrawerTitle className="text-xl font-semibold">
                             Kapan mau service?
                         </DrawerTitle>
-                        <Calendar
-                            mode="single"
-                            required
-                            selected={selectedDate}
-                            onSelect={setTempDate}
-                            // Disable past dates
-                            disabled={(date) =>
-                                date <
-                                new Date(
-                                    new Date().setDate(new Date().getDate())
-                                )
-                            }
-                            ISOWeek
-                            locale={id}
-                            autoFocus
-                            className={`w-full min-h-80 border rounded-lg `}
-                        />
+                        {isLoadingAvailability ? (
+                            <div className="flex justify-center items-center h-80">
+                                <Spinner size={50} />
+                            </div>
+                        ) : (
+                            <Calendar
+                                ISOWeek
+                                required
+                                locale={id}
+                                mode="single"
+                                selected={selectedDate}
+                                // Use a temporary state for selection inside the calendar
+                                onSelect={setTempDate}
+                                disabled={(date) =>
+                                    // Condition 1: Disable past dates
+                                    date <
+                                        new Date(
+                                            new Date().setDate(
+                                                new Date().getDate()
+                                            )
+                                        ) ||
+                                    // Condition 2: Use the dynamically calculated disabledDates
+                                    disabledDates.some(
+                                        (disabledDate) =>
+                                            disabledDate.getDate() ===
+                                                date.getDate() &&
+                                            disabledDate.getMonth() ===
+                                                date.getMonth() &&
+                                            disabledDate.getFullYear() ===
+                                                date.getFullYear()
+                                    )
+                                }
+                                // Additional: Visualize on the full dates
+                                modifiers={{ full: disabledDates }}
+                                components={{
+                                    Day: (props) => <CustomDay {...props} />,
+                                }}
+                                autoFocus
+                                className={`w-full min-h-80 border rounded-lg `}
+                            />
+                        )}
                     </DrawerHeader>
                     <DrawerFooter>
                         <Button

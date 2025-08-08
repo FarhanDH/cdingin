@@ -7,8 +7,9 @@ import { UserModule } from '../user/user.module';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, AcUnit]), UserModule],
-  controllers: [OrderController],
-  providers: [OrderService],
+    imports: [TypeOrmModule.forFeature([Order, AcUnit]), UserModule],
+    controllers: [OrderController],
+    providers: [OrderService],
+    exports: [OrderService],
 })
 export class OrderModule {}

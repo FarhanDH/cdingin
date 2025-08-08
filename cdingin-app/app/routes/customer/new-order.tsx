@@ -1,7 +1,8 @@
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import technicianImg from "~/assets/technician-smile-phone-nobg.png";
 import { Button } from "~/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import type {
     OrderFormData,
     OrderStep,
 } from "~/types/order.types";
+import { customToastStyle } from "../technician/technician-order-detail";
 
 // Definisikan urutan step agar mudah dikelola
 const steps: OrderStep[] = [
@@ -195,8 +197,15 @@ export default function NewOrder() {
                 setLoading(false);
             }
         } catch (error) {
-            console.error("Gagal membuat payload API:", error);
-            alert("Terjadi kesalahan");
+            if (error instanceof AxiosError) {
+                toast(
+                    error.response?.data?.message ??
+                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                    customToastStyle
+                );
+            }
+        } finally {
+            setLoading(false);
         }
     };
 

@@ -192,7 +192,7 @@ export default function AcUnitCard({
                     <Button
                         variant="outline"
                         size="icon"
-                        className="rounded-full border-primary text-primary cursor-pointer"
+                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95"
                         onClick={() =>
                             onUpdate(unit.id, "quantity", unit.quantity - 1)
                         }
@@ -205,7 +205,7 @@ export default function AcUnitCard({
                     <Button
                         variant="outline"
                         size="icon"
-                        className="rounded-full border-primary text-primary cursor-pointer"
+                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95"
                         onClick={() =>
                             onUpdate(unit.id, "quantity", unit.quantity + 1)
                         }

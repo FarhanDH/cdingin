@@ -219,7 +219,8 @@ export default function CustomerOrderDetail() {
                     {order.status === "pending" && (
                         <Button
                             // variant={"destructive"}
-                            className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 text-md font-semibold cursor-pointer active:scale-95 rounded-full"
+                            // className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 text-md font-semibold cursor-pointer active:scale-95 rounded-full"
+                            className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 transition-all duration-150 ease-in-out text-md font-semibold cursor-pointer rounded-full"
                             onClick={() => {
                                 setIsCancelSheetOpen(true);
                             }}
