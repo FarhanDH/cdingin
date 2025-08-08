@@ -2,6 +2,10 @@ import axios from "axios";
 import { AirVent, AlertCircle, MapPin, NotepadTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import ErrorIcon from "@mui/icons-material/Error";
+import LocationPinIcon from "@mui/icons-material/LocationPin";
+import PersonIcon from "@mui/icons-material/Person";
+import PhoneIcon from "@mui/icons-material/Phone";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
@@ -80,11 +84,15 @@ export default function CustomerOrderDetail() {
 
             <div className="p-2 bg-gray-100 min-h-screen flex flex-col gap-2">
                 {/* Service Address */}
-                <div className="p-4 shadow-md bg-white rounded-lg">
-                    <div className="flex items-center text-center justify-between">
-                        <div className="flex items-center text-center gap-2">
-                            <MapPin size={21} className="text-gray-700" />
-                            <p>Alamat service</p>
+                <div className="p-4 bg-white rounded-xl">
+                    <div className="flex items-start text-center justify-between">
+                        <div className="flex items-start text-center gap-4">
+                            <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                <LocationPinIcon className="w-20 text-white" />
+                            </div>
+                            <p className="text-gray-700 text-sm">
+                                Alamat service
+                            </p>
                         </div>
                         <span
                             className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
@@ -92,29 +100,34 @@ export default function CustomerOrderDetail() {
                             {statusText}
                         </span>
                     </div>
-                    <p className="font-semibold text-xl text-gray-700 flex items-center">
-                        {order.serviceLocation || "Lokasi belum diisi"}{" "}
-                    </p>
 
-                    {/* Property Type */}
-                    <div className="flex items-center mt-1 gap-4 text-sm rounded-lg">
-                        <p className="font-medium text-gray-800">
-                            {order.propertyType ||
-                                "Tipe properti belum dipilih"}
-                        </p>
-                        <p className="text-gray-600">
-                            Lantai {order.propertyFloor || "-"}
-                        </p>
+                    <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
+                        <div>
+                            <div>
+                                <p className="font-semibold text-start text-xl text-gray-700 ">
+                                    {order.serviceLocation ||
+                                        "Lokasi belum diisi"}{" "}
+                                </p>
+
+                                {/* Property Type */}
+                                <div className="flex items-center mt-1 gap-4 text-sm">
+                                    <p className="font-medium text-gray-800">
+                                        {order.propertyType ||
+                                            "Tipe properti belum dipilih"}
+                                    </p>
+                                    <p className="text-gray-600">
+                                        Lantai {order.propertyFloor || "-"}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Note for technician */}
                     {order.note && (
-                        <div className="flex items-center mt-2 gap-2">
-                            <NotepadTextIcon
-                                className=" text-muted-foreground"
-                                size={18}
-                            />
-                            <p className="text-gray-600 text-xs">
+                        <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                            <NotepadTextIcon className="text-green-500 w-5" />
+                            <p className="text-gray-800 text-sm">
                                 {order.note}
                             </p>
                         </div>
@@ -122,78 +135,90 @@ export default function CustomerOrderDetail() {
                 </div>
 
                 {/* AC Problems */}
-                <div className="p-4 shadow-md bg-white rounded-lg">
-                    <div className="flex items-center justify-between">
-                        <div className="flex gap-3 ">
-                            <div className="bg-gray-100 w-10 h-10 rounded-full flex items-center">
-                                <AlertCircle className="w-10 text-yellow-500" />
+                <div className="p-4 bg-white rounded-xl">
+                    <div className="flex items-center text-start">
+                        <div className="flex gap-4">
+                            <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                <ErrorIcon className="w-20 text-white" />
                             </div>
                             <div>
                                 <h1 className="font-semibold text-lg">
                                     Layanan / Keluhan
                                 </h1>
-                                <p className="text-xs text-gray-800">
-                                    {order.problems?.join(", ") ||
-                                        "Tipe layanan belum dipilih"}
-                                </p>
+                                <ul className="list-disc ml-4 text-sm text-gray-800">
+                                    {order.problems?.map((problem, index) => (
+                                        <li key={index}>{problem}</li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Detail Unit AC */}
-                <div className="p-4 shadow-md bg-white rounded-lg">
-                    <div className="flex">
-                        <AirVent />
-                        <h1 className="text-lg font-semibold">
-                            Detail Unit AC
-                        </h1>
-                    </div>
-                    {order.acUnits.map((acUnit, index) => (
-                        <div key={acUnit.id}>
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-3">
-                                    <div>
-                                        <h1 className="font-medium text-md">
-                                            {
-                                                acTypes.find(
-                                                    (type) =>
-                                                        type.id ===
-                                                        acUnit.acTypeName
-                                                )?.name
-                                            }{" "}
-                                            {acUnit.acCapacity}
-                                        </h1>
-                                        <p className="text-sm font-normal text-gray-700">
-                                            {acUnit.brand || "Tidak ditentukan"}
-                                        </p>
+                <div className="p-4 bg-white rounded-xl">
+                    <div className="flex items-start text-start gap-4">
+                        <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
+                            <AirVent className="text-white w-18" />
+                        </div>
+                        <div className="flex flex-col w-full">
+                            <h1 className="text-gray-700 text-sm mb-2">
+                                Detail Unit AC
+                            </h1>
+                            {order.acUnits.map((acUnit, index) => (
+                                <div key={acUnit.id}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div>
+                                                <h1 className="font-medium text-md">
+                                                    {
+                                                        acTypes.find(
+                                                            (type) =>
+                                                                type.id ===
+                                                                acUnit.acTypeName
+                                                        )?.name
+                                                    }{" "}
+                                                    {acUnit.acCapacity}
+                                                </h1>
+                                                <p className="text-sm font-normal text-gray-700">
+                                                    {acUnit.brand ||
+                                                        "Tidak ditentukan"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="font-normal text-sm w-4 text-center text-gray-700">
+                                            {acUnit.quantity}
+                                        </span>
                                     </div>
                                 </div>
-                                <span className="font-normal text-sm w-4 text-center text-gray-700">
-                                    {acUnit.quantity}
-                                </span>
+                            ))}
+                            <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
+                                <div className="mt-2 flex items-center justify-between">
+                                    <h1 className="font-semibold text-md">
+                                        Total Unit
+                                    </h1>
+                                    <span className="text-sm text-center font-semibold w-4">
+                                        {order.totalUnits}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                    <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
-                        <div className="mt-2 flex items-center justify-between">
-                            <h1 className="font-semibold text-md">
-                                Total Unit
-                            </h1>
-                            <span className="text-sm text-center font-semibold w-4">
-                                {order.totalUnits}
-                            </span>
                         </div>
                     </div>
                 </div>
 
                 {/* Order Id & Dates */}
-                <div className="bg-white p-4 mb-6 shadow-md rounded-sm">
+                <div className="bg-white p-4 mb-6 rounded-xl">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="font-medium text-gray-700">
-                            Order ID
-                        </div>
+                        <div className="font-medium">Order ID</div>
                         <div className="font-medium">{order.id}</div>
+                    </div>
+                    <div className="flex justify-between items-center mb-1">
+                        <div className="text-sm text-gray-700">
+                            Tanggal service
+                        </div>
+                        <div className="text-sm text-gray-700">
+                            {formattedDate(order.serviceDate)}
+                        </div>
                     </div>
                     <div className="flex justify-between items-center mb-1">
                         <div className="text-sm text-gray-700">
@@ -204,14 +229,17 @@ export default function CustomerOrderDetail() {
                             {formattedDate(order.createdAt, true)}
                         </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-700">
-                            Tanggal service
+
+                    {order.updatedAt !== order.createdAt && (
+                        <div className="flex justify-between items-center mb-1">
+                            <div className="text-sm text-gray-700">
+                                Waktu diperbarui
+                            </div>
+                            <div className="text-sm text-gray-700">
+                                {formattedDate(order.updatedAt, true)}
+                            </div>
                         </div>
-                        <div className="text-sm text-gray-700">
-                            {formattedDate(order.serviceDate)}
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Button */}

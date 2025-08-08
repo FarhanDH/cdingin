@@ -228,12 +228,14 @@ export class OrderService {
         );
 
         const whereClause: FindOptionsWhere<Order> = {};
+        whereClause.status = Not(
+            In([OrderStatusEnum.CANCELLED, OrderStatusEnum.COMPLETED]),
+        );
 
         switch (serviceDate) {
             case OrderDateFilter.TODAY: {
                 const todayStart = startOfDay(new Date());
                 const todayEnd = endOfDay(new Date());
-                console.log(todayStart, todayEnd);
                 whereClause.service_date = Between(todayStart, todayEnd);
                 break;
             }
