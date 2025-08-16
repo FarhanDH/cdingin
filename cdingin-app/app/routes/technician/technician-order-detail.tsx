@@ -4,10 +4,11 @@ import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
-import { AirVent, MoveLeft, NotepadTextIcon } from "lucide-react";
+import { AirVent, HomeIcon, MoveLeft, NotepadTextIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
 import { Button } from "~/components/ui/button";
 import { Drawer, DrawerContent } from "~/components/ui/drawer";
@@ -42,7 +43,7 @@ export default function CustomerOrderDetail() {
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { text: statusText, color: statusColor } = getStatusLabel(
-        order?.status || "pending"
+        order?.status || "pending",
     );
 
     const fetchOrderDetail = async () => {
@@ -51,7 +52,7 @@ export default function CustomerOrderDetail() {
                 `${import.meta.env.VITE_API_URL}/orders/technician/${orderId}`,
                 {
                     withCredentials: true,
-                }
+                },
             );
             setOrder(response.data.data);
             setIsLoading(false);
@@ -76,7 +77,7 @@ export default function CustomerOrderDetail() {
                     }/orders/technician/${orderId}`,
                     {
                         withCredentials: true,
-                    }
+                    },
                 );
                 setOrder(response.data.data);
                 setIsLoading(false);
@@ -96,14 +97,14 @@ export default function CustomerOrderDetail() {
             case "confirmed":
                 toast(
                     `Sip!, orderan diterima! Pelanggan udah dikabarin. 👍`,
-                    customToastStyle
+                    customToastStyle,
                 );
                 break;
 
             case "technician_on_the_way":
                 toast(
                     `Berangkaaat! Hati-hati di jalan, ya. 🛵`,
-                    customToastStyle
+                    customToastStyle,
                 );
                 break;
 
@@ -120,7 +121,7 @@ export default function CustomerOrderDetail() {
                 // dipicu oleh sistem setelah customer bayar
                 toast(
                     `Lunas! Orderan selesai. Kerja bagus! ✨`,
-                    customToastStyle
+                    customToastStyle,
                 );
                 break;
 
@@ -143,7 +144,7 @@ export default function CustomerOrderDetail() {
             const response = await axios.patch(
                 `${import.meta.env.VITE_API_URL}/orders/${orderId}/status`,
                 { status: newStatus }, // Body request
-                { withCredentials: true }
+                { withCredentials: true },
             );
 
             // Update local state order with new data from response
@@ -158,7 +159,7 @@ export default function CustomerOrderDetail() {
                     : "Terjadi kesalahan";
             toast(
                 errorMessage || "Gagal memperbarui status.",
-                customToastStyle
+                customToastStyle,
             );
         } finally {
             setIsUpdating(false);
@@ -248,84 +249,156 @@ export default function CustomerOrderDetail() {
                         <div className="p-4 min-h-screen flex flex-col gap-2">
                             {/* Customer Card */}
                             <div className="p-4 bg-white rounded-xl">
-                                <div className="flex items-center text-center justify-between">
-                                    <div className="flex text-center gap-4 mb-5">
-                                        <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center text-center justify-center">
-                                            <PersonIcon className="text-white w-20" />
-                                        </div>
-                                        <div className="flex flex-col text-start gap-1">
-                                            <p className="text-gray-700 text-sm">
-                                                Dipesan oleh
-                                            </p>
-                                            <p className="font-semibold text-xl text-gray-700 flex items-center">
-                                                {order.customer.fullName ||
-                                                    "Tidak ada nama"}{" "}
-                                            </p>
-                                        </div>
+                                <div className="flex gap-4">
+                                    {/* Person Icon */}
+                                    <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                        <PersonIcon className="text-white w-20" />
                                     </div>
-                                    <div className="flex flex-col items-end text-end gap-2 justify-end">
-                                        {/* Order status badge */}
-                                        <span
-                                            className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
-                                        >
-                                            {statusText}
-                                        </span>
-                                        {/* Phone Call to WhatsApp */}
-                                        <button
-                                            onClick={() => {
-                                                // Handle phone call to WhatsApp
-                                                window.open(
-                                                    `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                                    "_blank"
-                                                );
-                                            }}
-                                            disabled={!order.customer.phone}
-                                            className="bg-green-700 p-2 text-center flex items-center justify-center text-white rounded-full cursor-pointer active:scale-95"
-                                        >
-                                            <PhoneIcon className="w-5 h-5" />
-                                        </button>
+                                    <div className="w-full">
+                                        <div className="flex justify-between w-full">
+                                            <div>
+                                                <p className="text-gray-700 text-sm text-start">
+                                                    Dipesan oleh
+                                                </p>
+                                                <p className="font-semibold text-xl text-gray-700 flex items-center">
+                                                    {order.customer.fullName ||
+                                                        "Tidak ada nama"}{" "}
+                                                </p>
+                                            </div>
+
+                                            {/* Right Section */}
+                                            <div className="flex-col flex justify-end items-end text-end gap-1">
+                                                {/* Order status badge */}
+                                                <span
+                                                    className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
+                                                >
+                                                    {statusText}
+                                                </span>
+                                                {/* Phone Call to WhatsApp */}
+                                                <button
+                                                    onClick={() => {
+                                                        // Handle phone call to WhatsApp
+                                                        window.open(
+                                                            `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
+                                                            "_blank",
+                                                        );
+                                                    }}
+                                                    disabled={
+                                                        !order.customer.phone
+                                                    }
+                                                    className="bg-green-700 p-2 text-center flex items-center justify-center text-white rounded-full cursor-pointer active:scale-95"
+                                                >
+                                                    <PhoneIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {/* Note for technician */}
+                                        {order.note && (
+                                            <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                <img
+                                                    src={noteFilled}
+                                                    alt="noteSuccess"
+                                                    className="w-4"
+                                                />
+                                                <p className="text-gray-800 text-xs">
+                                                    {order.note}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {/* Cancellation detail */}
+                                        {order.status === "cancelled" && (
+                                            <div className="ml-13">
+                                                <div className="flex items-center">
+                                                    <div className="flex gap-4">
+                                                        <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                                            <PersonIcon className="text-white w-20" />
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <p className="text-gray-700 text-sm">
+                                                                Dibatalkan oleh{" "}
+                                                                {order
+                                                                    .cancelledBy
+                                                                    ?.role ===
+                                                                "customer"
+                                                                    ? "pelanggan"
+                                                                    : "teknisi"}
+                                                            </p>
+                                                            <p className="text-gray-900 font-medium text-sm">
+                                                                Alasan
+                                                                dibatalkan:
+                                                            </p>
+                                                            <p className="text-gray-900 font-medium text-sm">
+                                                                {
+                                                                    order.cancellationReason
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    {order.cancellationNote && (
+                                                        <p className="text-gray-900 font-medium text-sm">
+                                                            {
+                                                                order.cancellationNote
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Cancellation detail */}
                                 {order.status === "cancelled" && (
                                     <div className="ml-13">
-                                        <p className="text-gray-700 text-sm">
-                                            Dibatalkan oleh{" "}
-                                            {order.cancelledBy?.role ===
-                                            "customer"
-                                                ? "pelanggan"
-                                                : "teknisi"}
-                                        </p>
-                                        <p className="text-gray-900 font-medium text-sm">
-                                            Alasan dibatalkan:
-                                        </p>
-                                        <p className="text-gray-900 font-medium text-sm">
-                                            {order.cancellationReason}
-                                        </p>
-                                        {order.cancellationNote && (
-                                            <p className="text-gray-900 font-medium text-sm">
-                                                {order.cancellationNote}
-                                            </p>
-                                        )}
+                                        <div className="flex items-center">
+                                            <div className="flex gap-4">
+                                                <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                                    <PersonIcon className="text-white w-20" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <p className="text-gray-700 text-sm">
+                                                        Dibatalkan oleh{" "}
+                                                        {order.cancelledBy
+                                                            ?.role ===
+                                                        "customer"
+                                                            ? "pelanggan"
+                                                            : "teknisi"}
+                                                    </p>
+                                                    <p className="text-gray-900 font-medium text-sm">
+                                                        Alasan dibatalkan:
+                                                    </p>
+                                                    <p className="text-gray-900 font-medium text-sm">
+                                                        {
+                                                            order.cancellationReason
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {order.cancellationNote && (
+                                                <p className="text-gray-900 font-medium text-sm">
+                                                    {order.cancellationNote}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* Service Address */}
                             <div className="p-4 bg-white rounded-xl">
-                                <div className="flex items-center text-center justify-between">
-                                    <div className="flex gap-4">
+                                <div className="flex items-center text-center">
+                                    <div className="flex gap-4 w-full">
                                         <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
                                             <LocationPinIcon className="w-20 text-white" />
                                         </div>
-                                        <div className="flex flex-col text-start gap-1">
+                                        <div className="flex flex-col text-start gap-1 w-full">
                                             <p className="text-gray-700 text-sm">
                                                 Alamat service
                                             </p>
                                             <div>
                                                 <p className="font-semibold text-xl text-gray-700 ">
-                                                    {order.serviceLocation ||
+                                                    {order.serviceLocation
+                                                        .address ||
                                                         "Lokasi belum diisi"}{" "}
                                                 </p>
 
@@ -341,20 +414,24 @@ export default function CustomerOrderDetail() {
                                                             "-"}
                                                     </p>
                                                 </div>
+
+                                                {/* Address Note for technician */}
+                                                {order.serviceLocation.note && (
+                                                    <div className="flex items-center mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                        <HomeIcon className="text-green-600" />
+                                                        <p className="text-gray-800 text-xs w-full">
+                                                            {
+                                                                order
+                                                                    .serviceLocation
+                                                                    .note
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Note for technician */}
-                                {order.note && (
-                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                        <NotepadTextIcon className="text-green-500 w-5" />
-                                        <p className="text-gray-800 text-sm">
-                                            {order.note}
-                                        </p>
-                                    </div>
-                                )}
                             </div>
 
                             {/* AC Problems */}
@@ -374,7 +451,7 @@ export default function CustomerOrderDetail() {
                                                         <li key={index}>
                                                             {problem}
                                                         </li>
-                                                    )
+                                                    ),
                                                 )}
                                             </ul>
                                         </div>
@@ -401,10 +478,10 @@ export default function CustomerOrderDetail() {
                                                                 {
                                                                     acTypes.find(
                                                                         (
-                                                                            type
+                                                                            type,
                                                                         ) =>
                                                                             type.id ===
-                                                                            acUnit.acTypeName
+                                                                            acUnit.acTypeName,
                                                                     )?.name
                                                                 }{" "}
                                                                 {
@@ -471,7 +548,7 @@ export default function CustomerOrderDetail() {
                                         <div className="text-sm text-gray-700">
                                             {formattedDate(
                                                 order.updatedAt,
-                                                true
+                                                true,
                                             )}
                                         </div>
                                     </div>

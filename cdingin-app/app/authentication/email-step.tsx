@@ -1,5 +1,5 @@
+import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { Button } from "~/components/ui/button";
 import {
     Form,
     FormControl,
@@ -26,7 +26,7 @@ export default function EmailStep({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit((data) =>
-                        onSubmit({ email: data.email as string })
+                        onSubmit({ email: data.email as string }),
                     )}
                     className="space-y-6"
                 >
@@ -73,7 +73,7 @@ export default function EmailStep({
                     <Button
                         type="submit"
                         disabled={!form.watch("email") || loading}
-                        className="w-full h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 items-center"
+                        className="w-full h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 items-center bg-primary disabled:bg-primary/50 disabled:text-primary/50 disabled:text-white text-white capitalize"
                     >
                         Lanjut
                     </Button>

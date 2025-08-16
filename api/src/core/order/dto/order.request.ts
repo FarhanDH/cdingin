@@ -5,7 +5,10 @@ import {
     IsDate,
     IsEnum,
     IsInt,
+    IsLatitude,
+    IsLongitude,
     IsNotEmpty,
+    IsObject,
     IsOptional,
     IsPositive,
     IsString,
@@ -45,15 +48,32 @@ export class CancelOrderRequestDto {
     note?: string;
 }
 
+export class ServiceLocationRequestDto {
+    @IsLatitude()
+    latitude: number;
+
+    @IsLongitude()
+    longitude: number;
+
+    @IsString()
+    @IsOptional()
+    address?: string;
+
+    @IsString()
+    @IsOptional()
+    note?: string;
+}
+
 export class CreateOrderRequestDto {
     @IsArray()
     @IsString({ each: true })
     @IsNotEmpty({ each: true })
     acProblems: string[];
 
-    @IsString()
-    @IsNotEmpty()
-    serviceLocation: string;
+    @IsObject()
+    @ValidateNested()
+    @Type(() => ServiceLocationRequestDto)
+    serviceLocation: ServiceLocationRequestDto;
 
     @IsString()
     @IsNotEmpty()

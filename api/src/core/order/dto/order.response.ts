@@ -5,7 +5,12 @@ export class OrderResponse {
     id: string;
     problems: string[];
     status: OrderStatusEnum;
-    serviceLocation: string;
+    serviceLocation: {
+        latitude: number;
+        longitude: number;
+        address?: string;
+        note?: string;
+    };
     serviceDate: Date;
     propertyType: string;
     propertyFloor: string;
@@ -34,7 +39,12 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
     id: order.id,
     problems: order.ac_problems,
     status: order.status,
-    serviceLocation: order.service_location,
+    serviceLocation: {
+        latitude: order.latitude_service_location,
+        longitude: order.longitude_service_location,
+        address: order.service_location_address,
+        note: order.service_location_note,
+    },
     serviceDate: order.service_date,
     propertyType: order.property_type,
     propertyFloor: order.property_floor,

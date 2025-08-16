@@ -1,11 +1,10 @@
-import axios from "axios";
-import { AirVent, AlertCircle, MapPin, NotepadTextIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router";
 import ErrorIcon from "@mui/icons-material/Error";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
+import axios from "axios";
+import { AirVent, HomeIcon, NotepadTextIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
@@ -20,7 +19,7 @@ export default function CustomerOrderDetail() {
     const [error, setError] = useState<string | null>(null);
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const { text: statusText, color: statusColor } = getStatusLabel(
-        order?.status || "pending"
+        order?.status || "pending",
     );
 
     const fetchOrderDetail = async () => {
@@ -29,7 +28,7 @@ export default function CustomerOrderDetail() {
                 `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
                 {
                     withCredentials: true,
-                }
+                },
             );
             setOrder(response.data.data);
             setIsLoading(false);
@@ -52,7 +51,7 @@ export default function CustomerOrderDetail() {
                     `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
                     {
                         withCredentials: true,
-                    }
+                    },
                 );
                 setOrder(response.data.data);
                 setIsLoading(false);
@@ -105,9 +104,24 @@ export default function CustomerOrderDetail() {
                         <div>
                             <div>
                                 <p className="font-semibold text-start text-xl text-gray-700 ">
-                                    {order.serviceLocation ||
+                                    {order.serviceLocation.address ||
                                         "Lokasi belum diisi"}{" "}
                                 </p>
+
+                                {/* Address Note for technician */}
+                                {order.serviceLocation.note && (
+                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                        {/* <img
+                                            src={noteFilled}
+                                            alt="noteSuccess"
+                                            className="w-4"
+                                        /> */}
+                                        <HomeIcon className="text-green-600" />
+                                        <p className="text-gray-800 text-xs w-full">
+                                            {order.serviceLocation.note}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Property Type */}
                                 <div className="flex items-center mt-1 gap-4 text-sm">
@@ -119,19 +133,22 @@ export default function CustomerOrderDetail() {
                                         Lantai {order.propertyFloor || "-"}
                                     </p>
                                 </div>
+                                {/* Note for technician */}
+                                {order.note && (
+                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                        <img
+                                            src={noteFilled}
+                                            alt="noteSuccess"
+                                            className="w-4 ml-0.5"
+                                        />
+                                        <p className="text-gray-800 text-xs">
+                                            {order.note}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
-
-                    {/* Note for technician */}
-                    {order.note && (
-                        <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                            <NotepadTextIcon className="text-green-500 w-5" />
-                            <p className="text-gray-800 text-sm">
-                                {order.note}
-                            </p>
-                        </div>
-                    )}
                 </div>
 
                 {/* AC Problems */}
@@ -175,7 +192,7 @@ export default function CustomerOrderDetail() {
                                                         acTypes.find(
                                                             (type) =>
                                                                 type.id ===
-                                                                acUnit.acTypeName
+                                                                acUnit.acTypeName,
                                                         )?.name
                                                     }{" "}
                                                     {acUnit.acCapacity}

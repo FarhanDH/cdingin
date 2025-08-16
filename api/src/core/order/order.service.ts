@@ -118,7 +118,13 @@ export class OrderService {
                     id: user.sub,
                 },
                 ac_problems: createOrderDto.acProblems,
-                service_location: createOrderDto.serviceLocation,
+                latitude_service_location:
+                    createOrderDto.serviceLocation.latitude,
+                longitude_service_location:
+                    createOrderDto.serviceLocation.longitude,
+                service_location_address:
+                    createOrderDto.serviceLocation.address,
+                service_location_note: createOrderDto.serviceLocation.note,
                 property_type: createOrderDto.propertyType,
                 property_floor: createOrderDto.floor.toString(),
                 service_date: createOrderDto.serviceDate,

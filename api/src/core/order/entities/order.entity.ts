@@ -37,8 +37,17 @@ export class Order {
     @OneToMany(() => AcUnit, (acUnit) => acUnit.orders)
     ac_units: Relation<AcUnit>[];
 
-    @Column({ type: 'varchar', length: 255 })
-    service_location: string;
+    @Column({ type: 'double precision' })
+    latitude_service_location: number;
+
+    @Column({ type: 'double precision' })
+    longitude_service_location: number;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    service_location_address?: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    service_location_note?: string;
 
     @Column({ type: 'varchar', length: 255 })
     property_type: string;

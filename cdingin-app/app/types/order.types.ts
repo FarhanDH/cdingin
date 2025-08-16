@@ -48,7 +48,12 @@ export type AcUnitDetail = {
 
 export type OrderFormData = {
     problems: string[];
-    location: string;
+    serviceLocation: {
+        latitude: number;
+        longitude: number;
+        address?: any;
+        note?: string;
+    };
     acUnits: AcUnitDetail[];
     propertyType: {
         id: string;
@@ -68,7 +73,12 @@ export type AcUnitDto = {
 
 export type CreateOrderRequestDto = {
     acProblems: string[];
-    serviceLocation: string;
+    serviceLocation: {
+        latitude: number;
+        longitude: number;
+        address?: string;
+        note?: string;
+    };
     propertyType: string;
     floor: number;
     acUnits: AcUnitDto[];
@@ -80,7 +90,12 @@ export type OrderItem = {
     id: string;
     problems: string[];
     status: OrderStatus;
-    serviceLocation: string;
+    serviceLocation: {
+        latitude: number;
+        longitude: number;
+        address?: string;
+        note?: string;
+    };
     serviceDate: Date;
     propertyType: string;
     propertyFloor: string;

@@ -44,6 +44,8 @@ import {
     type AvailabilityData,
 } from "~/types/schedule.types";
 import CustomDay from "~/components/ui/custom-day";
+import noteFilled from "~/assets/note-filled.png";
+import addNote from "~/assets/add-note.png";
 import Spinner from "~/components/ui/spinner";
 
 interface SummaryStepProps {
@@ -92,7 +94,7 @@ export default function SummaryStep({
             const startDate = format(startOfMonth(today), "yyyy-MM-dd");
             const endDate = format(
                 endOfMonth(addMonths(today, 1)),
-                "yyyy-MM-dd"
+                "yyyy-MM-dd",
             );
 
             const response = await axios.get(
@@ -103,7 +105,7 @@ export default function SummaryStep({
                         "end-date": endDate,
                     },
                     withCredentials: true,
-                }
+                },
             );
             setAvailability(response.data.data);
         } catch (error) {
@@ -122,7 +124,7 @@ export default function SummaryStep({
                 .filter(
                     (day) =>
                         day.totalUnitsBooked + totalQuantityInCart >
-                        DAILY_UNIT_LIMIT
+                        DAILY_UNIT_LIMIT,
                 )
                 .map((day) => new Date(day.date))
         ); // Convert back to Date object
@@ -132,13 +134,13 @@ export default function SummaryStep({
         if (selectedDate) {
             const isStillAvailable = !disabledDates.some(
                 (disabledDate) =>
-                    disabledDate.getTime() === selectedDate.getTime()
+                    disabledDate.getTime() === selectedDate.getTime(),
             );
             if (!isStillAvailable) {
                 setSelectedDate(undefined); // Invalidate the date
                 toast(
                     "Jadwal gak tersedia. Silakan pilih tanggal lagi, ya",
-                    customToastStyle
+                    customToastStyle,
                 );
             }
         }
@@ -184,21 +186,38 @@ export default function SummaryStep({
                                     size={21}
                                     className="mb-2 text-gray-700"
                                 />
-                                <p>Alamat service</p>
+                                <p className="text-sm font-medium text-gray-600">
+                                    Alamat service
+                                </p>
                             </div>
-                            <p className="font-semibold text-xl text-gray-700 flex items-center">
-                                {formData.location || "Lokasi belum diisi"}{" "}
+                            <p className="font-medium text-xl text-gray-900 flex items-center">
+                                {formData.serviceLocation?.address ??
+                                    "Lokasi belum diisi"}{" "}
                                 {/* Navigate to location step */}
                                 <button
-                                    className="cursor-pointer items-center mt-1"
+                                    className="cursor-pointer items-center"
                                     onClick={() => navigateToStep("location")}
                                 >
                                     <ChevronRight />
                                 </button>
                             </p>
 
+                            {/* Address Note for technician */}
+                            {formData.serviceLocation?.note && (
+                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                    <img
+                                        src={noteFilled}
+                                        alt="noteSuccess"
+                                        className="w-4"
+                                    />
+                                    <p className="text-gray-800 text-sm">
+                                        {formData.serviceLocation?.note}
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Property Type */}
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2 text-sm mt-1">
                                 <p className="font-medium text-gray-700">
                                     {formData.propertyType?.name ||
                                         "Tipe properti belum dipilih"}
@@ -207,7 +226,7 @@ export default function SummaryStep({
                                     Lantai {formData.floor || "-"}
                                 </p>
                                 <button
-                                    className="cursor-pointer text-gray-700 "
+                                    className="cursor-pointer text-gray-700"
                                     onClick={() =>
                                         navigateToStep("property-type")
                                     }
@@ -233,9 +252,10 @@ export default function SummaryStep({
                                         className="text-sm resize-none bg-gray-200 rounded-lg"
                                     />
                                     {note.length <= 0 && (
-                                        <NotepadTextIcon
-                                            className="absolute left-2 top-2.5 text-muted-foreground"
-                                            size={18}
+                                        <img
+                                            src={addNote}
+                                            alt="add-note"
+                                            className="w-4.5 absolute left-2 top-2.5"
                                         />
                                     )}
                                     <p className="absolute right-2 bottom-1 text-muted-foreground text-xs">
@@ -253,7 +273,7 @@ export default function SummaryStep({
                                         <AlertCircle className="w-10 text-yellow-500" />
                                     </div>
                                     <div>
-                                        <h1 className="font-semibold text-lg">
+                                        <h1 className="font-medium text-md text-gray-800">
                                             Layanan / Keluhan
                                         </h1>
                                         <p className="text-xs text-gray-800">
@@ -288,10 +308,10 @@ export default function SummaryStep({
                                                         className="w-15"
                                                     />
                                                     <div>
-                                                        <h1 className="font-semibold text-lg">
+                                                        <h1 className="font-semibold text-gray-800 text-md">
                                                             {`${unit.acType?.name} ${unit.pk}`}
                                                         </h1>
-                                                        <p className="text-sm">
+                                                        <p className="text-xs text-gray-500 font-medium">
                                                             {unit.brand ||
                                                                 "Tidak ditentukan"}
                                                         </p>
@@ -304,7 +324,7 @@ export default function SummaryStep({
                                                         className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                                                         onClick={() =>
                                                             handleDecreaseQuantity(
-                                                                unit
+                                                                unit,
                                                             )
                                                         }
                                                     >
@@ -319,7 +339,7 @@ export default function SummaryStep({
                                                         className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                                                         onClick={() =>
                                                             handleIncreaseQuantity(
-                                                                unit
+                                                                unit,
                                                             )
                                                         }
                                                     >
@@ -328,7 +348,8 @@ export default function SummaryStep({
                                                 </div>
                                             </div>
                                             {index <
-                                                formData.acUnits?.length -
+                                                (formData.acUnits?.length ??
+                                                    0) -
                                                     1 && (
                                                 <div className="border-t-[1.5px] border-dashed border-gray-300 mx-auto w-full my-2"></div>
                                             )}
@@ -341,12 +362,12 @@ export default function SummaryStep({
                         {/* Additional button to add another unit ac if current total quantity less than 10 */}
                         {(formData.acUnits || []).reduce(
                             (acc, unit) => acc + unit.quantity,
-                            0
+                            0,
                         ) < 10 && (
                             <div className="p-4 shadow-md mb-2 bg-white">
-                                <div className="flex justify-between">
+                                <div className="flex justify-between items-center">
                                     <div>
-                                        <h1 className="font-semibold text-lg">
+                                        <h1 className="font-semibold text-md">
                                             Ada tambahan?
                                         </h1>
                                         <p className="text-gray-600 text-sm">
@@ -421,7 +442,7 @@ export default function SummaryStep({
                                                 year: "numeric",
                                                 month: "long",
                                                 day: "numeric",
-                                            }
+                                            },
                                         )}
                                     </p>
                                 </div>
@@ -429,7 +450,8 @@ export default function SummaryStep({
                                     <ArrowRightIcon
                                         className={`text-primary ${
                                             selectedDate &&
-                                            formData.acUnits.length > 0 &&
+                                            (formData.acUnits ?? []).length >
+                                                0 &&
                                             "animate-slide-right-loop"
                                         }`}
                                         size={16}
@@ -466,8 +488,8 @@ export default function SummaryStep({
                                     date <
                                         new Date(
                                             new Date().setDate(
-                                                new Date().getDate()
-                                            )
+                                                new Date().getDate(),
+                                            ),
                                         ) ||
                                     // Condition 2: Use the dynamically calculated disabledDates
                                     disabledDates.some(
@@ -477,7 +499,7 @@ export default function SummaryStep({
                                             disabledDate.getMonth() ===
                                                 date.getMonth() &&
                                             disabledDate.getFullYear() ===
-                                                date.getFullYear()
+                                                date.getFullYear(),
                                     )
                                 }
                                 // Additional: Visualize on the full dates

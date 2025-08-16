@@ -6,12 +6,6 @@ import { toast } from "sonner";
 import technicianImg from "~/assets/technician-smile-phone-nobg.png";
 import { Button } from "~/components/ui/button";
 import {
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-} from "~/components/ui/drawer";
-import {
     Sheet,
     SheetContent,
     SheetDescription,
@@ -32,7 +26,7 @@ import type {
 } from "~/types/order.types";
 import { customToastStyle } from "../technician/technician-order-detail";
 
-// Definisikan urutan step agar mudah dikelola
+// Order Steps
 const steps: OrderStep[] = [
     "ac-problems",
     "location",
@@ -44,11 +38,11 @@ const steps: OrderStep[] = [
 type Step = (typeof steps)[number];
 
 const mapFormDataToApiRequest = (
-    formData: Partial<OrderFormData>
+    formData: Partial<OrderFormData>,
 ): CreateOrderRequestDto => {
     if (
         !formData.problems ||
-        !formData.location ||
+        !formData.serviceLocation ||
         !formData.propertyType ||
         !formData.acUnits ||
         !formData.serviceDate
@@ -58,11 +52,16 @@ const mapFormDataToApiRequest = (
 
     return {
         acProblems: formData.problems,
-        serviceLocation: formData.location,
+        serviceLocation: {
+            latitude: formData.serviceLocation.latitude,
+            longitude: formData.serviceLocation.longitude,
+            address: formData.serviceLocation.address,
+            note: formData.serviceLocation.note,
+        },
         propertyType: formData.propertyType.name,
-        floor: formData.floor,
+        floor: formData.floor ?? 0,
         acUnits: formData.acUnits.map((unit) => ({
-            acTypeId: unit.acType.id,
+            acTypeId: unit.acType?.id || "",
             acCapacity: unit.pk,
             brand: unit.brand,
             quantity: unit.quantity,
@@ -119,8 +118,13 @@ export default function NewOrder() {
         handleNext();
     };
 
-    const handleLocationSubmit = (data: { location: string }) => {
-        setFormData((prev) => ({ ...prev, location: data.location }));
+    const handleLocationSubmit = (data: {
+        note: string;
+        address: string;
+        latitude: number;
+        longitude: number;
+    }) => {
+        setFormData((prev) => ({ ...prev, serviceLocation: data }));
         handleNext();
     };
 
@@ -133,7 +137,7 @@ export default function NewOrder() {
 
     const handleUpdateAcUnitQuantity = (
         unitId: string,
-        newQuantity: number
+        newQuantity: number,
     ) => {
         // If quantity less than 1, delete item from list
         if (newQuantity < 1) {
@@ -148,7 +152,7 @@ export default function NewOrder() {
         setFormData((prev) => ({
             ...prev,
             acUnits: prev.acUnits?.map((unit) =>
-                unit.id === unitId ? { ...unit, quantity: newQuantity } : unit
+                unit.id === unitId ? { ...unit, quantity: newQuantity } : unit,
             ),
         }));
     };
@@ -165,6 +169,7 @@ export default function NewOrder() {
             },
             floor: data.floor,
         }));
+        console.log("formData: ", formData);
         handleNext();
     };
 
@@ -189,7 +194,7 @@ export default function NewOrder() {
                 apiPayload,
                 {
                     withCredentials: true,
-                }
+                },
             );
 
             if (response.status === 201) {
@@ -199,9 +204,8 @@ export default function NewOrder() {
         } catch (error) {
             if (error instanceof AxiosError) {
                 toast(
-                    error.response?.data?.message ??
-                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
-                    customToastStyle
+                    "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                    customToastStyle,
                 );
             }
         } finally {
@@ -222,7 +226,7 @@ export default function NewOrder() {
             case "location":
                 return (
                     <LocationStep
-                        initialLocation={formData.location || ""}
+                        initialLocation={formData.serviceLocation || ""}
                         onSubmit={handleLocationSubmit}
                         onBack={handlePrev}
                     />
