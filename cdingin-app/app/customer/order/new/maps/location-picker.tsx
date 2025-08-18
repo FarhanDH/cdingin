@@ -15,14 +15,11 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
-const stadiaApiKey = import.meta.env.VITE_STADIA_MAP_API_KEY;
-
 // URL untuk tile layer Stadia Alidade Smooth
-const tileLayerUrl = `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${stadiaApiKey}`;
+const tileLayerUrl = import.meta.env.VITE_TILE_LAYER_MAP_URL;
 
 // Atribusi yang diperlukan oleh Stadia Maps
-const stadiaAttribution =
-    '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
+const stadiaAttribution = import.meta.env.VITE_STADIA_ATTRIBUTION_MAP;
 
 interface MapEventHandlerProps {
     onPositionChange: (position: L.LatLng) => void;

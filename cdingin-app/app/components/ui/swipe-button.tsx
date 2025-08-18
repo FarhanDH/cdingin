@@ -62,7 +62,7 @@ export default function SwipeButton({
 
     const progressWidth = useTransform(
         x,
-        (value) => `${value + SLIDER_WIDTH}px`
+        (value) => `${value + SLIDER_WIDTH}px`,
     );
 
     const iconScale = useTransform(x, [0, maxDrag], [1, 1.2]);
@@ -102,7 +102,7 @@ export default function SwipeButton({
 
                     <motion.p
                         className="absolute w-full text-center text-primary font-semibold pointer-events-none z-20 left-4"
-                        style={{ opacity: textOpacity }}
+                        // style={{ opacity: textOpacity }}
                     >
                         {text}
                     </motion.p>

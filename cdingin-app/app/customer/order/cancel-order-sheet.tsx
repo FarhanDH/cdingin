@@ -68,7 +68,7 @@ export default function CancelOrderSheet({
             await axios.patch(
                 apiUrl,
                 { reason: selectedReason },
-                { withCredentials: true }
+                { withCredentials: true },
             );
             toast("Pesanan berhasil dibatalkan.", customToastStyle);
             onSuccess();
@@ -96,7 +96,7 @@ export default function CancelOrderSheet({
                                 </div>
                                 <div>
                                     <SheetTitle className="text-xl font-bold">
-                                        Loh, kamu mau dibatalin?
+                                        Loh, kamu mau batalin?
                                     </SheetTitle>
                                     <p className="text-gray-500">
                                         Kalau gak terpaksa, jangan batalin, ya.

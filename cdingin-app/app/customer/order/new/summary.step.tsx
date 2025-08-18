@@ -1,3 +1,12 @@
+import {
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+} from "@mui/material";
+import axios from "axios";
+import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
 import { id } from "date-fns/locale";
 import {
     AlertCircle,
@@ -6,13 +15,16 @@ import {
     ChevronRight,
     MapPin,
     Minus,
-    NotepadTextIcon,
     Plus,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import addNote from "~/assets/add-note.png";
+import noteFilled from "~/assets/note-filled.png";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
+import CustomDay from "~/components/ui/custom-day";
 import {
     Drawer,
     DrawerContent,
@@ -20,33 +32,20 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from "~/components/ui/drawer";
-import {
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-} from "@mui/material";
+import Spinner from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import { customToastStyle } from "~/routes/technician/technician-order-detail";
 import type {
     AcUnitDetail,
     OrderFormData,
     OrderStep,
 } from "~/types/order.types";
-import "../../../app.css";
-import cashImage from "../../../assets/cash.png";
-import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
-import axios from "axios";
-import { toast } from "sonner";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
 import {
     DAILY_UNIT_LIMIT,
     type AvailabilityData,
 } from "~/types/schedule.types";
-import CustomDay from "~/components/ui/custom-day";
-import noteFilled from "~/assets/note-filled.png";
-import addNote from "~/assets/add-note.png";
-import Spinner from "~/components/ui/spinner";
+import "../../../app.css";
+import cashImage from "../../../assets/cash.png";
 
 interface SummaryStepProps {
     formData: Partial<OrderFormData>;

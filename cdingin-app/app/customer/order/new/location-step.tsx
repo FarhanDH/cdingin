@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteSucces from "~/assets/note-success.png";
 import { customToastStyle } from "~/routes/technician/technician-order-detail";
-import EnableLocationSheet from "./maps/enable-location-sheet";
+import EnableLocationSheet from "../../../components/enable-location-sheet";
 import LocationNoteSheet from "./maps/location-note-sheet";
 import LocationPicker from "./maps/location-picker";
 
@@ -144,7 +144,6 @@ export default function LocationStep({
             };
             fetchAddress();
         }, 1000);
-        console.log(() => clearTimeout(debounceTimer));
 
         return () => clearTimeout(debounceTimer);
     }, [coordinates]);

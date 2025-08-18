@@ -1,7 +1,7 @@
 import L from "leaflet";
 import { Circle, Marker } from "react-leaflet";
 
-const blueDotIcon = new L.DivIcon({
+export const blueDotIcon = new L.DivIcon({
     className: "leaflet-blue-dot-icon",
     iconSize: [20, 20], // The size of the icon
 });

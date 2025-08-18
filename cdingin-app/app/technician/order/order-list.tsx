@@ -1,98 +1,180 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@radix-ui/react-dialog';
-import axios from 'axios';
-import { useEffect, useMemo, useState } from 'react';
-import threeTechniciansImage from '~/assets/three-technicians.png';
-import Header from '~/components/header';
-import Spinner from '~/components/ui/spinner';
-import type { OrderItem, TechnicianabItem } from '~/types/order.types';
-import TechnicianOrderCard from './order-card';
-import type { TechnicianTabId } from './technician-order-tab';
-import TechnicianOrderTab from './technician-order-tab';
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from "@radix-ui/react-dialog";
+import axios from "axios";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import threeTechniciansImage from "~/assets/three-technicians.png";
+import Header from "~/components/header";
+import Spinner from "~/components/ui/spinner";
+import type { OrderItem, TechnicianabItem } from "~/types/order.types";
+import TechnicianOrderCard from "./order-card";
+import type { TechnicianTabId } from "./technician-order-tab";
+import TechnicianOrderTab from "./technician-order-tab";
+import EnableLocationSheet from "~/components/enable-location-sheet";
 
 export default function TechnicianOrderList() {
-  const [orders, setOrders] = useState<OrderItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<TechnicianTabId>('today');
+    const [orders, setOrders] = useState<OrderItem[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [activeTab, setActiveTab] = useState<TechnicianTabId>("today");
+    const [locationPermission, setLocationPermission] = useState<
+        "prompt" | "granted" | "denied"
+    >("prompt");
+    const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
+        useState(false);
 
-  // Fetch orders data for each activeTab changing
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/orders/technician`,
-          {
-            params: {
-              'service-date': activeTab,
+    /**
+     * Checks the current status of the geolocation permission.
+     * Updates the state and decides whether to show the prompt sheet.
+     */
+    const checkPermissionStatus = useCallback(async () => {
+        if (!navigator.permissions) {
+            // Fallback for older browsers
+            setLocationPermission("granted");
+            return;
+        }
+        try {
+            const permissionStatus = await navigator.permissions.query({
+                name: "geolocation",
+            });
+            setLocationPermission(permissionStatus.state); // 'granted', 'prompt', or 'denied'
+
+            // Show the sheet only if the user hasn't made a choice yet ('prompt')
+            if (permissionStatus.state === "prompt") {
+                setIsLocationPermissionSheetOpen(true);
+            }
+
+            // Listen for changes (e.g., user allows/blocks from browser settings)
+            permissionStatus.onchange = () => {
+                setLocationPermission(permissionStatus.state);
+                if (permissionStatus.state === "granted") {
+                    setIsLocationPermissionSheetOpen(false); // Automatically close sheet if permission is granted
+                }
+            };
+        } catch (error) {
+            console.error("Permission query failed:", error);
+            // Assume granted if query fails, to not block the user
+            setLocationPermission("granted");
+        }
+    }, []);
+
+    // --- RUN CHECKING WHEN COMPONENT MOUNTED ---
+    useEffect(() => {
+        checkPermissionStatus();
+    }, [checkPermissionStatus]);
+
+    /**
+     * This function is called when the "Aktifkan Lokasi" button is clicked.
+     * It triggers the browser's native permission prompt.
+     */
+    const handleActivateLocation = () => {
+        navigator.geolocation.getCurrentPosition(
+            // Success callback (user clicked "Allow")
+            () => {
+                // The 'onchange' listener in checkPermissionStatus will handle the state update
+                // and close the sheet automatically.
             },
-            withCredentials: true,
-          },
+            // Error callback (user clicked "Block")
+            () => {
+                // The 'onchange' listener will also handle this.
+                // The sheet will remain open, and you could show an error message.
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+            },
         );
-
-        setOrders(response.data.data);
-      } catch (error) {
-        console.error(`Gagal mengambil pesanan untuk tab ${activeTab}:`, error);
-      } finally {
-        setIsLoading(false);
-      }
     };
-    fetchOrders();
-  }, [activeTab]);
 
-  const tabs: TechnicianabItem[] = [
-    { id: 'today', label: 'Hari Ini' },
-    { id: 'tomorrow', label: 'Besok' },
-    { id: 'upcoming', label: 'Mendatang' },
-  ];
+    // Fetch orders data for each activeTab changing
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setIsLoading(true);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/orders/technician`,
+                    {
+                        params: {
+                            "service-date": activeTab,
+                        },
+                        withCredentials: true,
+                    },
+                );
 
-  return (
-    <div>
-      {isLoading && (
-        <div
-          className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-50 ${
-            isLoading ? 'bg-black/50' : ''
-          }`}
-        >
-          <Dialog open={isLoading} modal>
-            <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-              <DialogTitle></DialogTitle>
-              <DialogDescription></DialogDescription>
-              <Spinner size={30} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      )}
-      <div>
-        {/* Header */}
-        <Header isSticky={true} title="Daftar Pesanan">
-          <TechnicianOrderTab
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-        </Header>
+                setOrders(response.data.data);
+            } catch (error) {
+                console.error(
+                    `Gagal mengambil pesanan untuk tab ${activeTab}:`,
+                    error,
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchOrders();
+    }, [activeTab]);
 
-        {/* Order List */}
-        {orders.length === 0 ? (
-          <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
-            <img
-              src={threeTechniciansImage}
-              alt={threeTechniciansImage}
-              className="w-80 max-w-lg mb-6"
+    const tabs: TechnicianabItem[] = [
+        { id: "today", label: "Hari Ini" },
+        { id: "tomorrow", label: "Besok" },
+        { id: "upcoming", label: "Mendatang" },
+    ];
+
+    return (
+        <div>
+            {isLoading && (
+                <div
+                    className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-50 ${
+                        isLoading ? "bg-black/50" : ""
+                    }`}
+                >
+                    <Dialog open={isLoading} modal>
+                        <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
+                            <DialogTitle></DialogTitle>
+                            <DialogDescription></DialogDescription>
+                            <Spinner size={30} />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            )}
+            <div>
+                {/* Header */}
+                <Header isSticky={true} title="Daftar Pesanan">
+                    <TechnicianOrderTab
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
+                </Header>
+
+                {/* Order List */}
+                {orders.length === 0 ? (
+                    <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
+                        <img
+                            src={threeTechniciansImage}
+                            alt={threeTechniciansImage}
+                            className="w-80 max-w-lg mb-6"
+                        />
+                        <h1 className="font-semibold text-lg">
+                            Lagi sepi. Santai dulu
+                        </h1>
+                    </div>
+                ) : (
+                    orders.map((order) => (
+                        <TechnicianOrderCard key={order.id} order={order} />
+                    ))
+                )}
+            </div>
+
+            {/* Show Enable Location Sheet */}
+            <EnableLocationSheet
+                isOpen={isLocationPermissionSheetOpen}
+                onOpenChange={setIsLocationPermissionSheetOpen}
+                onActivate={handleActivateLocation}
             />
-            <h1 className="font-semibold text-lg">Lagi sepi. Santai dulu</h1>
-          </div>
-        ) : (
-          orders.map((order) => (
-            <TechnicianOrderCard key={order.id} order={order} />
-          ))
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
