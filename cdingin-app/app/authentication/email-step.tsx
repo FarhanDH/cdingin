@@ -58,7 +58,7 @@ export default function EmailStep({
                                             error
                                                 ? "border-[#f34b1b]"
                                                 : "border-[#a7a7a7]"
-                                        } pb-2 focus:outline-none focus:border-[#222222] text-lg font-medium tracking-wide`}
+                                        } pb-2 focus:outline-none focus:border-[#222222] text-[16px] font-medium tracking-wide`}
                                     />
                                 </FormControl>
                                 {error && (
@@ -73,7 +73,7 @@ export default function EmailStep({
                     <Button
                         type="submit"
                         disabled={!form.watch("email") || loading}
-                        className="w-full h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 items-center bg-primary disabled:bg-primary/50 disabled:text-primary/50 disabled:text-white text-white capitalize"
+                        className="w-full h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95 items-center bg-primary disabled:bg-primary/50 disabled:text-white text-white capitalize"
                     >
                         Lanjut
                     </Button>

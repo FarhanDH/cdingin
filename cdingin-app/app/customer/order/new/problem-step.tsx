@@ -80,7 +80,7 @@ export default function ProblemsStep({
                     type="submit"
                     onClick={handleSubmit}
                     disabled={selectedProblems.length === 0}
-                    className="w-full h-12 rounded-full text-md font-semibold mt-4 cursor-pointer active:scale-95 items-center bg-primary text-white capitalize disabled:bg-primary/50 disabled:text-white"
+                    className="w-full h-12 rounded-full text-[16px] font-semibold mt-4 cursor-pointer active:scale-95 items-center bg-primary text-white capitalize disabled:bg-primary/50 disabled:text-white"
                 >
                     Lanjut
                 </Button>

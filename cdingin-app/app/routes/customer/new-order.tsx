@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import technicianImg from "~/assets/technician-smile-phone-nobg.png";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Button } from "~/components/ui/button";
 import {
     Sheet,
@@ -71,11 +72,13 @@ const mapFormDataToApiRequest = (
     } satisfies CreateOrderRequestDto;
 };
 
+type SuccessState = "idle" | "animating" | "showingSheet";
+
 export default function NewOrder() {
     // State untuk menyimpan semua data dari setiap step
     const [formData, setFormData] = useState<Partial<OrderFormData>>({});
     const [loading, setLoading] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [successState, setSuccessState] = useState<SuccessState>("idle");
 
     // State untuk melacak step saat ini, dimulai dari index 0
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -91,6 +94,18 @@ export default function NewOrder() {
             navigate("/orders");
         }
     }, [formData.acUnits, currentStep, navigate]);
+
+    useEffect(() => {
+        // If the state is 'animating', wait for a few seconds and then change to 'showingSheet'
+        if (successState === "animating") {
+            const timer = setTimeout(() => {
+                setSuccessState("showingSheet");
+            }, 4000);
+
+            // Clean up function to clear the timer when the component is unmounted
+            return () => clearTimeout(timer);
+        }
+    }, [successState]);
 
     // Fungsi untuk pindah ke step berikutnya
     const handleNext = () => {
@@ -198,7 +213,7 @@ export default function NewOrder() {
             );
 
             if (response.status === 201) {
-                setIsSuccess(true);
+                setSuccessState("animating");
                 setLoading(false);
             }
         } catch (error) {
@@ -226,7 +241,7 @@ export default function NewOrder() {
             case "location":
                 return (
                     <LocationStep
-                        initialLocation={formData.serviceLocation || ""}
+                        initialLocation={formData.serviceLocation}
                         onSubmit={handleLocationSubmit}
                         onBack={handlePrev}
                     />
@@ -264,9 +279,7 @@ export default function NewOrder() {
 
     return (
         <div
-            className={`relative max-w-lg mx-auto bg-gray-50 ${
-                isSuccess ? "overflow-hidden" : ""
-            }`}
+            className={`relative max-w-lg mx-auto bg-gray-50 ${successState !== "idle" ? "overflow-hidden" : ""}`}
         >
             {loading && (
                 <div
@@ -281,10 +294,21 @@ export default function NewOrder() {
                     </Dialog>
                 </div>
             )}
-            <main>{!isSuccess && renderStep()}</main>
+            <main>{successState === "idle" && renderStep()}</main>
+
+            {successState === "animating" && (
+                <div className="h-screen flex items-center justify-center">
+                    <DotLottieReact
+                        src="https://lottie.host/c68a2567-7d30-4c79-9b82-ba4f7edca4fc/JnzotXvT5y.lottie"
+                        loop
+                        autoplay
+                        style={{ width: "300px", height: "300px" }}
+                    />
+                </div>
+            )}
 
             {/* Success Drawer if order created */}
-            <Sheet open={isSuccess}>
+            <Sheet open={successState === "showingSheet"}>
                 <SheetContent
                     isXIconVisible={false}
                     side="bottom"
@@ -309,7 +333,7 @@ export default function NewOrder() {
                         <Button
                             onClick={() => navigate("/orders")}
                             variant={"default"}
-                            className="w-full h-12 rounded-full text-md font-semibold active:scale-95 cursor-pointer"
+                            className="w-full h-12 rounded-full text-[16px] font-semibold active:scale-95 cursor-pointer"
                         >
                             Oke, siap
                         </Button>

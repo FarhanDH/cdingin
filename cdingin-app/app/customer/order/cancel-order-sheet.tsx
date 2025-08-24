@@ -99,7 +99,8 @@ export default function CancelOrderSheet({
                                         Loh, kamu mau batalin?
                                     </SheetTitle>
                                     <p className="text-gray-500">
-                                        Kalau gak terpaksa, jangan batalin, ya.
+                                        Kalau gak terpaksa, jangan dibatalin,
+                                        ya.
                                     </p>
                                 </div>
                             </div>

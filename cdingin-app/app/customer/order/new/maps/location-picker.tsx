@@ -1,4 +1,4 @@
-import L from "leaflet";
+import L, { type LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
@@ -15,11 +15,9 @@ L.Icon.Default.mergeOptions({
     shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
 });
 
-// URL untuk tile layer Stadia Alidade Smooth
 const tileLayerUrl = import.meta.env.VITE_TILE_LAYER_MAP_URL;
 
-// Atribusi yang diperlukan oleh Stadia Maps
-const stadiaAttribution = import.meta.env.VITE_STADIA_ATTRIBUTION_MAP;
+const attributionMap = import.meta.env.VITE_ATTRIBUTION_MAP;
 
 interface MapEventHandlerProps {
     onPositionChange: (position: L.LatLng) => void;
@@ -27,6 +25,7 @@ interface MapEventHandlerProps {
     onDragEnd: () => void;
     permissionStatus: "granted" | "denied" | "prompt";
     onLocationFound: (latlng: L.LatLng, accuracy: number) => void;
+    initialCoordinates?: { lat: number; lng: number };
 }
 
 function MapEventHandler({
@@ -35,11 +34,17 @@ function MapEventHandler({
     onDragEnd,
     permissionStatus,
     onLocationFound,
+    initialCoordinates,
 }: Readonly<MapEventHandlerProps>) {
     const map = useMap();
 
     useEffect(() => {
-        if (permissionStatus === "granted") {
+        if (initialCoordinates) {
+            map.flyTo(initialCoordinates, 18);
+            onPositionChange(
+                new L.LatLng(initialCoordinates.lat, initialCoordinates.lng),
+            );
+        } else if (permissionStatus === "granted") {
             map.locate();
         }
     }, [map, permissionStatus]);
@@ -70,15 +75,31 @@ function MapEventHandler({
 }
 
 export interface LocationPickerProps {
+    initialCoordinates?: { lat: number; lng: number };
     permissionStatus: "granted" | "denied" | "prompt";
+    children?: React.ReactNode;
     onPositionChange: (position: L.LatLng) => void;
     isLoading: boolean;
 }
 
+/**
+ * A map component that allows users to select a location.
+ * It displays a map from Stadia Alidade Smooth and a blue dot marker
+ * that indicates the user's current location.
+ * The component also provides a zoom control and a custom pin marker.
+ * @param {Object} props
+ * @param {Object} [props.initialCoordinates] - Initial coordinates for the map
+ * @param {String} props.permissionStatus - Status of the geolocation permission
+ * @param {Function} props.onPositionChange - Callback for when the user changes the location
+ * @param {Boolean} props.isLoading - Whether the map is currently loading
+ * @param {React.ReactNode} [props.children] - Additional children components that will be rendered inside the map container
+ */
 export default function LocationPicker({
+    initialCoordinates,
     permissionStatus,
     onPositionChange,
     isLoading,
+    children,
 }: Readonly<LocationPickerProps>) {
     const [isDragging, setIsDragging] = useState(false);
     const [currentPosition, setCurrentPosition] = useState<{
@@ -86,11 +107,23 @@ export default function LocationPicker({
         accuracy: number;
     } | null>(null);
 
+    const mapCenter = initialCoordinates
+        ? [initialCoordinates.lat, initialCoordinates.lng]
+        : [-0.53, 117.12];
+
+    /**
+     * Handle the map's drag events.
+     * If the user starts dragging, set isDragging to true.
+     * If the user ends dragging, set isDragging to false.
+     */
+    const handleDragStart = () => setIsDragging(true);
+    const handleDragEnd = () => setIsDragging(false);
+
     return (
-        // 2. Gunakan div wrapper untuk positioning
+        // Use div wrapper for positioning
         <div className="w-ful">
             <MapContainer
-                center={[-0.53, 117.12]} // Default Polnes
+                center={mapCenter as LatLngExpression} // Default Polnes
                 zoom={18}
                 style={{ height: "700px", width: "100%" }}
                 preferCanvas={true}
@@ -100,29 +133,29 @@ export default function LocationPicker({
                 dragging={!isDragging}
             >
                 <TileLayer
-                    attribution={stadiaAttribution}
+                    attribution={attributionMap}
                     url={tileLayerUrl}
-                    // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     className="absolute -top-10 left-0 right-0 mx-auto"
                 />
+                {children}
                 <MapEventHandler
                     onPositionChange={onPositionChange}
-                    onDragStart={() => setIsDragging(true)}
-                    onDragEnd={() => setIsDragging(false)}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
                     permissionStatus={permissionStatus}
                     onLocationFound={(latlng: L.LatLng, accuracy: number) => {
                         setCurrentPosition({ latlng, accuracy });
                     }}
+                    initialCoordinates={initialCoordinates}
                 />
                 <ZoomControl onPositionChange={onPositionChange} />
-                {/* Show marker location user, ONLY if founded */}
+                {/* Show user marker location, ONLY if founded */}
                 {currentPosition && (
                     <CurrentLocationMarker
                         position={currentPosition.latlng}
                         accuracy={currentPosition.accuracy}
                     />
-                )}{" "}
+                )}
             </MapContainer>
 
             {/* Custom pin marker */}

@@ -260,7 +260,7 @@ export default function TechnicianOrderDetail() {
                                         {/* Address Note for technician */}
                                         {order.serviceLocation.note && (
                                             <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                <HomeIcon className="text-green-600" />
+                                                <HomeIcon className="text-green-700" />
                                                 <p className="text-gray-800 text-xs w-full">
                                                     {order.serviceLocation.note}
                                                 </p>
@@ -273,7 +273,7 @@ export default function TechnicianOrderDetail() {
                                                 {order.propertyType ||
                                                     "Tipe properti belum dipilih"}
                                             </p>
-                                            <p className="text-gray-600">
+                                            <p className="text-gray-700">
                                                 Lantai{" "}
                                                 {order.propertyFloor || "-"}
                                             </p>

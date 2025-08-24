@@ -50,7 +50,7 @@ export default function OtpStep({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit((data) =>
-                        onSubmit({ otp: data.otp })
+                        onSubmit({ otp: data.otp }),
                     )}
                     className="space-y-6"
                 >
@@ -144,7 +144,7 @@ export default function OtpStep({
                             else
                                 window.open(
                                     "https://mail.google.com/mail/mu/mp/679/#",
-                                    "_blank"
+                                    "_blank",
                                 );
                         }}
                     >
@@ -153,7 +153,7 @@ export default function OtpStep({
                     <Button
                         type="submit"
                         disabled={!form.watch("otp") || loading}
-                        className={`w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95`}
+                        className={`w-full block h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95`}
                     >
                         Lanjut
                     </Button>

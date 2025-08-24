@@ -8,8 +8,8 @@ export function Welcome() {
     return (
         <div className="flex flex-col min-h-screen p-3">
             {/* Logo/Brand section */}
-            <div className="flex space-x-1 items-center">
-                <img src="/icon-192x192.png" alt="Logo" className="w-8" />
+            <div className="flex gap-1 items-center">
+                <img src="/icon-192x192.png" alt="Logo" className="w-9" />
                 <h1 className="text-2xl font-bold">cdingin</h1>
             </div>
 
@@ -23,7 +23,7 @@ export function Welcome() {
                 <h2 className="text-2xl font-bold mb-2">
                     Selamat datang di cdingin!
                 </h2>
-                <p className="text-gray-600 text-md">
+                <p className="font-light">
                     Cukup AC aja yang dingin, kamu jangan. Servis AC jadi
                     gampang tinggal ngeklik doang..
                 </p>
@@ -33,13 +33,13 @@ export function Welcome() {
             <div className="w-full space-y-5 pb-6">
                 <Button
                     onClick={() => navigate("/auth")}
-                    className="w-full block h-[48px] rounded-full text-center text-md font-semibold bg-primary text-white capitalize active:scale-95"
+                    className="w-full block h-[48px] rounded-full text-center text-[16px] font-semibold bg-primary text-white capitalize active:scale-95"
                 >
                     Masuk
                 </Button>
                 <Button
                     onClick={() => navigate("/auth")}
-                    className="w-full h-[48px] bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 capitalize"
+                    className="w-full h-[48px] bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95 capitalize"
                 >
                     Belum ada akun? Daftar dulu
                 </Button>

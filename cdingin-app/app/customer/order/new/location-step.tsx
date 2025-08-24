@@ -10,13 +10,23 @@ import { customToastStyle } from "~/routes/technician/technician-order-detail";
 import EnableLocationSheet from "../../../components/enable-location-sheet";
 import LocationNoteSheet from "./maps/location-note-sheet";
 import LocationPicker from "./maps/location-picker";
+import { samarindaServiceArea } from "~/common/geo-data";
+import pointInPolygon from "point-in-polygon";
+import { Polygon } from "react-leaflet";
+import type { LatLngExpression } from "leaflet";
 
-export default function LocationStep({
-    initialLocation,
-    onSubmit,
-    onBack,
-}: Readonly<{
-    initialLocation: {};
+const samarindaServiceAreaForLeaflet: LatLngExpression[] =
+    samarindaServiceArea.map(
+        (p) => [p[1], p[0]], // Swap to [lat, lng]
+    );
+
+export interface LocationStepProps {
+    initialLocation: {
+        latitude: number;
+        longitude: number;
+        address: string;
+        note: string;
+    };
     onSubmit: (data: {
         note: string;
         address: string;
@@ -24,21 +34,39 @@ export default function LocationStep({
         longitude: number;
     }) => void;
     onBack: () => void;
-}>) {
-    const [address, setAddress] = useState("Memuat alamat...");
+}
+
+export default function LocationStep({
+    initialLocation,
+    onSubmit,
+    onBack,
+}: Readonly<LocationStepProps>) {
+    const [address, setAddress] = useState(
+        initialLocation?.address || "Memuat alamat...",
+    );
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [coordinates, setCoordinates] = useState<{
         lat: number;
         lng: number;
-    } | null>(null);
+    } | null>(
+        initialLocation
+            ? {
+                  lat: initialLocation.latitude,
+                  lng: initialLocation.longitude,
+              }
+            : null,
+    );
     const [locationDetails, setLocationDetails] = useState<any>(null);
     const [locationPermission, setLocationPermission] = useState<
         "prompt" | "granted" | "denied"
     >("prompt");
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
         useState(false);
-    const [locationNote, setLocationNote] = useState("");
+    const [locationNote, setLocationNote] = useState(
+        initialLocation?.note || "",
+    );
     const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
+    const [isLocationValid, setIsLocationValid] = useState(true);
 
     /**
      * Checks the current status of the geolocation permission.
@@ -75,6 +103,20 @@ export default function LocationStep({
         }
     }, []);
 
+    /**
+     * A function that takes a set of coordinates and checks if they are within the Samarinda service area.
+     * @param coords - The coordinates to check, in the format { lat: number, lng: number }
+     * @returns A boolean indicating whether the coordinates are within the service area.
+     */
+    const validateLocation = useCallback(
+        (coords: { lat: number; lng: number }): boolean => {
+            const point = [coords.lng, coords.lat]; // Format [lng, lat]
+
+            return pointInPolygon(point, samarindaServiceArea);
+        },
+        [],
+    );
+
     // --- RUN CHECKING WHEN COMPONENT MOUNTED ---
     useEffect(() => {
         checkPermissionStatus();
@@ -104,9 +146,21 @@ export default function LocationStep({
         );
     };
 
-    const handlePositionChange = useCallback((latlng: L.LatLng) => {
-        setCoordinates({ lat: latlng.lat, lng: latlng.lng });
-    }, []);
+    /**
+     * A callback function that updates the component state with the new coordinates
+     * whenever the user drags the pin on the map. It also validates the new location
+     * by checking if it's within the service area boundary.
+     *
+     * @param {L.LatLng} latlng - The new latitude and longitude of the pin.
+     */
+    const handlePositionChange = useCallback(
+        (latlng: L.LatLng) => {
+            const coords = { lat: latlng.lat, lng: latlng.lng };
+            setCoordinates(coords);
+            setIsLocationValid(validateLocation(coords));
+        },
+        [validateLocation],
+    );
 
     useEffect(() => {
         if (!coordinates) {
@@ -148,18 +202,44 @@ export default function LocationStep({
         return () => clearTimeout(debounceTimer);
     }, [coordinates]);
 
+    /**
+     * A function that handles form submission.
+     * It checks if the user has set a valid location and address,
+     * and if so, calls the onSubmit function with the correct data.
+     * If not, it shows an error toast.
+     */
     const handleSubmit = () => {
-        if (coordinates && address) {
-            onSubmit({
-                latitude: coordinates.lat,
-                longitude: coordinates.lng,
-                note: locationNote,
-                address:
-                    locationDetails?.address.amenity ??
-                    locationDetails?.address.road ??
-                    locationDetails?.address.village,
-            });
+        // Check if the user has set a valid location
+        if (!coordinates) {
+            toast("Maaf, Anda belum mengatur lokasi", customToastStyle);
+            return;
         }
+
+        // Check if the user has set a valid address
+        if (!address) {
+            toast("Maaf, Anda belum mengatur alamat", customToastStyle);
+            return;
+        }
+
+        // Check if the user has set a valid location within the service area
+        if (!isLocationValid) {
+            toast(
+                "Maaf, layanan kami belum sampai di areamu",
+                customToastStyle,
+            );
+            return;
+        }
+
+        // Call the onSubmit function with the correct data
+        onSubmit({
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            note: locationNote,
+            address:
+                locationDetails?.address.amenity ??
+                locationDetails?.address.road ??
+                locationDetails?.address.village,
+        });
     };
 
     return (
@@ -167,10 +247,20 @@ export default function LocationStep({
             {/* Map Area */}
             <div className="absolute inset-0 z-0">
                 <LocationPicker
+                    initialCoordinates={coordinates ?? undefined}
                     permissionStatus={locationPermission}
                     isLoading={isGeocoding}
                     onPositionChange={handlePositionChange}
-                />
+                >
+                    <Polygon
+                        positions={samarindaServiceAreaForLeaflet}
+                        pathOptions={{
+                            color: "green",
+                            fillColor: "green",
+                            fillOpacity: 0.1,
+                        }}
+                    />
+                </LocationPicker>
             </div>
 
             {/* 3. Bottom Panel */}
@@ -179,7 +269,7 @@ export default function LocationStep({
                 <Fab
                     size="small"
                     // aria-label="add"
-                    onClick={() => window.history.back()}
+                    onClick={onBack}
                     className="absolute -top-15 left-4 z-10 bg-white p-2 rounded-full shadow-md cursor-pointer active:scale-95"
                 >
                     <MoveLeft className="text-gray-600" />
@@ -191,53 +281,72 @@ export default function LocationStep({
                     </h2>
 
                     {/* Detail Location */}
-                    <div className="bg-secondary/15 p-3 rounded-lg flex items-start gap-3">
-                        <div className="bg-red-400 p-1 rounded-full flex items-center justify-center text-center">
-                            <LocationPinIcon
-                                className="text-white"
-                                fontSize="small"
-                            />
+                    {!isLocationValid ? (
+                        // Show when LOCATION IS NOT VALID
+                        <div className="bg-red-100 border border-red-300 p-3 rounded-lg text-center">
+                            <h3 className="font-bold text-red-700">
+                                Di Luar Area Layanan
+                            </h3>
+                            <p className="text-sm text-red-600">
+                                Maaf, saat ini kami hanya melayani di area
+                                Samarinda. Silakan geser pin ke dalam area yang
+                                ditandai.
+                            </p>
                         </div>
-                        <div className="flex justify-between w-full">
-                            <div>
-                                <h3 className="font-medium text-md mb-1">
-                                    {isGeocoding
-                                        ? "Mencari..."
-                                        : locationDetails?.address.amenity ||
-                                          locationDetails?.address.road ||
-                                          locationDetails?.address.village ||
-                                          "Lokasi Terpilih"}
-                                </h3>
-                                <p className="text-sm text-gray-600 line-clamp-2">
-                                    {isGeocoding ? "..." : address}
-                                </p>
+                    ) : (
+                        <div className="bg-secondary/15 p-3 rounded-lg flex items-start gap-3">
+                            <div className="bg-red-400 p-1 rounded-full flex items-center justify-center text-center">
+                                <LocationPinIcon
+                                    className="text-white"
+                                    fontSize="small"
+                                />
                             </div>
-                            {/* Location Note */}
-                            <button
-                                className="bg-none p-1 rounded-full cursor-pointer"
-                                onClick={() => setIsNoteSheetOpen(true)}
-                            >
-                                {locationNote.trim().length > 0 ? (
-                                    <img
-                                        src={noteSucces}
-                                        alt="note-filled"
-                                        className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
-                                    />
-                                ) : (
-                                    <img
-                                        src={addNote}
-                                        alt="add-note"
-                                        className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
-                                    />
-                                )}
-                            </button>
+                            <div className="flex justify-between w-full">
+                                <div>
+                                    <h3 className="font-medium text-md mb-1">
+                                        {isGeocoding
+                                            ? "Mencari..."
+                                            : locationDetails?.address
+                                                  .amenity ||
+                                              locationDetails?.address.road ||
+                                              locationDetails?.address
+                                                  .village ||
+                                              "Lokasi Terpilih"}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 line-clamp-2">
+                                        {isGeocoding ? "..." : address}
+                                    </p>
+                                </div>
+                                {/* Location Note */}
+                                <button
+                                    className="bg-none p-1 rounded-full cursor-pointer"
+                                    onClick={() => setIsNoteSheetOpen(true)}
+                                >
+                                    {locationNote.trim().length > 0 ? (
+                                        <img
+                                            src={noteSucces}
+                                            alt="note-filled"
+                                            className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
+                                        />
+                                    ) : (
+                                        <img
+                                            src={addNote}
+                                            alt="add-note"
+                                            className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
+                                        />
+                                    )}
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
                     <Button
                         type="submit"
                         onClick={handleSubmit}
-                        disabled={isGeocoding || !coordinates}
-                        className="w-full h-12 rounded-full text-md font-semibold mt-4 cursor-pointer active:scale-95 items-center bg-primary text-white capitalize disabled:bg-primary/50 disabled:text-white"
+                        disabled={
+                            isGeocoding || !coordinates || !isLocationValid
+                        }
+                        className="w-full h-12 rounded-full text-[16px] font-semibold mt-4 cursor-pointer active:scale-95 items-center bg-primary text-white capitalize disabled:bg-primary/50 disabled:text-white"
                     >
                         Lanjut
                     </Button>

@@ -9,71 +9,71 @@ import { VerifyOtpResponse } from './dto/auth.response';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) {}
 
-  @Post('verify-otp')
-  async verifyOtp(
-    @Body() request: VerifyOtpRequest,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<ApiResponse<VerifyOtpResponse>> {
-    const data = await this.authService.verifyOtp(request);
+    @Post('verify-otp')
+    async verifyOtp(
+        @Body() request: VerifyOtpRequest,
+        @Res({ passthrough: true }) response: Response,
+    ): Promise<ApiResponse<VerifyOtpResponse>> {
+        const data = await this.authService.verifyOtp(request);
 
-    if (!data.user?.tokens) {
-      return {
-        message: 'OTP verified successfully',
-        data,
-      };
+        if (!data.user?.tokens) {
+            return {
+                message: 'OTP verified successfully',
+                data,
+            };
+        }
+        // Set access token and refresh token in cookies
+        response.cookie('accessToken', data.user.tokens.accessToken, {
+            httpOnly: true,
+            secure: configuration().env === 'production',
+            sameSite: 'lax',
+            maxAge: configuration().jwtConstants.accessTokenExpiresIn,
+        });
+        response.cookie('refreshToken', data.user.tokens.refreshToken, {
+            httpOnly: true,
+            secure: configuration().env === 'production',
+            sameSite: 'lax',
+            maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
+        });
+
+        // Remove tokens from response
+        data.user.tokens = undefined;
+
+        return {
+            message: 'OTP verified successfully',
+            data,
+        };
     }
-    // Set access token and refresh token in cookies
-    response.cookie('accessToken', data.user.tokens.accessToken, {
-      httpOnly: true,
-      secure: configuration().env === 'production',
-      sameSite: 'lax',
-      maxAge: configuration().jwtConstants.accessTokenExpiresIn,
-    });
-    response.cookie('refreshToken', data.user.tokens.refreshToken, {
-      httpOnly: true,
-      secure: configuration().env === 'production',
-      sameSite: 'lax',
-      maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
-    });
 
-    // Remove tokens from response
-    data.user.tokens = undefined;
+    @Post('register-customer-profile')
+    async createCustomerProfile(
+        @Body() request: CreateCustomerProfileRequest,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        const data = await this.authService.registerCustomerProfile(request);
 
-    return {
-      message: 'OTP verified successfully',
-      data,
-    };
-  }
+        // Set access token and refresh token in cookies
+        response.cookie('accessToken', data.tokens.accessToken, {
+            httpOnly: true,
+            secure: configuration().env === 'production',
+            sameSite: 'lax',
+            maxAge: configuration().jwtConstants.accessTokenExpiresIn,
+        });
+        response.cookie('refreshToken', data.tokens.refreshToken, {
+            httpOnly: true,
+            secure: configuration().env === 'production',
+            sameSite: 'lax',
+            maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
+        });
 
-  @Post('register-customer-profile')
-  async createCustomerProfile(
-    @Body() request: CreateCustomerProfileRequest,
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    const data = await this.authService.registerCustomerProfile(request);
+        // Remove tokens from response
+        data.tokens = undefined;
 
-    // Set access token and refresh token in cookies
-    response.cookie('accessToken', data.tokens.accessToken, {
-      httpOnly: true,
-      secure: configuration().env === 'production',
-      sameSite: 'lax',
-      maxAge: configuration().jwtConstants.accessTokenExpiresIn,
-    });
-    response.cookie('refreshToken', data.tokens.refreshToken, {
-      httpOnly: true,
-      secure: configuration().env === 'production',
-      sameSite: 'lax',
-      maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
-    });
-
-    // Remove tokens from response
-    data.tokens = undefined;
-
-    return {
-      message: 'OTP verified successfully',
-      data,
-    };
-  }
+        return {
+            message: 'OTP verified successfully',
+            data,
+        };
+    }
 }
