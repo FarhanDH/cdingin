@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteFilled from "~/assets/note-filled.png";
+import { customToastStyle } from "~/components/custom-toast-style";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -34,7 +35,6 @@ import {
 } from "~/components/ui/drawer";
 import Spinner from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { customToastStyle } from "~/components/custom-toast-style";
 import type {
     AcUnitDetail,
     OrderFormData,
@@ -69,7 +69,6 @@ export default function SummaryStep({
     const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
     const [tempDate, setTempDate] = useState<Date | undefined>();
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [imageVisible, setImageVisible] = useState(true);
 
     const totalQuantityInCart =
         formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
@@ -243,23 +242,19 @@ export default function SummaryStep({
                                 >
                                     <Textarea
                                         id="notes"
-                                        placeholder="      Catatan buat teknisi (opsional)"
+                                        placeholder="Catatan buat teknisi (opsional)"
                                         maxLength={100}
                                         value={note}
                                         onChange={(e) =>
                                             setNote(e.target.value)
                                         }
-                                        className="text-sm resize-none bg-gray-200 rounded-lg"
-                                        onFocus={() => setImageVisible(false)}
-                                        onBlur={() => setImageVisible(true)}
+                                        className="pl-10 text-sm resize-none bg-gray-200 rounded-lg"
                                     />
-                                    {imageVisible && note.length <= 0 && (
-                                        <img
-                                            src={addNote}
-                                            alt="add-note"
-                                            className="w-4.5 absolute left-2 top-2.5"
-                                        />
-                                    )}
+                                    <img
+                                        src={addNote}
+                                        alt="add-note"
+                                        className="w-4.5 absolute left-2 top-2.5"
+                                    />
                                     <p className="absolute right-2 bottom-1 text-muted-foreground text-xs">
                                         {note.length} / 100
                                     </p>

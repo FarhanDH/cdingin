@@ -25,7 +25,7 @@ import type {
     OrderFormData,
     OrderStep,
 } from "~/types/order.types";
-import { customToastStyle } from "../technician/technician-order-detail";
+import { customToastStyle } from "~/components/custom-toast-style";
 
 // Order Steps
 const steps: OrderStep[] = [

@@ -11,14 +11,34 @@ import LocationNoteSheet from "./maps/location-note-sheet";
 import LocationPicker from "./maps/location-picker";
 import { samarindaServiceArea } from "~/common/geo-data";
 import pointInPolygon from "point-in-polygon";
-import { Polygon } from "react-leaflet";
+import { Polygon, useMap } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import { customToastStyle } from "~/components/custom-toast-style";
+import L from "leaflet";
+import LocationSearch from "./maps/location-search";
 
 const samarindaServiceAreaForLeaflet: LatLngExpression[] =
     samarindaServiceArea.map(
         (p) => [p[1], p[0]], // Swap to [lat, lng]
     );
+
+function MapController({
+    targetPosition,
+}: {
+    targetPosition: L.LatLng | null;
+}) {
+    const map = useMap();
+    useEffect(() => {
+        if (targetPosition) {
+            map.flyTo(targetPosition, 18, {
+                animate: true,
+                duration: 1.5,
+            });
+        }
+    }, [targetPosition, map]);
+
+    return null;
+}
 
 export interface LocationStepProps {
     initialLocation: {
@@ -67,6 +87,7 @@ export default function LocationStep({
     );
     const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
     const [isLocationValid, setIsLocationValid] = useState(true);
+    const [targetPosition, setTargetPosition] = useState<L.LatLng | null>(null);
 
     /**
      * Checks the current status of the geolocation permission.
@@ -203,6 +224,15 @@ export default function LocationStep({
     }, [coordinates]);
 
     /**
+     * A callback function for when the user selects a location from the search results.
+     * It sets the target position on the map to the selected location.
+     * @param {Object} coords - The coordinates of the selected location, in the format { lat: number, lng: number }
+     */
+    const handleLocationSelect = (coords: { lat: number; lng: number }) => {
+        setTargetPosition(new L.LatLng(coords.lat, coords.lng));
+    };
+
+    /**
      * A function that handles form submission.
      * It checks if the user has set a valid location and address,
      * and if so, calls the onSubmit function with the correct data.
@@ -246,12 +276,17 @@ export default function LocationStep({
         <div className="h-screen w-full relative overflow-hidden max-w-lg mx-auto">
             {/* Map Area */}
             <div className="absolute inset-0 z-0">
+                {/* Search bar */}
+                <div className="absolute top-2 z-50 bg-white rounded-full w-full">
+                    <LocationSearch onLocationSelect={handleLocationSelect} />
+                </div>
                 <LocationPicker
                     initialCoordinates={coordinates ?? undefined}
                     permissionStatus={locationPermission}
                     isLoading={isGeocoding}
                     onPositionChange={handlePositionChange}
                 >
+                    <MapController targetPosition={targetPosition} />
                     <Polygon
                         positions={samarindaServiceAreaForLeaflet}
                         pathOptions={{
