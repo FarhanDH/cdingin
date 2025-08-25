@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { ACBrandEnum } from '~/common/enums/ac-brand.enum';
 import { ACCapacityEnum } from '~/common/enums/ac-capacity.enum';
+import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 
 class AcUnitDto {
     @IsString()
@@ -97,6 +98,20 @@ export class CreateOrderRequestDto {
     @IsString()
     @IsOptional()
     note?: string;
+}
+
+export class UpdateOrderStatusRequestDto {
+    @IsEnum(OrderStatusEnum)
+    @IsNotEmpty()
+    status: OrderStatusEnum;
+
+    @IsLatitude()
+    @IsOptional()
+    technicianLatitude?: number;
+
+    @IsLongitude()
+    @IsOptional()
+    technicianLongitude?: number;
 }
 
 export class UpdateOrderRequestDto extends PartialType(CreateOrderRequestDto) {}

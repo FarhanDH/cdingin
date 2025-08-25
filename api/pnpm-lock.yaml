@@ -53,6 +53,9 @@ importers:
       ejs:
         specifier: ^3.1.10
         version: 3.1.10
+      haversine-distance:
+        specifier: ^1.2.4
+        version: 1.2.4
       hbs:
         specifier: ^4.2.0
         version: 4.2.0
@@ -2679,6 +2682,9 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  haversine-distance@1.2.4:
+    resolution: {integrity: sha512-8MHQBQXR7GXZJIvitCf/ux+gwLtWOxmXNNz5dReG+jJbuvaEoj6QIXlaIO3cPr433BFWM4jececJaLYpwxnZhg==}
 
   hbs@4.2.0:
     resolution: {integrity: sha512-dQwHnrfWlTk5PvG9+a45GYpg0VpX47ryKF8dULVd6DtwOE6TEcYQXQ5QM6nyOx/h7v3bvEQbdn19EDAcfUAgZg==}
@@ -7998,6 +8004,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  haversine-distance@1.2.4: {}
 
   hbs@4.2.0:
     dependencies:

@@ -1,5 +1,6 @@
 import { addDays, format } from 'date-fns';
 import { Request } from 'express';
+import haversine from 'haversine-distance';
 import ShortUniqueId from 'short-unique-id';
 import { JwtPayload } from '~/core/auth/dto/auth.response';
 
@@ -8,12 +9,12 @@ import { JwtPayload } from '~/core/auth/dto/auth.response';
  * This is useful for accessing the authenticated user's information in request handlers.
  */
 export interface RequestWithUser extends Request {
-  user: JwtPayload;
+    user: JwtPayload;
 }
 
 export const generateUniqueId = (length: number) => {
-  const uid = new ShortUniqueId({ length });
-  return uid.rnd();
+    const uid = new ShortUniqueId({ length });
+    return uid.rnd();
 };
 
 /**
@@ -22,7 +23,7 @@ export const generateUniqueId = (length: number) => {
  * @returns string - Date in format 'yyyy-MM-dd'.
  */
 export const formatDate = (date: Date): string => {
-  return format(date, 'yyyy-MM-dd');
+    return format(date, 'yyyy-MM-dd');
 };
 
 /**
@@ -30,7 +31,7 @@ export const formatDate = (date: Date): string => {
  * @returns string - Today date in format 'yyyy-MM-dd'.
  */
 export const getToday = (): string => {
-  return formatDate(new Date());
+    return formatDate(new Date());
 };
 
 /**
@@ -38,7 +39,7 @@ export const getToday = (): string => {
  * @returns string - Tomorrow date in format 'yyyy-MM-dd'.
  */
 export const getTomorrow = (): string => {
-  return formatDate(addDays(new Date(), 1));
+    return formatDate(addDays(new Date(), 1));
 };
 
 /**
@@ -46,5 +47,18 @@ export const getTomorrow = (): string => {
  * @returns string - 2 Days Upcoming in format 'yyyy-MM-dd'.
  */
 export const getUpcoming = (): string => {
-  return formatDate(addDays(new Date(), 2));
+    return formatDate(addDays(new Date(), 2));
 };
+
+/**
+ * Calculates the distance in meters between two geographical points.
+ * @param pointA - The first point { lat: number, lng: number }.
+ * @param pointB - The second point { lat: number, lng: number }.
+ * @returns The distance in meters.
+ */
+export function calculateDistanceInMeters(
+    pointA: { lat: number; lng: number },
+    pointB: { lat: number; lng: number },
+): number {
+    return haversine(pointA, pointB);
+}

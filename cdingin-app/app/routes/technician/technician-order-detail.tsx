@@ -17,19 +17,6 @@ import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 
-export const customToastStyle = {
-    style: {
-        backgroundColor: "#242424",
-        color: "#fff",
-        opacity: "0.95",
-        borderRadius: "20px",
-        padding: "10px",
-        fontSize: "16px",
-        justifyContent: "center",
-        border: "none",
-    },
-};
-
 export default function TechnicianOrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();
     const [order, setOrder] = useState<OrderItem | null>(null);

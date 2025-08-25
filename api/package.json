@@ -46,6 +46,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
+    "haversine-distance": "^1.2.4",
     "hbs": "^4.2.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.0",

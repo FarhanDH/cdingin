@@ -12,7 +12,7 @@ import {
     SheetTitle,
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
+import { customToastStyle } from "~/components/custom-toast-style";
 
 // List of cancellation reasons
 const customerCancelReasons = [

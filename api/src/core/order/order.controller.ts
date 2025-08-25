@@ -19,6 +19,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import {
     CancelOrderRequestDto,
     CreateOrderRequestDto,
+    UpdateOrderStatusRequestDto,
 } from './dto/order.request';
 import { OrderResponse } from './dto/order.response';
 import { OrderService } from './order.service';
@@ -103,12 +104,12 @@ export class OrderController {
     async updateStatusByIdForTechnician(
         @Request() request: RequestWithUser,
         @Param('id') id: string,
-        @Body('status') status: OrderStatusEnum,
+        @Body() updateOrderStatusDto: UpdateOrderStatusRequestDto,
     ): Promise<ApiResponse<OrderResponse>> {
         const data = await this.orderService.updateStatusByIdForTechnician(
             request.user,
             id,
-            status,
+            updateOrderStatusDto,
         );
         return {
             message: 'Order status updated successfully',

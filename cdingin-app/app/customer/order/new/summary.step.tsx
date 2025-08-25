@@ -34,7 +34,7 @@ import {
 } from "~/components/ui/drawer";
 import Spinner from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
+import { customToastStyle } from "~/components/custom-toast-style";
 import type {
     AcUnitDetail,
     OrderFormData,
@@ -69,6 +69,7 @@ export default function SummaryStep({
     const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
     const [tempDate, setTempDate] = useState<Date | undefined>();
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [imageVisible, setImageVisible] = useState(true);
 
     const totalQuantityInCart =
         formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
@@ -249,8 +250,10 @@ export default function SummaryStep({
                                             setNote(e.target.value)
                                         }
                                         className="text-sm resize-none bg-gray-200 rounded-lg"
+                                        onFocus={() => setImageVisible(false)}
+                                        onBlur={() => setImageVisible(true)}
                                     />
-                                    {note.length <= 0 && (
+                                    {imageVisible && note.length <= 0 && (
                                         <img
                                             src={addNote}
                                             alt="add-note"

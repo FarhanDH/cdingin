@@ -7,6 +7,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
+import { useAuth } from "~/contexts/auth.context";
 
 interface EnableLocationSheetProps {
     isOpen: boolean;
@@ -23,6 +24,10 @@ export default function EnableLocationSheet({
     onOpenChange,
     onActivate,
 }: Readonly<EnableLocationSheetProps>) {
+    const user = useAuth();
+
+    const userRole = user.user?.role;
+
     return (
         <Sheet open={isOpen} onOpenChange={onOpenChange}>
             <SheetContent
@@ -41,9 +46,10 @@ export default function EnableLocationSheet({
                     <SheetTitle className="text-xl font-bold">
                         Aktifkan layanan lokasi HP-mu
                     </SheetTitle>
-                    <SheetDescription className="text-md text-gray-600">
-                        Biar teknisi lebih gampang mastiin posisi servicenya,
-                        dan lebih cepat sampai ke lokasimu.
+                    <SheetDescription className="text-[16px] text-gray-600">
+                        {userRole === "customer"
+                            ? "Biar teknisi lebih gampang mastiin posisi servicenya, dan lebih cepat sampai ke lokasimu."
+                            : "Dengan lokasi aktif, kamu bisa lebih mudah menemukan lokasi pelanggan."}
                     </SheetDescription>
                     <Button
                         onClick={onActivate}

@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     Injectable,
     InternalServerErrorException,
@@ -18,15 +19,19 @@ import {
 } from 'typeorm';
 import { OrderDateFilter } from '~/common/enums/order-date.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
+import { calculateDistanceInMeters } from '~/common/utils';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { JwtPayload } from '../auth/dto/auth.response';
 import { UserService } from '../user/user.service';
 import {
     CancelOrderRequestDto,
     CreateOrderRequestDto,
+    UpdateOrderStatusRequestDto,
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
+
+const SERVICE_RADIUS_METERS = 200;
 
 @Injectable()
 export class OrderService {
@@ -309,12 +314,12 @@ export class OrderService {
     async updateStatusByIdForTechnician(
         user: JwtPayload,
         orderId: string,
-        status: OrderStatusEnum,
+        updateStatusDto: UpdateOrderStatusRequestDto,
     ): Promise<OrderResponse> {
         this.logger.debug(
             `OrderService.updateStatusByIdForTechnician(user: ${JSON.stringify(
                 user,
-            )}, orderId: ${orderId}, status: ${status})`,
+            )}, orderId: ${orderId}, updateStatusDto: ${JSON.stringify(updateStatusDto)})`,
         );
         try {
             const order = await this.orderRepository.findOne({
@@ -325,8 +330,6 @@ export class OrderService {
                 },
             });
 
-            const technicianEntity = await this.userService.getById(user.sub);
-
             if (!order) {
                 this.logger.warn(`Order with id ${orderId} not found`);
                 throw new NotFoundException(
@@ -334,7 +337,40 @@ export class OrderService {
                 );
             }
 
-            order.status = status;
+            if (updateStatusDto.status === OrderStatusEnum.ON_WORKING) {
+                if (
+                    !updateStatusDto.technicianLatitude ||
+                    !updateStatusDto.technicianLongitude
+                ) {
+                    throw new BadRequestException(
+                        'Koordinat teknisi diperlukan untuk memulai pekerjaan.',
+                    );
+                }
+
+                const technicianPosition = {
+                    lat: updateStatusDto.technicianLatitude,
+                    lng: updateStatusDto.technicianLongitude,
+                };
+                const serviceLocation = {
+                    lat: order.latitude_service_location,
+                    lng: order.longitude_service_location,
+                };
+
+                const distance = calculateDistanceInMeters(
+                    technicianPosition,
+                    serviceLocation,
+                );
+
+                if (distance > SERVICE_RADIUS_METERS) {
+                    throw new BadRequestException(
+                        'Teknisi terlalu jauh dari lokasi servis.',
+                    );
+                }
+            }
+
+            const technicianEntity = await this.userService.getById(user.sub);
+
+            order.status = updateStatusDto.status;
             order.technician = technicianEntity;
             await this.orderRepository.save(order);
             return toOrderResponse(order);

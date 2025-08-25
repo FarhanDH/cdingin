@@ -6,7 +6,7 @@ import markerIcon from "~/assets/map-pin.png";
 import ZoomControl from "./zoom-control";
 import CurrentLocationMarker from "./current-location-marker";
 import { toast } from "sonner";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
+import { customToastStyle } from "~/components/custom-toast-style";
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:

@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteSucces from "~/assets/note-success.png";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
 import EnableLocationSheet from "../../../components/enable-location-sheet";
 import LocationNoteSheet from "./maps/location-note-sheet";
 import LocationPicker from "./maps/location-picker";
@@ -14,6 +13,7 @@ import { samarindaServiceArea } from "~/common/geo-data";
 import pointInPolygon from "point-in-polygon";
 import { Polygon } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
+import { customToastStyle } from "~/components/custom-toast-style";
 
 const samarindaServiceAreaForLeaflet: LatLngExpression[] =
     samarindaServiceArea.map(

@@ -5,10 +5,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
     plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
-    server: {
-        allowedHosts: [
-            "e7b0c36d0840.ngrok-free.app",
-            // "https://7ee39c000159.ngrok-free.app",
-        ],
-    },
+    // server: {
+    //     allowedHosts: [
+    //         "803e82420849.ngrok-free.app",
+    //         "https://803e82420849.ngrok-free.app",
+    //     ],
+    // },
 });

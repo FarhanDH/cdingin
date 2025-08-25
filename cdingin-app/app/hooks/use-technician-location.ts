@@ -1,7 +1,7 @@
 import L from "leaflet";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { customToastStyle } from "~/routes/technician/technician-order-detail";
+import { customToastStyle } from "~/components/custom-toast-style";
 
 /**
  * A custom React hook to get the technician's current geolocation ON DEMAND.

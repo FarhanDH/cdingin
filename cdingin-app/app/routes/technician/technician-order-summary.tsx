@@ -19,6 +19,8 @@ import {
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import noteFilled from "~/assets/note-filled.png";
+import { calculateDistanceInMeters } from "~/common/utils";
+import { customToastStyle } from "~/components/custom-toast-style";
 import EnableLocationSheet from "~/components/enable-location-sheet";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import Spinner from "~/components/ui/spinner";
@@ -32,19 +34,9 @@ import {
     type OrderItem,
     type OrderStatus,
 } from "~/types/order.types";
+import "leaflet/dist/leaflet.css";
 
-export const customToastStyle = {
-    style: {
-        backgroundColor: "#242424",
-        color: "#fff",
-        opacity: "0.95",
-        borderRadius: "20px",
-        padding: "10px",
-        fontSize: "16px",
-        justifyContent: "center",
-        border: "none",
-    },
-};
+const SERVICE_RADIUS_METERS = 200;
 
 export default function TechnicianOrderSummary() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -66,7 +58,7 @@ export default function TechnicianOrderSummary() {
     const { position: technicianPosition, requestLocation } =
         useTechnicianLocation();
 
-    const customerPosition = useMemo(() => {
+    const serviceLocationPosition = useMemo(() => {
         if (!order) return null;
         return new L.LatLng(
             order.serviceLocation.latitude,
@@ -77,7 +69,7 @@ export default function TechnicianOrderSummary() {
     // Calculate the route and distance.
     const { route, distance, isLoadingRoute } = useRouteCalculator(
         technicianPosition,
-        customerPosition,
+        serviceLocationPosition,
     );
 
     /**
@@ -301,7 +293,55 @@ export default function TechnicianOrderSummary() {
             case "technician_on_the_way":
                 return {
                     text: "Udah ketemu pelanggan",
-                    action: () => updateOrderStatus("on_working"),
+                    /**
+                     * Checks if the technician's position is close to the service location
+                     * before setting the order status to "on_working".
+                     * If not, shows an error toast.
+                     */
+                    action: () => {
+                        // Is the technician's position close to the service location?
+                        if (!technicianPosition || !serviceLocationPosition) {
+                            toast.error(
+                                "Lokasi Anda belum terdeteksi. Coba lagi.",
+                            );
+                            requestLocation();
+                            return;
+                        }
+
+                        const technicianDistanceWithServiceLocation =
+                            calculateDistanceInMeters(
+                                {
+                                    lat: technicianPosition.lat,
+                                    lng: technicianPosition.lng,
+                                },
+                                {
+                                    lat: serviceLocationPosition.lat,
+                                    lng: serviceLocationPosition.lng,
+                                },
+                            );
+
+                        /**
+                         * If the distance is greater than the service radius,
+                         * show an error toast with the distance.
+                         * If the distance is within the service radius,
+                         * call the API to update the order status to "on_working".
+                         */
+                        if (
+                            technicianDistanceWithServiceLocation >
+                            SERVICE_RADIUS_METERS
+                        ) {
+                            const distance = Math.round(
+                                technicianDistanceWithServiceLocation,
+                            );
+                            toast(
+                                `Masih sekitar ${distance} dari lokasi. Coba majuan lagi.`,
+                                customToastStyle,
+                            );
+                        } else {
+                            // Call API when position valid
+                            updateOrderStatus("on_working");
+                        }
+                    },
                 };
             case "on_working":
                 // navigasi ke halaman pembuatan tagihan
@@ -386,7 +426,9 @@ export default function TechnicianOrderSummary() {
                         </>
                     )}
                     {/* Service location marker */}
-                    {customerPosition && <Marker position={customerPosition} />}
+                    {serviceLocationPosition && (
+                        <Marker position={serviceLocationPosition} />
+                    )}
                     {/* Route Polyline (now dynamic) */}
                     {route.length > 0 && (
                         <Polyline
