@@ -38,15 +38,21 @@ To enhance the order creation and management process by integrating Maps for pre
 
 ---
 
+### Black Box Testing Scenarios
+
+## Test Cases - Increment 3: Service location coordinate, Technician position, and Open Street Maps integration
+
+| No  | Page / Component   | Scenario                                                                                                                                | Expected Result                                                                                                                                                                                     |
+| --- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Order List Page    | Customer or technician has not enabled GPS service.                                                                                     | Display a drawer requesting permission to enable GPS service.                                                                                                                                       |
+| 2   | Location Form      | Customer sets the service location by pinning coordinates on the map.                                                                   | The coordinates are saved and the process continues to the next step.                                                                                                                               |
+| 3   | Location Form      | Customer sets the service location outside the Samarinda area.                                                                          | Display an error message: “Service is not yet available in this area.”                                                                                                                              |
+| 4   | Order Summary Page | Technician clicks one of the orders.                                                                                                    | Navigate to the order summary page with an interactive map.                                                                                                                                         |
+| 5   | Order Summary Page | Technician clicks one of the orders.                                                                                                    | Navigate to the order summary page with an interactive map that shows both the service location and the technician’s current location.                                                              |
+| 6   | Order Summary Page | Technician clicks the “Get Directions” button.                                                                                          | Open Google Maps navigation for the technician to reach the service location.                                                                                                                       |
+| 7   | Order Summary Page | The technician slides the "I have met the customer" button, but the technician's location is still far from the service location point. | Displays the error message “Still about (distance) from the location. Try moving forward again.”                                                                                                    |
+| 8   | Order Detail Page  | Technician or customer clicks one of the orders.                                                                                        | The system displays order details including customer name, phone number, issue, location details, AC type and unit count, building type, and service date. Also includes a button to update status. |
+
 ---
 
-| No  | Page/Component               | Scenario                                                                    | Expected Result                                                                                                                                                   |
-| --- | ---------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Order Creation Form          | Customer interacts with the map component to place a pin.                   | The map displays, and the customer can successfully place a marker at their desired service location.                                                             |
-| 12  | Order Creation Form          | Customer submits an order after pinning a location.                         | The order is successfully created, and the `latitude` and `longitude` coordinates corresponding to the pinned location are stored in the database for that order. |
-| 13  | Technician Order Detail Page | Technician views an order that has location coordinates.                    | The order detail page displays a static map showing the exact location pinned by the customer.                                                                    |
-| 14  | Technician Order Detail Page | Technician clicks the "Get Directions" button on an order with coordinates. | A new browser tab or window opens, redirecting to Google Maps (or similar map service) with the `latitude` and `longitude` pre-filled for navigation.             |
-
----
-
-_This branch was created from `increment-2-technician-dashboard`. The next increment, `increment-4-notifications`, will be branched off from here._
+_This branch was created from `increment-2-technician-order-management`. The next increment, `increment-4-notifications`, will be branched off from here._
