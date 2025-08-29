@@ -1,7 +1,7 @@
 import L from "leaflet";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 
 /**
  * A custom React hook to get the technician's current geolocation ON DEMAND.
@@ -18,7 +18,7 @@ export function useTechnicianLocation() {
             setError("Geolocation tidak didukung oleh browser ini.");
             toast(
                 "Geolocation tidak didukung oleh browser ini.",
-                customToastStyle,
+                customToastStyle
             );
             return;
         }
@@ -30,7 +30,7 @@ export function useTechnicianLocation() {
             // Success callback
             (pos) => {
                 setPosition(
-                    new L.LatLng(pos.coords.latitude, pos.coords.longitude),
+                    new L.LatLng(pos.coords.latitude, pos.coords.longitude)
                 );
                 setIsFetching(false);
             },
@@ -39,12 +39,12 @@ export function useTechnicianLocation() {
                 setError("Gagal mendapatkan lokasimu. Pastikan GPS aktif.");
                 toast(
                     "Gagal mendapatkan lokasimu. Pastikan GPS aktif, ya.",
-                    customToastStyle,
+                    customToastStyle
                 );
                 setIsFetching(false);
             },
             // Options
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }, []); // Empty dependency array ensures this runs only once on mount.
 

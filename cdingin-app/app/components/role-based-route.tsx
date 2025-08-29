@@ -9,7 +9,9 @@ interface RoleBasedRouteProps {
     allowedRoles: UserRole[];
 }
 
-export default function RoleBasedRoute({ allowedRoles }: RoleBasedRouteProps) {
+export default function RoleBasedRoute({
+    allowedRoles,
+}: Readonly<RoleBasedRouteProps>) {
     const { user, isAuthenticated, isLoading } = useAuth();
 
     // Wait until authentication clear

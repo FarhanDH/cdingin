@@ -20,7 +20,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import noteFilled from "~/assets/note-filled.png";
 import { calculateDistanceInMeters } from "~/common/utils";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 import EnableLocationSheet from "~/components/enable-location-sheet";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import Spinner from "~/components/ui/spinner";
@@ -48,7 +48,7 @@ export default function TechnicianOrderSummary() {
     const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
     const { text: statusText, color: statusColor } = getStatusLabel(
-        order?.status || "pending",
+        order?.status || "pending"
     );
     const [locationPermission, setLocationPermission] = useState<
         "prompt" | "granted" | "denied"
@@ -62,14 +62,14 @@ export default function TechnicianOrderSummary() {
         if (!order) return null;
         return new L.LatLng(
             order.serviceLocation.latitude,
-            order.serviceLocation.longitude,
+            order.serviceLocation.longitude
         );
     }, [order]);
 
     // Calculate the route and distance.
     const { route, distance, isLoadingRoute } = useRouteCalculator(
         technicianPosition,
-        serviceLocationPosition,
+        serviceLocationPosition
     );
 
     /**
@@ -127,7 +127,7 @@ export default function TechnicianOrderSummary() {
                 enableHighAccuracy: true,
                 timeout: 5000,
                 maximumAge: 0,
-            },
+            }
         );
     };
 
@@ -149,7 +149,7 @@ export default function TechnicianOrderSummary() {
                 `${import.meta.env.VITE_API_URL}/orders/technician/${orderId}`,
                 {
                     withCredentials: true,
-                },
+                }
             );
 
             setOrder(orderData.data.data);
@@ -175,7 +175,7 @@ export default function TechnicianOrderSummary() {
                     }/orders/technician/${orderId}`,
                     {
                         withCredentials: true,
-                    },
+                    }
                 );
                 const detailLocation = await axios.get(
                     "https://nominatim.openstreetmap.org/reverse",
@@ -185,7 +185,7 @@ export default function TechnicianOrderSummary() {
                             lon: response.data.data.serviceLocation.longitude,
                             format: "json",
                         },
-                    },
+                    }
                 );
                 setDetailAddress(detailLocation.data);
                 setOrder(response.data.data);
@@ -206,14 +206,14 @@ export default function TechnicianOrderSummary() {
             case "confirmed":
                 toast(
                     `Sip!, Pelangganmu udah kami kabarin. 👍`,
-                    customToastStyle,
+                    customToastStyle
                 );
                 break;
 
             case "technician_on_the_way":
                 toast(
                     `Berangkaaat! Hati-hati di jalan, ya. 🛵`,
-                    customToastStyle,
+                    customToastStyle
                 );
                 break;
 
@@ -230,7 +230,7 @@ export default function TechnicianOrderSummary() {
                 // dipicu oleh sistem setelah customer bayar
                 toast(
                     `Lunas! Orderan selesai. Kerja bagus! ✨`,
-                    customToastStyle,
+                    customToastStyle
                 );
                 break;
 
@@ -252,8 +252,12 @@ export default function TechnicianOrderSummary() {
         try {
             const response = await axios.patch(
                 `${import.meta.env.VITE_API_URL}/orders/${orderId}/status`,
-                { status: newStatus }, // Body request
-                { withCredentials: true },
+                {
+                    status: newStatus,
+                    technicianLatitude: technicianPosition?.lat,
+                    technicianLongitude: technicianPosition?.lng,
+                }, // Body request
+                { withCredentials: true }
             );
 
             // Update local state order with new data from response
@@ -268,7 +272,7 @@ export default function TechnicianOrderSummary() {
                     : "Terjadi kesalahan";
             toast(
                 errorMessage || "Gagal memperbarui status.",
-                customToastStyle,
+                customToastStyle
             );
         } finally {
             setIsUpdating(false);
@@ -301,8 +305,9 @@ export default function TechnicianOrderSummary() {
                     action: () => {
                         // Is the technician's position close to the service location?
                         if (!technicianPosition || !serviceLocationPosition) {
-                            toast.error(
+                            toast(
                                 "Lokasi Anda belum terdeteksi. Coba lagi.",
+                                customToastStyle
                             );
                             requestLocation();
                             return;
@@ -317,7 +322,7 @@ export default function TechnicianOrderSummary() {
                                 {
                                     lat: serviceLocationPosition.lat,
                                     lng: serviceLocationPosition.lng,
-                                },
+                                }
                             );
 
                         /**
@@ -331,11 +336,11 @@ export default function TechnicianOrderSummary() {
                             SERVICE_RADIUS_METERS
                         ) {
                             const distance = Math.round(
-                                technicianDistanceWithServiceLocation,
+                                technicianDistanceWithServiceLocation
                             );
                             toast(
                                 `Masih sekitar ${distance} dari lokasi. Coba majuan lagi.`,
-                                customToastStyle,
+                                customToastStyle
                             );
                         } else {
                             // Call API when position valid
@@ -465,7 +470,7 @@ export default function TechnicianOrderSummary() {
                         onClick={() => {
                             window.open(
                                 `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order.serviceLocation.latitude},${order.serviceLocation.longitude}`,
-                                "_blank",
+                                "_blank"
                             );
                         }}
                     >
@@ -531,7 +536,7 @@ export default function TechnicianOrderSummary() {
                                                 // Handle phone call to WhatsApp
                                                 window.open(
                                                     `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                                    "_blank",
+                                                    "_blank"
                                                 );
                                             }}
                                             disabled={!order.customer.phone}

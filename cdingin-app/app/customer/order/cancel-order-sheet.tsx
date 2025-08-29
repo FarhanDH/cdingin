@@ -12,7 +12,7 @@ import {
     SheetTitle,
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 
 // List of cancellation reasons
 const customerCancelReasons = [
@@ -68,7 +68,7 @@ export default function CancelOrderSheet({
             await axios.patch(
                 apiUrl,
                 { reason: selectedReason },
-                { withCredentials: true },
+                { withCredentials: true }
             );
             toast("Pesanan berhasil dibatalkan.", customToastStyle);
             onSuccess();

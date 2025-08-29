@@ -53,7 +53,7 @@ export default function TechnicianOrderCard({
                 </div>
                 {/* Bottom section */}
                 <div className="flex items-center text-sm text-gray-500 mr-4">
-                    <span className="w-56 md:w-80">
+                    <span className="w-56 md:w-80 line-clamp-1">
                         {order.problems.join(", ")}
                     </span>
                     <div className="flex items-center ml-auto">

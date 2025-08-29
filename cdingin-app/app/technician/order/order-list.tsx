@@ -14,6 +14,9 @@ import TechnicianOrderCard from "./order-card";
 import type { TechnicianTabId } from "./technician-order-tab";
 import TechnicianOrderTab from "./technician-order-tab";
 import EnableLocationSheet from "~/components/enable-location-sheet";
+import { useNotificationPermission } from "~/hooks/use-notification-permission";
+import { set } from "lodash";
+import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 
 export default function TechnicianOrderList() {
     const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -24,12 +27,18 @@ export default function TechnicianOrderList() {
     >("prompt");
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
         useState(false);
+    const [
+        isNotificationPermissionSheetOpen,
+        setIsNotificationPermissionSheetOpen,
+    ] = useState(false);
+    const { permission, requestPermission, isSubscribing } =
+        useNotificationPermission();
 
     /**
      * Checks the current status of the geolocation permission.
      * Updates the state and decides whether to show the prompt sheet.
      */
-    const checkPermissionStatus = useCallback(async () => {
+    const checkLocationPermissionStatus = useCallback(async () => {
         if (!navigator.permissions) {
             // Fallback for older browsers
             setLocationPermission("granted");
@@ -60,10 +69,26 @@ export default function TechnicianOrderList() {
         }
     }, []);
 
-    // --- RUN CHECKING WHEN COMPONENT MOUNTED ---
+    // --- RUN CHECKING WHEN COMPONENT MOUNTED FOR NOTIFICATION PERMISSION ---
     useEffect(() => {
-        checkPermissionStatus();
-    }, [checkPermissionStatus]);
+        if (permission === "prompt") {
+            const timer = setTimeout(
+                () => setIsNotificationPermissionSheetOpen(true),
+                1500
+            );
+            return () => clearTimeout(timer);
+        }
+    }, [permission]);
+
+    // --- RUN CHECKING WHEN COMPONENT MOUNTED FOR LOCATION PERMISSION ---
+    useEffect(() => {
+        checkLocationPermissionStatus();
+    }, [checkLocationPermissionStatus]);
+
+    const handleConfirmPermission = async () => {
+        setIsNotificationPermissionSheetOpen(false);
+        await requestPermission();
+    };
 
     /**
      * This function is called when the "Aktifkan Lokasi" button is clicked.
@@ -85,7 +110,7 @@ export default function TechnicianOrderList() {
                 enableHighAccuracy: true,
                 timeout: 5000,
                 maximumAge: 0,
-            },
+            }
         );
     };
 
@@ -101,14 +126,14 @@ export default function TechnicianOrderList() {
                             "service-date": activeTab,
                         },
                         withCredentials: true,
-                    },
+                    }
                 );
 
                 setOrders(response.data.data);
             } catch (error) {
                 console.error(
                     `Gagal mengambil pesanan untuk tab ${activeTab}:`,
-                    error,
+                    error
                 );
             } finally {
                 setIsLoading(false);
@@ -174,6 +199,14 @@ export default function TechnicianOrderList() {
                 isOpen={isLocationPermissionSheetOpen}
                 onOpenChange={setIsLocationPermissionSheetOpen}
                 onActivate={handleActivateLocation}
+            />
+
+            <NotificationPermissionSheet
+                isOpen={isNotificationPermissionSheetOpen}
+                onOpenChange={setIsNotificationPermissionSheetOpen}
+                onConfirm={handleConfirmPermission}
+                title="Dapetin info orderan lebih cepet!"
+                description="Yuk, izinkan notifikasi biar kamu langsung tahu kalau ada pesanan baru yang masuk."
             />
         </div>
     );

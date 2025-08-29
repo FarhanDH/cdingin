@@ -9,7 +9,11 @@ export function Welcome() {
         <div className="flex flex-col min-h-screen p-3">
             {/* Logo/Brand section */}
             <div className="flex gap-1 items-center">
-                <img src="/icon-192x192.png" alt="Logo" className="w-9" />
+                <img
+                    src="/web-app-manifest-192x192.png"
+                    alt="Logo"
+                    className="w-9"
+                />
                 <h1 className="text-2xl font-bold">cdingin</h1>
             </div>
 

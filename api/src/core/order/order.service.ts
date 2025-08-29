@@ -30,6 +30,10 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
+import {
+    PayloadMessage,
+    PushSubscriptionService,
+} from '../push-subscription/push-subscription.service';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -41,6 +45,7 @@ export class OrderService {
         @InjectRepository(AcUnit)
         private readonly acUnitRepository: Repository<AcUnit>,
         private readonly userService: UserService,
+        private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly dataSource: DataSource,
     ) {}
 
@@ -165,6 +170,18 @@ export class OrderService {
                     customer: true,
                 },
             });
+
+            // Send new order notification to technicians
+            const technicianSubscriptions =
+                await this.pushSubscriptionService.getAllTechnicianSubscriptions();
+            await this.pushSubscriptionService.sendNotifications(
+                technicianSubscriptions,
+                {
+                    title: 'Order Baru!',
+                    body: 'Ada pesanan baru dari pelanggan.',
+                    tag: 'new-order',
+                },
+            );
             return toOrderResponse(completeOrder);
         } catch (error) {
             // Rollback transaction
@@ -373,6 +390,10 @@ export class OrderService {
             order.status = updateStatusDto.status;
             order.technician = technicianEntity;
             await this.orderRepository.save(order);
+            await this.pushSubscriptionService.sendNotificationToUser(
+                order.customer.id,
+                this.updateStatusNotificationMessage(updateStatusDto.status),
+            );
             return toOrderResponse(order);
         } catch (error) {
             this.logger.error(`Error updating order status: ${error.message}`);
@@ -397,6 +418,7 @@ export class OrderService {
                 relations: {
                     ac_units: true,
                     customer: true,
+                    technician: true,
                 },
             });
             if (!order) {
@@ -427,6 +449,14 @@ export class OrderService {
             };
 
             await this.orderRepository.save(order);
+            await this.pushSubscriptionService.sendNotificationToUser(
+                order.technician.id,
+                {
+                    title: '💔 Belum jodoh',
+                    body: `Orderan di cancel sama pelanggan `,
+                    tag: 'cancel-order',
+                },
+            );
             return toOrderResponse(order);
         } catch (error) {
             this.logger.error(`Error canceling order: ${error.message}`);
@@ -471,6 +501,10 @@ export class OrderService {
             };
 
             await this.orderRepository.save(order);
+            await this.pushSubscriptionService.sendNotificationToUser(
+                order.customer.id,
+                this.updateStatusNotificationMessage(OrderStatusEnum.CANCELLED),
+            );
             return toOrderResponse(order);
         } catch (error) {
             this.logger.error(`Error canceling order: ${error.message}`);
@@ -490,5 +524,51 @@ export class OrderService {
             },
         });
         return toOrderResponse(order);
+    }
+
+    private updateStatusNotificationMessage(
+        status: OrderStatusEnum,
+    ): PayloadMessage {
+        const tag = `order-status-update`;
+        switch (status) {
+            case OrderStatusEnum.CONFIRMED:
+                return {
+                    title: '💪 Terkonfirmasi',
+                    body: `Pesananmu udah dikonfirmasi teknisi. Tunggu info selanjutnya ya.`,
+                    tag,
+                };
+            case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
+                return {
+                    title: '🛵 Teknisi OTW!',
+                    body: `Teknisi sedang menuju ke lokasi servicemu. Siap-siap, ya!`,
+                    tag,
+                };
+            case OrderStatusEnum.ON_WORKING:
+                return {
+                    title: '🛠️ Lagi ngoprek',
+                    body: `Teknisi lagi sibuk ngurusin AC-mu. Sabar ya, biar adem lagi rumahmu.`,
+                    tag,
+                };
+            case OrderStatusEnum.WAITING_PAYMENT:
+                return {
+                    title: '💵 Tagihan siap',
+                    body: `Invoice udah dibuat. Yuk segera selesaikan pembayarannya.`,
+                    tag,
+                };
+            case OrderStatusEnum.COMPLETED:
+                return {
+                    title: '🎉 Selesai',
+                    body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin 💙`,
+                    tag,
+                };
+            case OrderStatusEnum.CANCELLED:
+                return {
+                    title: '💔 Belum jodoh',
+                    body: `Maaf ya, teknisi belum bisa kerjain pesananmu. Coba atur pesanan baru, ya.`,
+                    tag,
+                };
+            default:
+                throw new Error(`Unknown status ${status}`);
+        }
     }
 }

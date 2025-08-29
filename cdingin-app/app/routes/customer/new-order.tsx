@@ -1,10 +1,11 @@
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import technicianImg from "~/assets/technician-smile-phone-nobg.png";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { customToastStyle } from "~/common/custom-toast-style";
 import { Button } from "~/components/ui/button";
 import {
     Sheet,
@@ -25,7 +26,6 @@ import type {
     OrderFormData,
     OrderStep,
 } from "~/types/order.types";
-import { customToastStyle } from "~/components/custom-toast-style";
 
 // Order Steps
 const steps: OrderStep[] = [
@@ -39,7 +39,7 @@ const steps: OrderStep[] = [
 type Step = (typeof steps)[number];
 
 const mapFormDataToApiRequest = (
-    formData: Partial<OrderFormData>,
+    formData: Partial<OrderFormData>
 ): CreateOrderRequestDto => {
     if (
         !formData.problems ||
@@ -79,7 +79,6 @@ export default function NewOrder() {
     const [formData, setFormData] = useState<Partial<OrderFormData>>({});
     const [loading, setLoading] = useState(false);
     const [successState, setSuccessState] = useState<SuccessState>("idle");
-
     // State untuk melacak step saat ini, dimulai dari index 0
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const currentStep: Step = steps[currentStepIndex];
@@ -152,7 +151,7 @@ export default function NewOrder() {
 
     const handleUpdateAcUnitQuantity = (
         unitId: string,
-        newQuantity: number,
+        newQuantity: number
     ) => {
         // If quantity less than 1, delete item from list
         if (newQuantity < 1) {
@@ -167,7 +166,7 @@ export default function NewOrder() {
         setFormData((prev) => ({
             ...prev,
             acUnits: prev.acUnits?.map((unit) =>
-                unit.id === unitId ? { ...unit, quantity: newQuantity } : unit,
+                unit.id === unitId ? { ...unit, quantity: newQuantity } : unit
             ),
         }));
     };
@@ -209,7 +208,7 @@ export default function NewOrder() {
                 apiPayload,
                 {
                     withCredentials: true,
-                },
+                }
             );
 
             if (response.status === 201) {
@@ -220,7 +219,7 @@ export default function NewOrder() {
             if (error instanceof AxiosError) {
                 toast(
                     "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
-                    customToastStyle,
+                    customToastStyle
                 );
             }
         } finally {
@@ -279,7 +278,9 @@ export default function NewOrder() {
 
     return (
         <div
-            className={`relative max-w-lg mx-auto bg-gray-50 ${successState !== "idle" ? "overflow-hidden" : ""}`}
+            className={`relative max-w-lg mx-auto bg-gray-50 ${
+                successState !== "idle" ? "overflow-hidden" : ""
+            }`}
         >
             {loading && (
                 <div

@@ -8,7 +8,7 @@ export const formattedDate = (date: Date, time = false) => {
         year: "numeric",
     });
     const formatTime = `${new Date(date).getHours()}:${new Date(
-        date,
+        date
     ).getMinutes()}`;
 
     return `${formatDate} ${time ? formatTime : ""}`;
@@ -22,7 +22,24 @@ export const formattedDate = (date: Date, time = false) => {
  */
 export function calculateDistanceInMeters(
     pointA: { lat: number; lng: number },
-    pointB: { lat: number; lng: number },
+    pointB: { lat: number; lng: number }
 ): number {
     return haversine(pointA, pointB);
+}
+
+/**
+ * Converts a VAPID key from a URL-safe base64 string to a Uint8Array.
+ * This is required by the browser's Push API.
+ */
+export function urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
 }

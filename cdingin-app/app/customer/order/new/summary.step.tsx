@@ -21,7 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteFilled from "~/assets/note-filled.png";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
@@ -93,7 +93,7 @@ export default function SummaryStep({
             const startDate = format(startOfMonth(today), "yyyy-MM-dd");
             const endDate = format(
                 endOfMonth(addMonths(today, 1)),
-                "yyyy-MM-dd",
+                "yyyy-MM-dd"
             );
 
             const response = await axios.get(
@@ -104,7 +104,7 @@ export default function SummaryStep({
                         "end-date": endDate,
                     },
                     withCredentials: true,
-                },
+                }
             );
             setAvailability(response.data.data);
         } catch (error) {
@@ -123,7 +123,7 @@ export default function SummaryStep({
                 .filter(
                     (day) =>
                         day.totalUnitsBooked + totalQuantityInCart >
-                        DAILY_UNIT_LIMIT,
+                        DAILY_UNIT_LIMIT
                 )
                 .map((day) => new Date(day.date))
         ); // Convert back to Date object
@@ -133,13 +133,13 @@ export default function SummaryStep({
         if (selectedDate) {
             const isStillAvailable = !disabledDates.some(
                 (disabledDate) =>
-                    disabledDate.getTime() === selectedDate.getTime(),
+                    disabledDate.getTime() === selectedDate.getTime()
             );
             if (!isStillAvailable) {
                 setSelectedDate(undefined); // Invalidate the date
                 toast(
                     "Jadwal gak tersedia. Silakan pilih tanggal lagi, ya",
-                    customToastStyle,
+                    customToastStyle
                 );
             }
         }
@@ -321,7 +321,7 @@ export default function SummaryStep({
                                                         className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                                                         onClick={() =>
                                                             handleDecreaseQuantity(
-                                                                unit,
+                                                                unit
                                                             )
                                                         }
                                                     >
@@ -336,7 +336,7 @@ export default function SummaryStep({
                                                         className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
                                                         onClick={() =>
                                                             handleIncreaseQuantity(
-                                                                unit,
+                                                                unit
                                                             )
                                                         }
                                                     >
@@ -359,7 +359,7 @@ export default function SummaryStep({
                         {/* Additional button to add another unit ac if current total quantity less than 10 */}
                         {(formData.acUnits || []).reduce(
                             (acc, unit) => acc + unit.quantity,
-                            0,
+                            0
                         ) < 10 && (
                             <div className="p-4 shadow-md mb-2 bg-white">
                                 <div className="flex justify-between items-center">
@@ -439,7 +439,7 @@ export default function SummaryStep({
                                                 year: "numeric",
                                                 month: "long",
                                                 day: "numeric",
-                                            },
+                                            }
                                         )}
                                     </p>
                                 </div>
@@ -485,8 +485,8 @@ export default function SummaryStep({
                                     date <
                                         new Date(
                                             new Date().setDate(
-                                                new Date().getDate(),
-                                            ),
+                                                new Date().getDate()
+                                            )
                                         ) ||
                                     // Condition 2: Use the dynamically calculated disabledDates
                                     disabledDates.some(
@@ -496,7 +496,7 @@ export default function SummaryStep({
                                             disabledDate.getMonth() ===
                                                 date.getMonth() &&
                                             disabledDate.getFullYear() ===
-                                                date.getFullYear(),
+                                                date.getFullYear()
                                     )
                                 }
                                 // Additional: Visualize on the full dates

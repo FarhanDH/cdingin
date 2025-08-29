@@ -64,6 +64,9 @@
     "tw-animate-css": "^1.3.5",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-plugin-pwa": "^1.0.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "workbox-precaching": "^7.3.0",
+    "workbox-window": "^7.3.0"
   }
 }

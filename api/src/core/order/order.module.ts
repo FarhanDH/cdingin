@@ -5,9 +5,14 @@ import { Order } from './entities/order.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from '../user/user.module';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
+import { PushSubscriptionModule } from '../push-subscription/push-subscription.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Order, AcUnit]), UserModule],
+    imports: [
+        TypeOrmModule.forFeature([Order, AcUnit]),
+        UserModule,
+        PushSubscriptionModule,
+    ],
     controllers: [OrderController],
     providers: [OrderService],
     exports: [OrderService],

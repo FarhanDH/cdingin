@@ -14,11 +14,14 @@ import Header from "~/components/header";
 import Spinner from "~/components/ui/spinner";
 import CustomerOrderCard from "~/customer/order/order-card";
 import type {
-    OrderItem,
     CustomerOrderTabType,
     CustomerTabItem,
+    OrderItem,
 } from "~/types/order.types";
 import CustomerOrderTab from "./order-tab-status";
+import { useNotificationPermission } from "~/hooks/use-notification-permission";
+import { toast } from "sonner";
+import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 
 export default function CustomerOrderList() {
     const navigate = useNavigate();
@@ -27,6 +30,14 @@ export default function CustomerOrderList() {
     const [isNavigating, setIsNavigating] = useState<boolean>(false);
     const [activeTab, setActiveTab] =
         useState<CustomerOrderTabType>("progress");
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const { permission, requestPermission } = useNotificationPermission();
+
+    // useEffect(() => {
+    //     if (permission === "granted") {
+    //         subscribe();
+    //     }
+    // }, [permission, subscribe]);
 
     // Fetch orders data for each activeTab changing
     useEffect(() => {
@@ -40,14 +51,14 @@ export default function CustomerOrderList() {
                             status: activeTab,
                         },
                         withCredentials: true,
-                    },
+                    }
                 );
 
                 setOrders(response.data.data);
             } catch (error) {
                 console.error(
                     `Gagal mengambil pesanan untuk tab ${activeTab}:`,
-                    error,
+                    error
                 );
             } finally {
                 setIsLoading(false);
@@ -56,9 +67,23 @@ export default function CustomerOrderList() {
         fetchOrders();
     }, [activeTab]);
 
-    const handleActionButton = async () => {
-        setIsNavigating(true);
-        navigate("/order/new");
+    const handleCreateOrderClick = () => {
+        // Logika menjadi lebih sederhana
+        if (permission === "granted") {
+            navigate("/order/new");
+        } else if (permission === "denied") {
+            toast.error(
+                "Kamu harus mengizinkan notifikasi di pengaturan browser."
+            );
+        } else {
+            // 'prompt'
+            setIsSheetOpen(true);
+        }
+    };
+
+    const handleConfirmPermission = async () => {
+        setIsSheetOpen(false);
+        await requestPermission();
     };
 
     const tabs: CustomerTabItem[] = [
@@ -122,7 +147,7 @@ export default function CustomerOrderList() {
                         <Fab
                             size="large"
                             // aria-label="add"
-                            onClick={handleActionButton}
+                            onClick={handleCreateOrderClick}
                             className="bg-primary rounded-xl active:scale-95"
                         >
                             <PlusIcon className="text-white" />
@@ -136,6 +161,15 @@ export default function CustomerOrderList() {
                     </div>
                 </div>
             </div>
+
+            {/* Notification prompt */}
+            <NotificationPermissionSheet
+                isOpen={isSheetOpen}
+                onOpenChange={setIsSheetOpen}
+                onConfirm={handleConfirmPermission}
+                title="Izinkan notifikasi, yuk!"
+                description="Biar gak ketinggalan info penting dari teknisi, seperti saat mereka OTW ke lokasimu."
+            />
         </div>
     );
 }

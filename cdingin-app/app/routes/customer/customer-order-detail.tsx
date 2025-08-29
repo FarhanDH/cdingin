@@ -1,7 +1,7 @@
 import ErrorIcon from "@mui/icons-material/Error";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import axios from "axios";
-import { AirVent, HomeIcon, NotepadTextIcon } from "lucide-react";
+import { AirVent, HomeIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import noteFilled from "~/assets/note-filled.png";

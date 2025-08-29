@@ -13,13 +13,13 @@ import { samarindaServiceArea } from "~/common/geo-data";
 import pointInPolygon from "point-in-polygon";
 import { Polygon, useMap } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 import L from "leaflet";
 import LocationSearch from "./maps/location-search";
 
 const samarindaServiceAreaForLeaflet: LatLngExpression[] =
     samarindaServiceArea.map(
-        (p) => [p[1], p[0]], // Swap to [lat, lng]
+        (p) => [p[1], p[0]] // Swap to [lat, lng]
     );
 
 function MapController({
@@ -62,7 +62,7 @@ export default function LocationStep({
     onBack,
 }: Readonly<LocationStepProps>) {
     const [address, setAddress] = useState(
-        initialLocation?.address || "Memuat alamat...",
+        initialLocation?.address || "Memuat alamat..."
     );
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [coordinates, setCoordinates] = useState<{
@@ -74,7 +74,7 @@ export default function LocationStep({
                   lat: initialLocation.latitude,
                   lng: initialLocation.longitude,
               }
-            : null,
+            : null
     );
     const [locationDetails, setLocationDetails] = useState<any>(null);
     const [locationPermission, setLocationPermission] = useState<
@@ -83,7 +83,7 @@ export default function LocationStep({
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
         useState(false);
     const [locationNote, setLocationNote] = useState(
-        initialLocation?.note || "",
+        initialLocation?.note || ""
     );
     const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false);
     const [isLocationValid, setIsLocationValid] = useState(true);
@@ -135,7 +135,7 @@ export default function LocationStep({
 
             return pointInPolygon(point, samarindaServiceArea);
         },
-        [],
+        []
     );
 
     // --- RUN CHECKING WHEN COMPONENT MOUNTED ---
@@ -163,7 +163,7 @@ export default function LocationStep({
                 enableHighAccuracy: true,
                 timeout: 5000,
                 maximumAge: 0,
-            },
+            }
         );
     };
 
@@ -180,7 +180,7 @@ export default function LocationStep({
             setCoordinates(coords);
             setIsLocationValid(validateLocation(coords));
         },
-        [validateLocation],
+        [validateLocation]
     );
 
     useEffect(() => {
@@ -199,10 +199,10 @@ export default function LocationStep({
                                 lon: coordinates.lng,
                                 format: "json",
                             },
-                        },
+                        }
                     );
                     setAddress(
-                        response.data.display_name || "Alamat tidak ditemukan",
+                        response.data.display_name || "Alamat tidak ditemukan"
                     );
                     setLocationDetails(response.data);
                 } catch (error) {
@@ -210,7 +210,7 @@ export default function LocationStep({
                         error instanceof Error
                             ? error.message
                             : "Gagal mendapatkan alamat",
-                        customToastStyle,
+                        customToastStyle
                     );
                     setAddress("Gagal mendapatkan alamat");
                 } finally {
@@ -255,7 +255,7 @@ export default function LocationStep({
         if (!isLocationValid) {
             toast(
                 "Maaf, layanan kami belum sampai di areamu",
-                customToastStyle,
+                customToastStyle
             );
             return;
         }
@@ -361,13 +361,21 @@ export default function LocationStep({
                                         <img
                                             src={noteSucces}
                                             alt="note-filled"
-                                            className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
+                                            className={`${
+                                                isGeocoding
+                                                    ? "w-5 lg:w-5"
+                                                    : "w-10.5 lg:w-8"
+                                            }`}
                                         />
                                     ) : (
                                         <img
                                             src={addNote}
                                             alt="add-note"
-                                            className={`${isGeocoding ? "w-5 lg:w-5" : "w-10.5 lg:w-8"}`}
+                                            className={`${
+                                                isGeocoding
+                                                    ? "w-5 lg:w-5"
+                                                    : "w-10.5 lg:w-8"
+                                            }`}
                                         />
                                     )}
                                 </button>

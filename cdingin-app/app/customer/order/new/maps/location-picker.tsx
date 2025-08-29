@@ -6,7 +6,7 @@ import markerIcon from "~/assets/map-pin.png";
 import ZoomControl from "./zoom-control";
 import CurrentLocationMarker from "./current-location-marker";
 import { toast } from "sonner";
-import { customToastStyle } from "~/components/custom-toast-style";
+import { customToastStyle } from "~/common/custom-toast-style";
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl:
@@ -42,7 +42,7 @@ function MapEventHandler({
         if (initialCoordinates) {
             map.flyTo(initialCoordinates, 18);
             onPositionChange(
-                new L.LatLng(initialCoordinates.lat, initialCoordinates.lng),
+                new L.LatLng(initialCoordinates.lat, initialCoordinates.lng)
             );
         } else if (permissionStatus === "granted") {
             map.locate();

@@ -10,26 +10,28 @@ import { EmailModule } from './core/email/email.module';
 import { OrderModule } from './core/order/order.module';
 import { AcUnitModule } from './core/ac-unit/ac-unit.module';
 import { ScheduleModule } from './core/schedule/schedule.module';
+import { PushSubscriptionModule } from './core/push-subscription/push-subscription.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      envFilePath: '.env',
-      isGlobal: true,
-      load: [configuration],
-    }),
-    DatabaseModule,
-    UserModule,
-    AuthModule,
-    EmailModule,
-    OrderModule,
-    AcUnitModule,
-    ScheduleModule,
-  ],
-  controllers: [AppController],
+    imports: [
+        ConfigModule.forRoot({
+            envFilePath: '.env',
+            isGlobal: true,
+            load: [configuration],
+        }),
+        DatabaseModule,
+        UserModule,
+        AuthModule,
+        EmailModule,
+        OrderModule,
+        AcUnitModule,
+        ScheduleModule,
+        PushSubscriptionModule,
+    ],
+    controllers: [AppController],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AppLoggerMiddleware).forRoutes('*');
-  }
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(AppLoggerMiddleware).forRoutes('*');
+    }
 }
