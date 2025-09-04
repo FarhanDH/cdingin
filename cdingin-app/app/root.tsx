@@ -1,12 +1,12 @@
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { StyledEngineProvider } from "@mui/material/styles";
+import { useEffect } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import { Toaster } from "sonner";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import NotFoundPage from "./pages/not-found";
-import { useEffect } from "react";
 
 export const links: Route.LinksFunction = () => [
     { rel: "icon", href: "/favicon.ico" },

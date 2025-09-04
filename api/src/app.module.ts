@@ -11,6 +11,8 @@ import { OrderModule } from './core/order/order.module';
 import { AcUnitModule } from './core/ac-unit/ac-unit.module';
 import { ScheduleModule } from './core/schedule/schedule.module';
 import { PushSubscriptionModule } from './core/push-subscription/push-subscription.module';
+import { NotificationModule } from './core/notification/notification.module';
+import { NotificationReadModule } from './core/notification-read/notification-read.module';
 
 @Module({
     imports: [
@@ -27,6 +29,8 @@ import { PushSubscriptionModule } from './core/push-subscription/push-subscripti
         AcUnitModule,
         ScheduleModule,
         PushSubscriptionModule,
+        NotificationModule,
+        NotificationReadModule,
     ],
     controllers: [AppController],
 })

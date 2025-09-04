@@ -8,11 +8,12 @@ import { JwtPayload } from '../auth/dto/auth.response';
 import { UserService } from '../user/user.service';
 import { CreatePushSubscriptionRequest } from './dto/push-subscription.request';
 import { PushSubscription } from './entities/push-subscription.entity';
+import { NotificationType } from '~/common/enums/notification-type.enum';
 
 export type PayloadMessage = {
     title: string;
     body: string;
-    tag: string;
+    tag: NotificationType;
 };
 
 @Injectable()

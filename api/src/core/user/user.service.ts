@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateCustomerProfileRequest } from './dto/user.request';
 import { User } from './entities/user.entity';
 import { toUserResponse, UserResponse } from './dto/user.response';
+import { RoleEnum } from '~/common/enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -45,6 +46,12 @@ export class UserService {
 
     async getById(id: string): Promise<User> {
         return await this.userRepository.findOne({ where: { id } });
+    }
+
+    async getAllTechnicians(): Promise<User[]> {
+        return await this.userRepository.find({
+            where: { role: RoleEnum.TECHNICIAN },
+        });
     }
 
     async getMe(id: string): Promise<UserResponse> {

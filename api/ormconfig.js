@@ -1,7 +1,10 @@
-import { dataSourceOptions } from '~/core/database/data-source';
+// const { dataSourceOptions } = require('./src/core/database/data-source');
+const { dataSourceOptions } = require('./dist/core/database/data-source');
 
 module.exports = {
-  ...dataSourceOptions,
-  seeds: ['src/**/*{seed.ts,seed.js}'],
-  factories: ['src/**/*{factory.ts,factory.js}'],
+    ...dataSourceOptions,
+    entities: ['dist/**/*.entity.js'],
+    migrations: ['dist/core/database/migrations/*.js'],
+    seeds: ['dist/**/*{seed.ts,seed.js}'],
+    factories: ['dist/**/*{factory.ts,factory.js}'],
 };

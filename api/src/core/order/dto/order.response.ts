@@ -15,7 +15,7 @@ export class OrderResponse {
     propertyType: string;
     propertyFloor: string;
     note?: string;
-    customer: {
+    customer?: {
         id: string;
         fullName: string;
         phone: string;

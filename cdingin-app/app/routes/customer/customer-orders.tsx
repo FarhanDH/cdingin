@@ -7,6 +7,14 @@ import { useEffect } from "react";
 import InstallPwaSheet from "~/components/install-pwa-sheet";
 import CustomerOrderList from "~/customer/order/order-list";
 import { usePwaInstall } from "~/hooks/use-pwa-install";
+import type { Route } from "./+types/customer-orders";
+
+export function meta({}: Route.MetaArgs) {
+    return [
+        { title: "Daftar pesanan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function CustomerOrders() {
     const {
@@ -43,10 +51,12 @@ export default function CustomerOrders() {
                     <BottomNavigationAction
                         label="Pesanan"
                         icon={<ListOrdered />}
+                        href="/orders"
                     />
                     <BottomNavigationAction
                         label="Pemberitahuan"
                         icon={<Bell />}
+                        href="/notifications"
                     />
                     <BottomNavigationAction
                         label="Profil"

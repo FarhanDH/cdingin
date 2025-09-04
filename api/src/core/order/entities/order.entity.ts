@@ -12,6 +12,7 @@ import {
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { generateUniqueId } from '~/common/utils';
 import { AcUnit } from '~/core/ac-unit/entities/ac-unit.entity';
+import { Notification } from '~/core/notification/entities/notification.entity';
 import { User } from '~/core/user/entities/user.entity';
 
 export interface Subject {
@@ -25,17 +26,8 @@ export class Order {
     @PrimaryColumn()
     id: string;
 
-    @ManyToOne(() => User, (user) => user.orders)
-    customer: Relation<User>;
-
-    @ManyToOne(() => User, (user) => user.orders)
-    technician: Relation<User>;
-
     @Column({ type: 'varchar', array: true })
     ac_problems: string[];
-
-    @OneToMany(() => AcUnit, (acUnit) => acUnit.orders)
-    ac_units: Relation<AcUnit>[];
 
     @Column({ type: 'double precision' })
     latitude_service_location: number;
@@ -76,6 +68,21 @@ export class Order {
         default: OrderStatusEnum.PENDING,
     })
     status: OrderStatusEnum;
+
+    /**
+     * Relations
+     */
+    @ManyToOne(() => User, (user) => user.orders)
+    customer: Relation<User>;
+
+    @ManyToOne(() => User, (user) => user.orders)
+    technician: Relation<User>;
+
+    @OneToMany(() => AcUnit, (acUnit) => acUnit.orders)
+    ac_units: Relation<AcUnit>[];
+
+    @OneToMany(() => Notification, (notification) => notification.order)
+    notifications: Relation<Notification>[];
 
     @CreateDateColumn({ type: 'timestamp with time zone' })
     created_at: Date;

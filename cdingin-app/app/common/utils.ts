@@ -1,3 +1,5 @@
+import { formatDistanceToNow } from "date-fns";
+import { id } from "date-fns/locale";
 import haversine from "haversine-distance";
 
 export const formattedDate = (date: Date, time = false) => {
@@ -42,4 +44,14 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
         outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+}
+
+/**
+ * Formats a date string into a relative time string (e.g., "5 minutes ago").
+ * @param dateString - The ISO date string to format.
+ * @returns A user-friendly relative time string.
+ */
+export function formatRelativeTime(dateString: string): string {
+    const date = new Date(dateString);
+    return formatDistanceToNow(date, { addSuffix: true, locale: id });
 }

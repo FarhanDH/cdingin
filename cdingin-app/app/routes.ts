@@ -12,6 +12,7 @@ export default [
         route("/orders", "routes/customer/customer-orders.tsx"),
         route("/order/new", "routes/customer/new-order.tsx"),
         route("/order/:orderId", "routes/customer/customer-order-detail.tsx"),
+        route("/notifications", "routes/notification.tsx"),
     ]),
 
     // Technician Routes
@@ -19,11 +20,11 @@ export default [
         route("/technician/orders", "routes/technician/technician-orders.tsx"),
         route(
             "/technician/order/:orderId",
-            "routes/technician/technician-order-summary.tsx",
+            "routes/technician/technician-order-summary.tsx"
         ),
         route(
             "/technician/order/detail/:orderId",
-            "routes/technician/technician-order-detail.tsx",
+            "routes/technician/technician-order-detail.tsx"
         ),
     ]),
 ] satisfies RouteConfig;

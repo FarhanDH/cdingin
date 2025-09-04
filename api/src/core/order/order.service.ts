@@ -17,11 +17,17 @@ import {
     Not,
     Repository,
 } from 'typeorm';
+import { NotificationType } from '~/common/enums/notification-type.enum';
 import { OrderDateFilter } from '~/common/enums/order-date.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { calculateDistanceInMeters } from '~/common/utils';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { JwtPayload } from '../auth/dto/auth.response';
+import { NotificationService } from '../notification/notification.service';
+import {
+    PayloadMessage,
+    PushSubscriptionService,
+} from '../push-subscription/push-subscription.service';
 import { UserService } from '../user/user.service';
 import {
     CancelOrderRequestDto,
@@ -30,10 +36,6 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
-import {
-    PayloadMessage,
-    PushSubscriptionService,
-} from '../push-subscription/push-subscription.service';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -46,6 +48,7 @@ export class OrderService {
         private readonly acUnitRepository: Repository<AcUnit>,
         private readonly userService: UserService,
         private readonly pushSubscriptionService: PushSubscriptionService,
+        private readonly notificationService: NotificationService,
         private readonly dataSource: DataSource,
     ) {}
 
@@ -162,6 +165,30 @@ export class OrderService {
             // If all operations are successful, commit the transaction to make changes permanent.
             await queryRunner.commitTransaction();
 
+            const technicians = await this.userService.getAllTechnicians();
+
+            const savedNotification = technicians.map(async (technician) => {
+                return await this.notificationService.create({
+                    orderId: savedOrder.id,
+                    recipientId: technician.id,
+                    title: 'Order Baru!',
+                    message: 'Ada pesanan baru dari pelanggan',
+                    type: NotificationType.NEW_ORDER,
+                });
+            });
+            const savedNotifications = await Promise.all(savedNotification);
+
+            // Send new order notification to technicians
+            const technicianSubscriptions =
+                await this.pushSubscriptionService.getAllTechnicianSubscriptions();
+            await this.pushSubscriptionService.sendNotifications(
+                technicianSubscriptions,
+                {
+                    title: savedNotifications[0].title,
+                    body: savedNotifications[0].message,
+                    tag: savedNotifications[0].type,
+                },
+            );
             // Get new order for response
             const completeOrder = await this.orderRepository.findOne({
                 where: { id: savedOrder.id },
@@ -171,17 +198,6 @@ export class OrderService {
                 },
             });
 
-            // Send new order notification to technicians
-            const technicianSubscriptions =
-                await this.pushSubscriptionService.getAllTechnicianSubscriptions();
-            await this.pushSubscriptionService.sendNotifications(
-                technicianSubscriptions,
-                {
-                    title: 'Order Baru!',
-                    body: 'Ada pesanan baru dari pelanggan.',
-                    tag: 'new-order',
-                },
-            );
             return toOrderResponse(completeOrder);
         } catch (error) {
             // Rollback transaction
@@ -328,6 +344,16 @@ export class OrderService {
         }
     }
 
+    /**
+     * Updates the status of an order as a technician.
+     * @param user - The JWT payload of the authenticated technician.
+     * @param orderId - The ID of the order to be updated.
+     * @param updateStatusDto - The request body containing the status to be updated.
+     * @returns A promise that resolves to the updated order response.
+     * @throws {@link NotFoundException} if the order with the given ID is not found.
+     * @throws {@link BadRequestException} if the technician is not within the service radius when updating to 'ON_WORKING'.
+     * @throws {@link InternalServerErrorException} if an error occurs while updating the order status.
+     */
     async updateStatusByIdForTechnician(
         user: JwtPayload,
         orderId: string,
@@ -354,6 +380,7 @@ export class OrderService {
                 );
             }
 
+            // Check if the technician is within the service radius before updating to 'ON_WORKING'
             if (updateStatusDto.status === OrderStatusEnum.ON_WORKING) {
                 if (
                     !updateStatusDto.technicianLatitude ||
@@ -385,15 +412,36 @@ export class OrderService {
                 }
             }
 
+            // Get the technician entity from the database
             const technicianEntity = await this.userService.getById(user.sub);
 
+            // Update the order status and technician
             order.status = updateStatusDto.status;
             order.technician = technicianEntity;
             await this.orderRepository.save(order);
-            await this.pushSubscriptionService.sendNotificationToUser(
-                order.customer.id,
-                this.updateStatusNotificationMessage(updateStatusDto.status),
+
+            // Create a notification for the customer
+            const notificationMessage = this.updateStatusNotificationMessage(
+                updateStatusDto.status,
             );
+            const savedNotification = await this.notificationService.create({
+                orderId: order.id,
+                recipientId: order.customer.id,
+                title: notificationMessage.title,
+                message: notificationMessage.body,
+                type: notificationMessage.tag,
+            });
+
+            // Send the notification to the customer
+            await this.pushSubscriptionService.sendNotificationToUser(
+                savedNotification.recipient.id,
+                {
+                    title: savedNotification.title,
+                    body: savedNotification.message,
+                    tag: savedNotification.type,
+                },
+            );
+
             return toOrderResponse(order);
         } catch (error) {
             this.logger.error(`Error updating order status: ${error.message}`);
@@ -401,6 +449,15 @@ export class OrderService {
         }
     }
 
+    /**
+     * Cancels an order as a customer.
+     * @param user - The JWT payload of the authenticated customer.
+     * @param orderId - The ID of the order to be cancelled.
+     * @param request - The request body containing the cancellation reason and note.
+     * @returns A promise that resolves to the cancelled order response.
+     * @throws {@link NotFoundException} if the order with the given ID is not found.
+     * @throws {@link InternalServerErrorException} if an error occurs while cancelling the order.
+     */
     async cancelByIdForCustomer(
         user: JwtPayload,
         orderId: string,
@@ -449,12 +506,32 @@ export class OrderService {
             };
 
             await this.orderRepository.save(order);
-            await this.pushSubscriptionService.sendNotificationToUser(
-                order.technician.id,
+
+            // Notification received by all technicians
+            const technicians = await this.userService.getAllTechnicians();
+            const notificationMassage = {
+                title: '💔 Pesananmu dibatalkan',
+                message: 'Pesanan dibatalkan sama pelanggan',
+                type: NotificationType.CANCELLED_ORDER,
+            };
+            const savedNotification = technicians.map(async (technician) => {
+                return await this.notificationService.create({
+                    orderId: order.id,
+                    recipientId: technician.id,
+                    ...notificationMassage,
+                });
+            });
+            const savedNotifications = await Promise.all(savedNotification);
+
+            const technicianSubscriptions =
+                await this.pushSubscriptionService.getAllTechnicianSubscriptions();
+
+            await this.pushSubscriptionService.sendNotifications(
+                technicianSubscriptions,
                 {
-                    title: '💔 Belum jodoh',
-                    body: `Orderan di cancel sama pelanggan `,
-                    tag: 'cancel-order',
+                    title: savedNotifications[0].title,
+                    body: savedNotifications[0].message,
+                    tag: savedNotifications[0].type,
                 },
             );
             return toOrderResponse(order);
@@ -464,6 +541,15 @@ export class OrderService {
         }
     }
 
+    /**
+     * Cancels an order as a technician.
+     * @param user - The JWT payload of the authenticated technician.
+     * @param orderId - The ID of the order to be cancelled.
+     * @param request - The request body containing the cancellation reason and note.
+     * @returns A promise that resolves to the cancelled order response.
+     * @throws {@link NotFoundException} if the order with the given ID is not found.
+     * @throws {@link InternalServerErrorException} if an error occurs while cancelling the order.
+     */
     async cancelByIdForTechnician(
         user: JwtPayload,
         orderId: string,
@@ -475,9 +561,9 @@ export class OrderService {
             )}, orderId: ${orderId}, request: ${JSON.stringify(request)})`,
         );
         try {
-            // Get order by order id
+            // Get order by order id and technician id
             const order = await this.orderRepository.findOne({
-                where: { id: orderId },
+                where: { id: orderId, technician: { id: user.sub } },
                 relations: {
                     ac_units: true,
                     customer: true,
@@ -501,9 +587,29 @@ export class OrderService {
             };
 
             await this.orderRepository.save(order);
+
+            // Set notification message
+            const notificationMassage = this.updateStatusNotificationMessage(
+                OrderStatusEnum.CANCELLED,
+            );
+
+            // Save notification message
+            const savedNotification = await this.notificationService.create({
+                orderId: order.id,
+                recipientId: order.customer.id,
+                title: notificationMassage.title,
+                message: notificationMassage.body,
+                type: notificationMassage.tag,
+            });
+
+            // Send notification to recipient
             await this.pushSubscriptionService.sendNotificationToUser(
-                order.customer.id,
-                this.updateStatusNotificationMessage(OrderStatusEnum.CANCELLED),
+                savedNotification.recipient.id,
+                {
+                    title: savedNotification.title,
+                    body: savedNotification.message,
+                    tag: savedNotification.type,
+                },
             );
             return toOrderResponse(order);
         } catch (error) {
@@ -512,10 +618,17 @@ export class OrderService {
         }
     }
 
+    /**
+     * Gets an order by id for a customer
+     * @param user - The user making the request
+     * @param orderId - The id of the order to get
+     * @returns The order response
+     */
     async getOneByIdForCustomer(
         user: JwtPayload,
         orderId: string,
     ): Promise<OrderResponse> {
+        // Get the order by id and customer id
         const order = await this.orderRepository.findOne({
             where: { id: orderId, customer: { id: user.sub } },
             relations: {
@@ -523,49 +636,59 @@ export class OrderService {
                 customer: true,
             },
         });
+
+        // Return the order response
         return toOrderResponse(order);
     }
 
+    /**
+     * Gets a notification message based on the order status
+     * @param status - The order status
+     * @returns The notification message
+     */
     private updateStatusNotificationMessage(
         status: OrderStatusEnum,
     ): PayloadMessage {
-        const tag = `order-status-update`;
+        const tag: NotificationType = NotificationType.ORDER_STATUS_UPDATE;
+        /**
+         * The notification message based on the order status
+         */
         switch (status) {
             case OrderStatusEnum.CONFIRMED:
                 return {
-                    title: '💪 Terkonfirmasi',
-                    body: `Pesananmu udah dikonfirmasi teknisi. Tunggu info selanjutnya ya.`,
+                    title: 'Pesananmu Udah Diterima ',
+                    body: `Teknisi udah terima pesananmu, tunggu sampai harinya yaa`,
                     tag,
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: '🛵 Teknisi OTW!',
+                    title: '  Teknisi OTW!',
                     body: `Teknisi sedang menuju ke lokasi servicemu. Siap-siap, ya!`,
                     tag,
                 };
             case OrderStatusEnum.ON_WORKING:
                 return {
-                    title: '🛠️ Lagi ngoprek',
-                    body: `Teknisi lagi sibuk ngurusin AC-mu. Sabar ya, biar adem lagi rumahmu.`,
+                    title: 'Teknisi Sudah Tiba!',
+                    body: `Teknisi sudah sampai!, dan lagi nge-cek AC-mu. Sabar yaa`,
                     tag,
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: '💵 Tagihan siap',
-                    body: `Invoice udah dibuat. Yuk segera selesaikan pembayarannya.`,
+                    title: '  Tagihan siap',
+                    body: `Invoice udah dibuat. Yuk, segera selesaikan pembayarannya.`,
                     tag,
                 };
             case OrderStatusEnum.COMPLETED:
                 return {
-                    title: '🎉 Selesai',
-                    body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin 💙`,
+                    title: '  Yeay! Service Udah Selesai',
+                    body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin `,
                     tag,
                 };
             case OrderStatusEnum.CANCELLED:
                 return {
-                    title: '💔 Belum jodoh',
+                    title: '  Pesananmu dibatalkan',
                     body: `Maaf ya, teknisi belum bisa kerjain pesananmu. Coba atur pesanan baru, ya.`,
-                    tag,
+                    tag: NotificationType.CANCELLED_ORDER,
                 };
             default:
                 throw new Error(`Unknown status ${status}`);

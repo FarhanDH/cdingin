@@ -1,20 +1,10 @@
-import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    UseGuards,
-    Request,
-} from '@nestjs/common';
-import { PushSubscriptionService } from './push-subscription.service';
-import { JwtGuard } from '../auth/guards/jwt.guard';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { RequestWithUser } from '~/common/utils';
+import { JwtGuard } from '../auth/guards/jwt.guard';
 import { CreatePushSubscriptionRequest } from './dto/push-subscription.request';
+import { PushSubscriptionService } from './push-subscription.service';
 
-@Controller('push-subscription')
+@Controller('push-subscriptions')
 export class PushSubscriptionController {
     constructor(
         private readonly pushSubscriptionService: PushSubscriptionService,

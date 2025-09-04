@@ -45,5 +45,5 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
     // Open specific URL when notification clicked
-    event.waitUntil(clients.openWindow("/orders"));
+    event.waitUntil(clients.openWindow("/notifications"));
 });

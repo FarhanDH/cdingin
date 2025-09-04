@@ -126,7 +126,7 @@ export function useNotificationPermission() {
 
             // Send the subscription object to the backend.
             await axios.post(
-                `${import.meta.env.VITE_API_URL}/push-subscription`,
+                `${import.meta.env.VITE_API_URL}/push-subscriptions`,
                 subscription,
                 { withCredentials: true } // Include cookies with the request.
             );
