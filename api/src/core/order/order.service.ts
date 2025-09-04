@@ -510,7 +510,7 @@ export class OrderService {
             // Notification received by all technicians
             const technicians = await this.userService.getAllTechnicians();
             const notificationMassage = {
-                title: '💔 Pesananmu dibatalkan',
+                title: '💔 Pesananmu Dibatalkan',
                 message: 'Pesanan dibatalkan sama pelanggan',
                 type: NotificationType.CANCELLED_ORDER,
             };
@@ -656,13 +656,13 @@ export class OrderService {
         switch (status) {
             case OrderStatusEnum.CONFIRMED:
                 return {
-                    title: 'Pesananmu Udah Diterima ',
+                    title: 'Pesananmu Udah Diterima ✅',
                     body: `Teknisi udah terima pesananmu, tunggu sampai harinya yaa`,
                     tag,
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: '  Teknisi OTW!',
+                    title: '🛵 Teknisi OTW!',
                     body: `Teknisi sedang menuju ke lokasi servicemu. Siap-siap, ya!`,
                     tag,
                 };
@@ -674,19 +674,19 @@ export class OrderService {
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: '  Tagihan siap',
+                    title: '🗒️ Tagihan Siap',
                     body: `Invoice udah dibuat. Yuk, segera selesaikan pembayarannya.`,
                     tag,
                 };
             case OrderStatusEnum.COMPLETED:
                 return {
-                    title: '  Yeay! Service Udah Selesai',
+                    title: '🙌 Yeay! Service Udah Selesai',
                     body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin `,
                     tag,
                 };
             case OrderStatusEnum.CANCELLED:
                 return {
-                    title: '  Pesananmu dibatalkan',
+                    title: '💔 Pesananmu Dibatalkan',
                     body: `Maaf ya, teknisi belum bisa kerjain pesananmu. Coba atur pesanan baru, ya.`,
                     tag: NotificationType.CANCELLED_ORDER,
                 };

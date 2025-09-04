@@ -1,4 +1,11 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Param,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { ApiResponse } from '~/common/api-response.dto';
@@ -21,6 +28,22 @@ export class NotificationController {
         return {
             message: 'Notification fetched successfully',
             data,
+        };
+    }
+
+    @UseGuards(JwtGuard)
+    @Post(':id/read')
+    async markAsRead(
+        @Request() request: RequestWithUser,
+        @Param('id') notificationId: string,
+    ): Promise<ApiResponse<null>> {
+        await this.notificationService.markAsRead(
+            request.user.sub,
+            notificationId,
+        );
+        return {
+            message: 'Notification marked as read successfully',
+            data: null,
         };
     }
 }

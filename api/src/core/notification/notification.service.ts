@@ -75,19 +75,11 @@ export class NotificationService {
         this.logger.debug(
             `NotificationService.getAllNotificationByUser(): ${userId}`,
         );
-        // const notifications = await this.notificationRepository.find({
-        //     where: [{ recipient: null }],
-        //     relations: {
-        //         reads: true,
-        //         recipient: true,
-        //         order: true,
-        //     },
-        // });
         const notifications = await this.notificationRepository
             .createQueryBuilder('notification')
-            .leftJoinAndSelect('notification.reads', 'reads') // Penting: Join untuk cek status baca
+            .leftJoinAndSelect('notification.reads', 'reads')
             .leftJoinAndSelect('reads.user', 'readUser')
-            .leftJoinAndSelect('notification.order', 'order') // Penting: Join untuk detail pesanan
+            .leftJoinAndSelect('notification.order', 'order')
             .where('notification.recipient.id = :userId', { userId })
             .orWhere('notification.recipient IS NULL')
             .andWhere('notification.type != :type', {
@@ -99,5 +91,40 @@ export class NotificationService {
         return notifications.map((notification) =>
             toNotificationResponse(notification, userId),
         );
+    }
+
+    /**
+     * Mark a notification as read by a user.
+     *
+     * @param userId The ID of the user marking the notification as read
+     * @param notificationId The ID of the notification being marked as read
+     * @throws InternalServerErrorException if the notification cannot be marked as read
+     */
+    async markAsRead(userId: string, notificationId: string): Promise<void> {
+        // Check if the notification has already been marked as read
+        const notificationReadExists = await this.notificationReadRepository
+            .createQueryBuilder('read')
+            .where('read.notification.id = :notificationId', {
+                notificationId,
+            })
+            .andWhere('read.user.id = :userId', { userId })
+            .getOne();
+
+        if (!notificationReadExists) {
+            // Create a new read entry if the notification isn't already marked as read
+            const newReadEntry = this.notificationReadRepository.create({
+                user: { id: userId },
+                notification: { id: notificationId },
+            });
+            await this.notificationReadRepository.save(newReadEntry);
+            this.logger.log(
+                `Notification ${notificationId} marked as read by user ${userId}.`,
+            );
+        } else {
+            // Log a message if the notification is already marked as read
+            this.logger.log(
+                `Notification ${notificationId} is already read by user ${userId}.`,
+            );
+        }
     }
 }

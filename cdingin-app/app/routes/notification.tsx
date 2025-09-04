@@ -1,6 +1,16 @@
 import NotificationCard from "~/components/notification/notification-card";
 import type { Route } from "./+types/notification";
 import Header from "~/components/header";
+import { useEffect, useState } from "react";
+import type { NotificationItem } from "~/types/notification.types";
+import axios from "axios";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from "~/components/ui/dialog";
+import Spinner from "~/components/ui/spinner";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -9,33 +19,63 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 export default function NotificationPage() {
+    const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            setIsLoading(true);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/notifications`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+
+                setNotifications(response.data.data);
+            } catch (error) {
+                console.error(`Gagal mengambil notifikasi: `, error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchOrders();
+    }, []);
+
     return (
         <div>
             <Header title="Pemberitahuan" isSticky showBorder />
-            <NotificationCard
-                id="1"
-                title="🎉 Yeay! Service Udah Selesai"
-                body="Servis AC sudah selesai. Semoga dinginnya tahan lama~ ❄️"
-                createdAt="2025-08-24 19:19:29.685406+08"
-                isRead={false}
-                key={1}
-            />
-            <NotificationCard
-                id="1"
-                title="🎉 Yeay!"
-                body="Servis AC sudah selesai. Semoga dinginnya tahan lama~ ❄️"
-                createdAt="2025-08-24 19:19:29.685406+08"
-                isRead={false}
-                key={1}
-            />
-            <NotificationCard
-                id="1"
-                title="🎉 Yeay! Service Udah Selesai"
-                body="Servis AC sudah selesai. Semoga dinginnya tahan lama~ ❄️"
-                createdAt="2025-08-24 19:19:29.685406+08"
-                isRead={true}
-                key={1}
-            />
+            {isLoading && (
+                <div
+                    className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-50 ${
+                        isLoading ? "bg-black/50" : ""
+                    }`}
+                >
+                    <Dialog open={isLoading} modal>
+                        <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
+                            <DialogTitle></DialogTitle>
+                            <DialogDescription></DialogDescription>
+                            <Spinner size={30} className="text-primary" />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            )}
+
+            {notifications.length === 0 ? (
+                <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
+                    <h1 className="font-semibold text-lg">
+                        Belum ada notifikasi
+                    </h1>
+                </div>
+            ) : (
+                notifications.map((notification) => (
+                    <NotificationCard
+                        key={notification.id}
+                        notification={notification}
+                    />
+                ))
+            )}
         </div>
     );
 }
