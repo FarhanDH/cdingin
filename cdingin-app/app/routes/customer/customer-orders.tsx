@@ -33,37 +33,8 @@ export default function CustomerOrders() {
         }
     }, [showInstallSheet]);
     return (
-        <Box sx={{ pb: 7 }}>
+        <>
             <CustomerOrderList />
-            <Paper
-                sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
-                elevation={3}
-                className="max-w-lg mx-auto "
-            >
-                <BottomNavigation
-                    showLabels
-                    className="border-2"
-                    // value={value}
-                    // onChange={(event, newValue) => {
-                    //   setValue(newValue);
-                    // }}
-                >
-                    <BottomNavigationAction
-                        label="Pesanan"
-                        icon={<ListOrdered />}
-                        href="/orders"
-                    />
-                    <BottomNavigationAction
-                        label="Pemberitahuan"
-                        icon={<Bell />}
-                        href="/notifications"
-                    />
-                    <BottomNavigationAction
-                        label="Profil"
-                        icon={<PersonStanding />}
-                    />
-                </BottomNavigation>
-            </Paper>
 
             {/* Pwa Prompt Sheet */}
             <InstallPwaSheet
@@ -71,6 +42,6 @@ export default function CustomerOrders() {
                 onClose={closeInstallSheet}
                 onInstall={triggerInstallPrompt}
             />
-        </Box>
+        </>
     );
 }

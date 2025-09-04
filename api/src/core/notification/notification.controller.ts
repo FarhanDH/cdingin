@@ -46,4 +46,21 @@ export class NotificationController {
             data: null,
         };
     }
+
+    @UseGuards(JwtGuard)
+    @Get('unread-count')
+    async getUnreadCount(@Request() request: RequestWithUser): Promise<
+        ApiResponse<{
+            unreadCount: number;
+        }>
+    > {
+        const data = await this.notificationService.getUnreadCount(
+            request.user.sub,
+        );
+
+        return {
+            message: 'Unread count fetched successfully',
+            data,
+        };
+    }
 }

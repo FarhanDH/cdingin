@@ -8,11 +8,7 @@ const NotFoundPage = () => {
 
     return (
         <div>
-            <Header
-                title="404 - Not Found"
-                showSidebar={true}
-                isSticky={true}
-            />
+            <Header title="404 - Not Found" isSticky={true} />
             <div className="flex flex-col text-center items-center mt-25 md:mt-20 p-3">
                 <img src={notFoundImage} alt="Logo" className="w-50 mb-4"></img>
                 <h1 className="text-2xl font-bold">

@@ -127,4 +127,40 @@ export class NotificationService {
             );
         }
     }
+
+    /**
+     * Retrieves the count of unread notifications for a given user.
+     *
+     * @param userId The ID of the user for which the unread count should be retrieved.
+     * @throws InternalServerErrorException if the unread count cannot be retrieved.
+     * @returns An object containing the unread count.
+     */
+    async getUnreadCount(userId: string): Promise<{ unreadCount: number }> {
+        this.logger.debug(`NotificationService.getUnreadCount(): ${userId}`);
+
+        try {
+            // Get all notifications for the given user
+            const getAllNotifications =
+                await this.getAllNotificationByUser(userId);
+
+            // Filter the notifications to only include unread ones and count them
+            const unreadCount = getAllNotifications
+                .filter((notification) => !notification.isRead)
+                .reduce((acc, curr) => acc + 1, 0);
+
+            // Log the result
+            this.logger.log(`Unread count for user ${userId}: ${unreadCount}`);
+
+            // Return the count
+            return { unreadCount };
+        } catch (error) {
+            // Catch any errors and log them
+            this.logger.error(`Error getting unread count: ${error}`);
+
+            // Throw an internal server error if the unread count cannot be retrieved
+            throw new InternalServerErrorException(
+                'Failed to get unread notification count.',
+            );
+        }
+    }
 }

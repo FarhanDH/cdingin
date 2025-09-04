@@ -1,4 +1,9 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import {
+    type RouteConfig,
+    index,
+    layout,
+    route,
+} from "@react-router/dev/routes";
 
 export default [
     // Public Routes
@@ -9,10 +14,14 @@ export default [
 
     // Customer Routes
     route("", "components/customer-route.tsx", [
-        route("/orders", "routes/customer/customer-orders.tsx"),
+        layout("routes/customer/layout.tsx", [
+            route("/orders", "routes/customer/customer-orders.tsx"),
+            route("/notifications", "routes/notification.tsx"),
+            route("/profile", "routes/customer/profile.tsx"),
+        ]),
+
         route("/order/new", "routes/customer/new-order.tsx"),
         route("/order/:orderId", "routes/customer/customer-order-detail.tsx"),
-        route("/notifications", "routes/notification.tsx"),
     ]),
 
     // Technician Routes

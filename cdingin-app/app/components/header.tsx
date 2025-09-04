@@ -6,7 +6,6 @@ export default function Header({
     showBack = false,
     navigateTo = "/",
     title,
-    showSidebar = true,
     showBorder = true,
     children,
 }: Readonly<{
@@ -15,7 +14,6 @@ export default function Header({
     showBack?: boolean;
     navigateTo?: string;
     title: string;
-    showSidebar?: boolean;
     children?: React.ReactNode;
 }>) {
     return (
@@ -27,11 +25,7 @@ export default function Header({
             }`}
         >
             <div className={`flex items-center justify-between mb-2`}>
-                <div
-                    className={`flex items-center space-x-2 ${
-                        showSidebar ? "justify-between" : "justify-start gap-3"
-                    }`}
-                >
+                <div className={`flex items-center gap-3`}>
                     {showBack && (
                         <Link to={navigateTo}>
                             <ArrowLeft size={24} className="text-gray-500" />
@@ -39,7 +33,7 @@ export default function Header({
                     )}
                     <h1 className={`text-[20px] font-semibold `}>{title}</h1>
                 </div>
-                {/* {showSidebar && <Menu size={26} className="text-gray-500" />} */}
+                {/* {showSidebar && <} */}
             </div>
             {children}
         </div>

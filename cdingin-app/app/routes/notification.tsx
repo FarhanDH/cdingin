@@ -1,16 +1,16 @@
-import NotificationCard from "~/components/notification/notification-card";
-import type { Route } from "./+types/notification";
-import Header from "~/components/header";
-import { useEffect, useState } from "react";
-import type { NotificationItem } from "~/types/notification.types";
-import axios from "axios";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogTitle,
-} from "~/components/ui/dialog";
+} from "@radix-ui/react-dialog";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import Header from "~/components/header";
+import NotificationCard from "~/components/notification/notification-card";
 import Spinner from "~/components/ui/spinner";
+import type { NotificationItem } from "~/types/notification.types";
+import type { Route } from "./+types/notification";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -45,7 +45,6 @@ export default function NotificationPage() {
 
     return (
         <div>
-            <Header title="Pemberitahuan" isSticky showBorder />
             {isLoading && (
                 <div
                     className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 z-50 ${
@@ -62,10 +61,12 @@ export default function NotificationPage() {
                 </div>
             )}
 
+            <Header title="Pemberitahuan" isSticky showBorder />
+
             {notifications.length === 0 ? (
                 <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
                     <h1 className="font-semibold text-lg">
-                        Belum ada notifikasi
+                        Belum ada pemberitahuan
                     </h1>
                 </div>
             ) : (

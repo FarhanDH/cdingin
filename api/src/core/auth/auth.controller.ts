@@ -28,13 +28,13 @@ export class AuthController {
         response.cookie('accessToken', data.user.tokens.accessToken, {
             httpOnly: true,
             secure: configuration().env === 'production',
-            sameSite: 'lax',
+            sameSite: 'none',
             maxAge: configuration().jwtConstants.accessTokenExpiresIn,
         });
         response.cookie('refreshToken', data.user.tokens.refreshToken, {
             httpOnly: true,
             secure: configuration().env === 'production',
-            sameSite: 'lax',
+            sameSite: 'none',
             maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
         });
 
@@ -58,13 +58,13 @@ export class AuthController {
         response.cookie('accessToken', data.tokens.accessToken, {
             httpOnly: true,
             secure: configuration().env === 'production',
-            sameSite: 'lax',
+            sameSite: 'none',
             maxAge: configuration().jwtConstants.accessTokenExpiresIn,
         });
         response.cookie('refreshToken', data.tokens.refreshToken, {
             httpOnly: true,
             secure: configuration().env === 'production',
-            sameSite: 'lax',
+            sameSite: 'none',
             maxAge: configuration().jwtConstants.refreshTokenExpiresIn,
         });
 

@@ -104,7 +104,7 @@ export default function CustomerOrderList() {
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
                             <DialogTitle></DialogTitle>
                             <DialogDescription></DialogDescription>
-                            <Spinner size={30} />
+                            <Spinner size={30} className="text-primary" />
                         </DialogContent>
                     </Dialog>
                 </div>
