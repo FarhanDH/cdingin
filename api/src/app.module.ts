@@ -13,6 +13,7 @@ import { ScheduleModule } from './core/schedule/schedule.module';
 import { PushSubscriptionModule } from './core/push-subscription/push-subscription.module';
 import { NotificationModule } from './core/notification/notification.module';
 import { NotificationReadModule } from './core/notification-read/notification-read.module';
+import { ScheduledTaskModule } from './core/scheduled-task/scheduled-task.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { NotificationReadModule } from './core/notification-read/notification-re
         PushSubscriptionModule,
         NotificationModule,
         NotificationReadModule,
+        ScheduledTaskModule,
     ],
     controllers: [AppController],
 })

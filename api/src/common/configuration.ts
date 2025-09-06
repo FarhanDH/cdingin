@@ -35,5 +35,8 @@ export const configuration = () => {
             vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
             vapidSubject: process.env.VAPID_SUBJECT,
         },
+        cron: {
+            secret: process.env.CRON_SECRET,
+        },
     };
 };

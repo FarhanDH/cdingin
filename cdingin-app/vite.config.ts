@@ -490,12 +490,12 @@ export default defineConfig({
     //     },
     // },
 
-    server: {
-        // port: 3000,
+    // server: {
+    //     // port: 3000,
 
-        allowedHosts: [
-            "22b6d56c6708.ngrok-free.app",
-            "https://22b6d56c6708.ngrok-free.app",
-        ],
-    },
+    //     allowedHosts: [
+    //         "6300e0494be2.ngrok-free.app",
+    //         "https://6300e0494be2.ngrok-free.app",
+    //     ],
+    // },
 });

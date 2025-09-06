@@ -13,6 +13,7 @@ import {
     DataSource,
     FindOptionsWhere,
     In,
+    LessThanOrEqual,
     MoreThanOrEqual,
     Not,
     Repository,
@@ -693,5 +694,31 @@ export class OrderService {
             default:
                 throw new Error(`Unknown status ${status}`);
         }
+    }
+
+    /**
+     * Gets all orders that were completed in the last 3 months
+     * @returns All completed orders in the last 3 months
+     */
+    async getAllOrdersCompletedInThreeMonths(): Promise<Order[]> {
+        this.logger.debug(`OrderService.getAllOrdersCompletedIn3Months()`);
+
+        // Create a date that is 3 months ago
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+        // Find all orders that have a status of completed and were updated in the last 3 months
+        const completedOrders = await this.orderRepository.find({
+            where: {
+                status: OrderStatusEnum.COMPLETED,
+                updated_at: LessThanOrEqual(threeMonthsAgo),
+            },
+            relations: {
+                customer: true,
+                notifications: true,
+            },
+        });
+
+        return completedOrders;
     }
 }

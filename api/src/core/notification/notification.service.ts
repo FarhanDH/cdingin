@@ -40,7 +40,6 @@ export class NotificationService {
 
             const savedNotification =
                 await this.notificationRepository.save(notificationEntity);
-            console.log(savedNotification);
 
             return await this.getById(savedNotification.id);
         } catch (error) {
