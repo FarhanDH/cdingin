@@ -42,7 +42,7 @@ export class ScheduledTaskService {
         for (const order of isCompletedOrdersNotified ? [] : completedOrders) {
             const notification = await this.notificationService.create({
                 title: 'Waktunya Service AC!',
-                message: `AC kamu diservice ${new Date().getMonth() + 1 - (order.updated_at.getMonth() + 1)} bulan lalu, yuk jadwalkan service sekarang biar tetep adem!`,
+                message: `AC di ${order.property_type.toLocaleLowerCase()} kamu diservice ${new Date().getMonth() + 1 - (order.updated_at.getMonth() + 1)} bulan yang lalu, yuk jadwalkan service sekarang biar tetep adem!`,
                 type: NotificationType.SERVICE_REMINDER,
                 recipientId: order.customer.id,
                 orderId: order.id,

@@ -3,16 +3,16 @@ import {
     InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
-import { CreateNotificationDto } from './dto/notification.request';
-import { Repository } from 'typeorm';
-import { Notification } from './entities/notification.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtPayload } from '../auth/dto/auth.response';
 import { NotificationRead } from '../notification-read/entities/notification-read.entity';
+import { CreateNotificationDto } from './dto/notification.request';
 import {
     NotificationResponse,
     toNotificationResponse,
 } from './dto/notification.response';
-import { NotificationType } from '~/common/enums/notification-type.enum';
+import { Notification } from './entities/notification.entity';
 
 @Injectable()
 export class NotificationService {
@@ -64,31 +64,29 @@ export class NotificationService {
     /**
      * Get all notifications for a given user
      *
-     * @param userId ID of the user to fetch notifications for
+     * @param user to fetch notifications for
      * @returns An array of NotificationResponse objects, which include the notification
      *          details and a boolean indicating whether the notification has been read
      */
     async getAllNotificationByUser(
-        userId: string,
+        user: JwtPayload,
     ): Promise<NotificationResponse[]> {
         this.logger.debug(
-            `NotificationService.getAllNotificationByUser(): ${userId}`,
+            `NotificationService.getAllNotificationByUser(): ${user.sub}`,
         );
         const notifications = await this.notificationRepository
             .createQueryBuilder('notification')
             .leftJoinAndSelect('notification.reads', 'reads')
             .leftJoinAndSelect('reads.user', 'readUser')
             .leftJoinAndSelect('notification.order', 'order')
-            .where('notification.recipient.id = :userId', { userId })
+            .where('notification.recipient.id = :userId', { userId: user.sub })
             .orWhere('notification.recipient IS NULL')
-            .andWhere('notification.type != :type', {
-                type: NotificationType.NEW_ORDER,
-            })
             .orderBy('notification.created_at', 'DESC')
             .getMany();
 
+        // Return the notifications for
         return notifications.map((notification) =>
-            toNotificationResponse(notification, userId),
+            toNotificationResponse(notification, user.sub),
         );
     }
 
@@ -134,13 +132,13 @@ export class NotificationService {
      * @throws InternalServerErrorException if the unread count cannot be retrieved.
      * @returns An object containing the unread count.
      */
-    async getUnreadCount(userId: string): Promise<{ unreadCount: number }> {
-        this.logger.debug(`NotificationService.getUnreadCount(): ${userId}`);
+    async getUnreadCount(user: JwtPayload): Promise<{ unreadCount: number }> {
+        this.logger.debug(`NotificationService.getUnreadCount(): ${user.sub}`);
 
         try {
             // Get all notifications for the given user
             const getAllNotifications =
-                await this.getAllNotificationByUser(userId);
+                await this.getAllNotificationByUser(user);
 
             // Filter the notifications to only include unread ones and count them
             const unreadCount = getAllNotifications
@@ -148,7 +146,9 @@ export class NotificationService {
                 .reduce((acc, curr) => acc + 1, 0);
 
             // Log the result
-            this.logger.log(`Unread count for user ${userId}: ${unreadCount}`);
+            this.logger.log(
+                `Unread count for user ${user.sub}: ${unreadCount}`,
+            );
 
             // Return the count
             return { unreadCount };

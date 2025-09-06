@@ -16,7 +16,7 @@ export default [
     route("", "components/customer-route.tsx", [
         layout("routes/customer/layout.tsx", [
             route("/orders", "routes/customer/customer-orders.tsx"),
-            route("/notifications", "routes/notification.tsx"),
+            route("/notifications", "routes/customer/notification.tsx"),
             route("/profile", "routes/customer/profile.tsx"),
         ]),
 
@@ -26,7 +26,17 @@ export default [
 
     // Technician Routes
     route("", "components/technician-route.tsx", [
-        route("/technician/orders", "routes/technician/technician-orders.tsx"),
+        layout("routes/technician/layout.tsx", [
+            route(
+                "/technician/orders",
+                "routes/technician/technician-orders.tsx"
+            ),
+            route(
+                "/technician/notifications",
+                "routes/technician/notification.tsx"
+            ),
+        ]),
+
         route(
             "/technician/order/:orderId",
             "routes/technician/technician-order-summary.tsx"

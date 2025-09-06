@@ -22,7 +22,7 @@ export class NotificationController {
         @Request() request: RequestWithUser,
     ): Promise<ApiResponse<NotificationResponse[]>> {
         const data = await this.notificationService.getAllNotificationByUser(
-            request.user.sub,
+            request.user,
         );
 
         return {
@@ -55,7 +55,7 @@ export class NotificationController {
         }>
     > {
         const data = await this.notificationService.getUnreadCount(
-            request.user.sub,
+            request.user,
         );
 
         return {

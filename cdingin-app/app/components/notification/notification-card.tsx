@@ -2,6 +2,7 @@ import { Button } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { formatRelativeTime } from "~/common/utils";
+import { useAuth } from "~/contexts/auth.context";
 import type { NotificationItem } from "~/types/notification.types";
 
 export interface NotificationCardProps {
@@ -16,6 +17,7 @@ export default function NotificationCard({
     notification,
 }: Readonly<NotificationCardProps>) {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     // Convert date to readable
     const relativeTime = formatRelativeTime(notification.createdAt);
@@ -40,8 +42,13 @@ export default function NotificationCard({
             return;
         }
 
-        // Navigate to the order page
-        navigate(`/order/${notification.orderId}`);
+        // Navigate to the order page after marking as read and navigation with different role
+        if (user?.role === "customer") {
+            navigate(`/order/${notification.orderId}`);
+        }
+        if (user?.role === "technician") {
+            navigate(`/technician/order/${notification.orderId}`);
+        }
     };
 
     return (
