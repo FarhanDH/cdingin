@@ -31,7 +31,7 @@ export default function Header({
                             <ArrowLeft size={24} className="text-gray-500" />
                         </Link>
                     )}
-                    <h1 className={`text-[20px] font-semibold `}>{title}</h1>
+                    <h1 className={`text-lg font-semibold `}>{title}</h1>
                 </div>
                 {/* {showSidebar && <} */}
             </div>

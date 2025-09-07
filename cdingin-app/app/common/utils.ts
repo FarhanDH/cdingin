@@ -2,7 +2,7 @@ import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 import haversine from "haversine-distance";
 
-export const formattedDate = (date: Date, time = false) => {
+export const formattedDate = (date: Date, { time = false }) => {
     const formatDate = new Date(date).toLocaleDateString("id-ID", {
         weekday: "long",
         day: "numeric",

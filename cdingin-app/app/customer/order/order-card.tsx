@@ -14,7 +14,7 @@ export default function CustomerOrderCard({
         order.status
     );
     const navigate = useNavigate();
-    const formatDate = formattedDate(order.serviceDate);
+    const formatDate = formattedDate(order.serviceDate, { time: false });
 
     const handleCardClick = () => {
         navigate(`/order/${order.id}`);

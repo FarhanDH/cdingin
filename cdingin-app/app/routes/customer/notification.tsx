@@ -10,7 +10,7 @@ import Header from "~/components/header";
 import NotificationCard from "~/components/notification/notification-card";
 import Spinner from "~/components/ui/spinner";
 import type { NotificationItem } from "~/types/notification.types";
-import type { Route } from "../+types/notification";
+import type { Route } from "./+types/notification";
 
 export function meta({}: Route.MetaArgs) {
     return [

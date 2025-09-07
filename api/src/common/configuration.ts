@@ -38,5 +38,11 @@ export const configuration = () => {
         cron: {
             secret: process.env.CRON_SECRET,
         },
+        midtrans: {
+            serverKey: process.env.MIDTRANS_SERVER_KEY,
+            url: process.env.MIDTRANS_SANDBOX_URL,
+            username: process.env.MIDTRANS_USERNAME,
+            password: process.env.MIDTRANS_PASSWORD,
+        },
     };
 };

@@ -22,6 +22,11 @@ export default [
 
         route("/order/new", "routes/customer/new-order.tsx"),
         route("/order/:orderId", "routes/customer/customer-order-detail.tsx"),
+        // Invoice Detail
+        route(
+            "/order/:orderId/invoice",
+            "routes/customer/invoice/invoice-detail.tsx"
+        ),
     ]),
 
     // Technician Routes
@@ -37,13 +42,25 @@ export default [
             ),
         ]),
 
+        // Grouping child routes under a parent route
         route(
             "/technician/order/:orderId",
             "routes/technician/technician-order-summary.tsx"
         ),
         route(
-            "/technician/order/detail/:orderId",
+            "/technician/order/:orderId/detail",
             "routes/technician/technician-order-detail.tsx"
+        ),
+
+        // Invoice Create
+        route(
+            "/technician/order/:orderId/invoice/create",
+            "routes/technician/invoice/invoice-create.tsx"
+        ),
+        // Invoice Detail
+        route(
+            "/technician/order/:orderId/invoice",
+            "routes/technician/invoice/invoice-detail.tsx"
         ),
     ]),
 ] satisfies RouteConfig;

@@ -24,6 +24,7 @@ import {
 import { OrderResponse } from './dto/order.response';
 import { OrderService } from './order.service';
 import { OrderDateFilter } from '~/common/enums/order-date.enum';
+import { InvoiceResponseDto } from '../invoice/dto/invoice.response';
 
 @Controller('orders')
 export class OrderController {
@@ -94,6 +95,18 @@ export class OrderController {
         );
         return {
             message: 'Order fetched successfully',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard)
+    @Get(':id/invoice')
+    async getInvoiceByOrderId(
+        @Param('id') id: string,
+    ): Promise<ApiResponse<InvoiceResponseDto>> {
+        const data = await this.orderService.getInvoiceByOrderId(id);
+        return {
+            message: `Invoice by order id ${id} fetched successfully`,
             data,
         };
     }

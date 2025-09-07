@@ -14,6 +14,8 @@ import { PushSubscriptionModule } from './core/push-subscription/push-subscripti
 import { NotificationModule } from './core/notification/notification.module';
 import { NotificationReadModule } from './core/notification-read/notification-read.module';
 import { ScheduledTaskModule } from './core/scheduled-task/scheduled-task.module';
+import { InvoiceModule } from './core/invoice/invoice.module';
+import { PaymentModule } from './core/payment/payment.module';
 
 @Module({
     imports: [
@@ -33,6 +35,8 @@ import { ScheduledTaskModule } from './core/scheduled-task/scheduled-task.module
         NotificationModule,
         NotificationReadModule,
         ScheduledTaskModule,
+        InvoiceModule,
+        PaymentModule,
     ],
     controllers: [AppController],
 })

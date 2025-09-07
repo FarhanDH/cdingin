@@ -9,19 +9,19 @@ import axios from "axios";
 import { PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import threeTechniciansImage from "~/assets/three-technicians.png";
 import Header from "~/components/header";
+import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 import Spinner from "~/components/ui/spinner";
 import CustomerOrderCard from "~/customer/order/order-card";
+import { useNotificationPermission } from "~/hooks/use-notification-permission";
 import type {
     CustomerOrderTabType,
     CustomerTabItem,
     OrderItem,
 } from "~/types/order.types";
 import CustomerOrderTab from "./order-tab-status";
-import { useNotificationPermission } from "~/hooks/use-notification-permission";
-import { toast } from "sonner";
-import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 
 export default function CustomerOrderList() {
     const navigate = useNavigate();
@@ -53,6 +53,7 @@ export default function CustomerOrderList() {
                         withCredentials: true,
                     }
                 );
+                console.log(response.data);
 
                 setOrders(response.data.data);
             } catch (error) {

@@ -7,12 +7,14 @@ import { UserModule } from '../user/user.module';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { PushSubscriptionModule } from '../push-subscription/push-subscription.module';
 import { NotificationModule } from '../notification/notification.module';
+import { InvoiceModule } from '../invoice/invoice.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Order, AcUnit]),
         UserModule,
         PushSubscriptionModule,
+        // InvoiceModule,
         NotificationModule,
     ],
     controllers: [OrderController],

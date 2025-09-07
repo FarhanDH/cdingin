@@ -46,6 +46,13 @@ export class User {
     @OneToMany(() => Order, (order) => order.customer)
     orders: Relation<Order>[];
 
+    /**
+     * Orders where this user is the TECHNICIAN.
+     * A new relation to handle technician assignments.
+     */
+    @OneToMany(() => Order, (order) => order.technician)
+    assigned_orders: Relation<Order[]>;
+
     @OneToMany(() => PushSubscription, (subscription) => subscription.user)
     push_subscriptions: Relation<PushSubscription>[];
 

@@ -5,6 +5,7 @@ import {
     Entity,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryColumn,
     Relation,
     UpdateDateColumn,
@@ -12,6 +13,7 @@ import {
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { generateUniqueId } from '~/common/utils';
 import { AcUnit } from '~/core/ac-unit/entities/ac-unit.entity';
+import { Invoice } from '~/core/invoice/entities/invoice.entity';
 import { Notification } from '~/core/notification/entities/notification.entity';
 import { User } from '~/core/user/entities/user.entity';
 
@@ -75,7 +77,7 @@ export class Order {
     @ManyToOne(() => User, (user) => user.orders)
     customer: Relation<User>;
 
-    @ManyToOne(() => User, (user) => user.orders)
+    @ManyToOne(() => User, (user) => user.assigned_orders)
     technician: Relation<User>;
 
     @OneToMany(() => AcUnit, (acUnit) => acUnit.orders)
@@ -83,6 +85,10 @@ export class Order {
 
     @OneToMany(() => Notification, (notification) => notification.order)
     notifications: Relation<Notification>[];
+
+    /** The invoice associated with this order. */
+    @OneToOne(() => Invoice, (invoice) => invoice.order)
+    invoice: Relation<Invoice>;
 
     @CreateDateColumn({ type: 'timestamp with time zone' })
     created_at: Date;

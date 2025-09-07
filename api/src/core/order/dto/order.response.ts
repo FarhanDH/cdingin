@@ -31,6 +31,7 @@ export class OrderResponse {
     cancellationNote?: string;
     cancelledBy?: Subject;
     totalUnits: number;
+    invoiceId?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -65,6 +66,7 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
         (total, acUnit) => total + acUnit.quantity,
         0,
     ),
+    invoiceId: order.invoice?.id,
     cancellationReason: order.cancellation_reason,
     cancellationNote: order.cancellation_note,
     cancelledBy: order.cancelled_by,

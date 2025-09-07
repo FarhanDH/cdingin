@@ -119,6 +119,7 @@ export type OrderItem = {
         role: string;
         fullName: string;
     };
+    invoiceId?: string;
     totalUnits: number;
     createdAt: Date;
     updatedAt: Date;

@@ -1,16 +1,17 @@
 import ErrorIcon from "@mui/icons-material/Error";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
+import { Button } from "@mui/material";
 import axios from "axios";
-import { AirVent, HomeIcon } from "lucide-react";
+import { AirVent, HomeIcon, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
-import { Button } from "~/components/ui/button";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
+import cashImage from "~/assets/cash.png";
 
 export default function CustomerOrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -19,8 +20,9 @@ export default function CustomerOrderDetail() {
     const [error, setError] = useState<string | null>(null);
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const { text: statusText, color: statusColor } = getStatusLabel(
-        order?.status || "pending",
+        order?.status || "pending"
     );
+    const navigate = useNavigate();
 
     const fetchOrderDetail = async () => {
         try {
@@ -28,7 +30,7 @@ export default function CustomerOrderDetail() {
                 `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
                 {
                     withCredentials: true,
-                },
+                }
             );
             setOrder(response.data.data);
             setIsLoading(false);
@@ -51,7 +53,7 @@ export default function CustomerOrderDetail() {
                     `${import.meta.env.VITE_API_URL}/orders/${orderId}`,
                     {
                         withCredentials: true,
-                    },
+                    }
                 );
                 setOrder(response.data.data);
                 setIsLoading(false);
@@ -79,9 +81,14 @@ export default function CustomerOrderDetail() {
 
     return (
         <div className="">
-            <Header title="Detail pesananmu" showBack showBorder={false} />
+            <Header
+                title="Detail pesananmu"
+                showBack
+                isSticky
+                showBorder={false}
+            />
 
-            <div className="p-2 bg-gray-100 min-h-screen flex flex-col gap-2">
+            <div className="p-2 min-h-screen bg-gray-100 flex flex-col gap-2">
                 {/* Service Address */}
                 <div className="p-4 bg-white rounded-xl">
                     <div className="flex items-start text-center justify-between">
@@ -192,7 +199,7 @@ export default function CustomerOrderDetail() {
                                                         acTypes.find(
                                                             (type) =>
                                                                 type.id ===
-                                                                acUnit.acTypeName,
+                                                                acUnit.acTypeName
                                                         )?.name
                                                     }{" "}
                                                     {acUnit.acCapacity}
@@ -234,7 +241,7 @@ export default function CustomerOrderDetail() {
                             Tanggal service
                         </div>
                         <div className="text-sm text-gray-700">
-                            {formattedDate(order.serviceDate)}
+                            {formattedDate(order.serviceDate, { time: false })}
                         </div>
                     </div>
                     <div className="flex justify-between items-center mb-1">
@@ -243,7 +250,7 @@ export default function CustomerOrderDetail() {
                         </div>
                         {/* Created time */}
                         <div className="text-sm text-gray-700">
-                            {formattedDate(order.createdAt, true)}
+                            {formattedDate(order.createdAt, { time: true })}
                         </div>
                     </div>
 
@@ -253,7 +260,7 @@ export default function CustomerOrderDetail() {
                                 Waktu diperbarui
                             </div>
                             <div className="text-sm text-gray-700">
-                                {formattedDate(order.updatedAt, true)}
+                                {formattedDate(order.updatedAt, { time: true })}
                             </div>
                         </div>
                     )}
@@ -263,8 +270,6 @@ export default function CustomerOrderDetail() {
                 <div>
                     {order.status === "pending" && (
                         <Button
-                            // variant={"destructive"}
-                            // className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 text-md font-semibold cursor-pointer active:scale-95 rounded-full"
                             className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 transition-all duration-150 ease-in-out text-md font-semibold cursor-pointer rounded-full"
                             onClick={() => {
                                 setIsCancelSheetOpen(true);
@@ -275,6 +280,38 @@ export default function CustomerOrderDetail() {
                     )}
                 </div>
             </div>
+
+            {order.invoiceId && (
+                <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
+                    {order.status !== "completed" && (
+                        <>
+                            <h1 className="text-lg font-semibold">
+                                Tagihan Udah Siap!
+                            </h1>
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src={cashImage}
+                                    alt="cash"
+                                    className="w-6 h-6"
+                                />
+                                <p className="text-sm text-gray-600">
+                                    Pembayaran bisa dengan tunai, atau digital
+                                    lohh
+                                </p>
+                            </div>
+                        </>
+                    )}
+                    <Button
+                        onClick={() => navigate(`/order/${orderId}/invoice`)}
+                        className="w-full h-12 rounded-full text-base font-medium flex items-center justify-center bg-primary text-white capitalize !font-[Rubik] active:scale-95"
+                    >
+                        <Wallet size={20} className="mr-2" />
+                        {order.status === "completed"
+                            ? "Lihat tagihan"
+                            : "Lihat & bayar tagihan"}
+                    </Button>
+                </div>
+            )}
 
             {/* Show Order sheet when cancel button clicked */}
             <CancelOrderSheet

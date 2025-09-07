@@ -352,7 +352,17 @@ export default function TechnicianOrderSummary() {
                 // navigasi ke halaman pembuatan tagihan
                 return {
                     text: "Geser untuk Buat Tagihan",
-                    action: () => {},
+                    action: () => {
+                        navigate(
+                            `/technician/order/${order.id}/invoice/create`
+                        );
+                    },
+                };
+
+            case "waiting_payment":
+                return {
+                    text: "Terima bayar tunai",
+                    action: () => updateOrderStatus("completed"),
                 };
             default:
                 return null;
@@ -628,9 +638,9 @@ export default function TechnicianOrderSummary() {
                     {/* To Detail Button */}
                     <Button
                         onClick={() =>
-                            navigate(`/technician/order/detail/${order.id}`)
+                            navigate(`/technician/order/${order.id}/detail`)
                         }
-                        className="py-4 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 pt-6 flex justify-center items-center text-lg font-medium cursor-pointer w-full text-gray-900 capitalize rounded-none"
+                        className="py-4 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 pt-6 flex justify-center items-center text-base font-medium cursor-pointer w-full text-gray-900 capitalize rounded-none"
                     >
                         Lihat Pesanan
                         <ChevronRight />
@@ -638,7 +648,7 @@ export default function TechnicianOrderSummary() {
                     {order.status !== "cancelled" &&
                         order.status !== "completed" && (
                             <Button
-                                className="w-full rounded-none border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 text-md font-medium border-gray-200 cursor-pointer text-red-500 capitalize"
+                                className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 text-md font-medium border-gray-200 cursor-pointer text-red-600 capitalize"
                                 onClick={() => setIsCancelSheetOpen(true)}
                             >
                                 Batalkan pesanan

@@ -37,6 +37,10 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
+import {
+    InvoiceResponseDto,
+    toInvoiceResponseDto,
+} from '../invoice/dto/invoice.response';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -302,7 +306,6 @@ export class OrderService {
             `Executing query with where clause: ${JSON.stringify(whereClause)}`,
         );
 
-        // 4. Jalankan query dengan 'where' yang sudah dinamis
         const orders = await this.orderRepository.find({
             where: whereClause,
             relations: {
@@ -310,7 +313,7 @@ export class OrderService {
                 customer: true,
             },
             order: {
-                service_date: 'ASC', // Urutkan berdasarkan tanggal servis
+                service_date: 'ASC',
             },
         });
 
@@ -330,6 +333,7 @@ export class OrderService {
                 relations: {
                     ac_units: true,
                     customer: true,
+                    invoice: true,
                 },
             });
             if (!order) {
@@ -343,6 +347,33 @@ export class OrderService {
             this.logger.error(error);
             throw new InternalServerErrorException(error.message);
         }
+    }
+
+    async getInvoiceByOrderId(orderId: string): Promise<InvoiceResponseDto> {
+        this.logger.debug(
+            `OrderService.getInvoiceByOrderId(orderId: ${orderId})`,
+        );
+
+        const invoiceById = await this.orderRepository.findOne({
+            where: { id: orderId },
+            relations: {
+                invoice: {
+                    order: {
+                        customer: true,
+                        ac_units: true,
+                        technician: true,
+                    },
+                    items: true,
+                },
+            },
+        });
+
+        if (!invoiceById) {
+            this.logger.warn(`Invoice with id ${orderId} not found`);
+            throw new NotFoundException(`Invoice with id ${orderId} not found`);
+        }
+
+        return toInvoiceResponseDto(invoiceById.invoice);
     }
 
     /**
@@ -448,6 +479,24 @@ export class OrderService {
             this.logger.error(`Error updating order status: ${error.message}`);
             throw new InternalServerErrorException(error.message);
         }
+    }
+
+    /**
+     * Finds an order by its ID.
+     * @param id - The ID of the order to be found.
+     * @returns A promise that resolves to the found order.
+     * @throws {@link InternalServerErrorException} if an error occurs while finding the order.
+     */
+    async getById(id: string): Promise<Order> {
+        this.logger.debug(`OrderService.getById(id: ${id})`);
+        return await this.orderRepository.findOne({
+            where: { id },
+            relations: {
+                ac_units: true,
+                customer: true,
+                technician: true,
+            },
+        });
     }
 
     /**
@@ -629,12 +678,16 @@ export class OrderService {
         user: JwtPayload,
         orderId: string,
     ): Promise<OrderResponse> {
+        this.logger.debug(
+            `OrderService.getOneByIdForCustomer(user: ${user}) orderId: ${orderId}`,
+        );
         // Get the order by id and customer id
         const order = await this.orderRepository.findOne({
             where: { id: orderId, customer: { id: user.sub } },
             relations: {
                 ac_units: true,
                 customer: true,
+                invoice: true,
             },
         });
 

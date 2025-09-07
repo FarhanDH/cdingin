@@ -2,13 +2,13 @@ import ErrorIcon from "@mui/icons-material/Error";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
-import { Fab } from "@mui/material";
+import { Button, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
-import { AirVent, HomeIcon } from "lucide-react";
+import { AirVent, HomeIcon, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
@@ -26,8 +26,9 @@ export default function TechnicianOrderDetail() {
     const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
     const { text: statusText, color: statusColor } = getStatusLabel(
-        order?.status || "pending",
+        order?.status || "pending"
     );
+    const navigate = useNavigate();
 
     const fetchOrderDetail = async () => {
         try {
@@ -35,7 +36,7 @@ export default function TechnicianOrderDetail() {
                 `${import.meta.env.VITE_API_URL}/orders/technician/${orderId}`,
                 {
                     withCredentials: true,
-                },
+                }
             );
 
             setOrder(orderData.data.data);
@@ -61,7 +62,7 @@ export default function TechnicianOrderDetail() {
                     }/orders/technician/${orderId}`,
                     {
                         withCredentials: true,
-                    },
+                    }
                 );
                 const detailLocation = await axios.get(
                     "https://nominatim.openstreetmap.org/reverse",
@@ -71,7 +72,7 @@ export default function TechnicianOrderDetail() {
                             lon: response.data.data.serviceLocation.longitude,
                             format: "json",
                         },
-                    },
+                    }
                 );
                 setDetailAddress(detailLocation.data);
                 setOrder(response.data.data);
@@ -161,7 +162,7 @@ export default function TechnicianOrderDetail() {
                                                 // Handle phone call to WhatsApp
                                                 window.open(
                                                     `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                                    "_blank",
+                                                    "_blank"
                                                 );
                                             }}
                                             disabled={!order.customer.phone}
@@ -286,7 +287,7 @@ export default function TechnicianOrderDetail() {
                                         {order.problems?.map(
                                             (problem, index) => (
                                                 <li key={index}>{problem}</li>
-                                            ),
+                                            )
                                         )}
                                     </ul>
                                 </div>
@@ -314,7 +315,7 @@ export default function TechnicianOrderDetail() {
                                                             acTypes.find(
                                                                 (type) =>
                                                                     type.id ===
-                                                                    acUnit.acTypeName,
+                                                                    acUnit.acTypeName
                                                             )?.name
                                                         }{" "}
                                                         {acUnit.acCapacity}
@@ -356,7 +357,9 @@ export default function TechnicianOrderDetail() {
                                 Tanggal service
                             </div>
                             <div className="text-sm text-gray-700">
-                                {formattedDate(order.serviceDate)}
+                                {formattedDate(order.serviceDate, {
+                                    time: true,
+                                })}
                             </div>
                         </div>
                         <div className="flex justify-between items-center mb-1">
@@ -365,7 +368,7 @@ export default function TechnicianOrderDetail() {
                             </div>
                             {/* Created time */}
                             <div className="text-sm text-gray-700">
-                                {formattedDate(order.createdAt, true)}
+                                {formattedDate(order.createdAt, { time: true })}
                             </div>
                         </div>
 
@@ -375,13 +378,29 @@ export default function TechnicianOrderDetail() {
                                     Waktu diperbarui
                                 </div>
                                 <div className="text-sm text-gray-700">
-                                    {formattedDate(order.updatedAt, true)}
+                                    {formattedDate(order.updatedAt, {
+                                        time: true,
+                                    })}
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {order.invoiceId && (
+                <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t p-4">
+                    <Button
+                        onClick={() =>
+                            navigate(`/technician/order/${orderId}/invoice`)
+                        }
+                        className="w-full h-12 rounded-full text-base font-medium flex items-center justify-center bg-primary text-white capitalize !font-[Rubik] active:scale-95"
+                    >
+                        <Wallet size={20} className="mr-2" />
+                        Lihat Tagihan
+                    </Button>
+                </div>
+            )}
 
             {/* Show Order sheet when cancel button clicked */}
             <CancelOrderSheet
