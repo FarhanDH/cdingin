@@ -9,4 +9,5 @@ export enum NotificationType {
     INVOICE_VOID = 'invoice_void',
     COMPLETED_ORDER = 'completed_order',
     PAYMENT_SUCCESS = 'payment_success',
+    INVOICE_DOWNLOADED = 'invoice_downloaded',
 }

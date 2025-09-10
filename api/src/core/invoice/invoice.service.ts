@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
     ConflictException,
     Injectable,
@@ -5,13 +6,22 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import * as fs from 'fs';
+import * as hbs from 'handlebars';
+import path from 'path';
 import { DataSource, Repository } from 'typeorm';
+import { configuration } from '~/common/configuration';
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
 import { NotificationType } from '~/common/enums/notification-type.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
+import { PaymentStatus } from '~/common/enums/payment-status.enum';
+import { PaymentMethod } from '~/common/enums/payment.enum';
 import { NotificationService } from '../notification/notification.service';
 import { Order } from '../order/entities/order.entity';
 import { OrderService } from '../order/order.service';
+import { Payment } from '../payment/entities/payment.entity';
 import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
 import { CreateInvoiceDto } from './dto/invoice.request';
 import {
@@ -20,22 +30,13 @@ import {
 } from './dto/invoice.response';
 import { InvoiceItem } from './entities/invoice-item.entity';
 import { Invoice } from './entities/invoice.entity';
-import path from 'path';
-import * as puppeteer from 'puppeteer';
-import * as fs from 'fs';
-import * as hbs from 'handlebars';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
-import { Payment } from '../payment/entities/payment.entity';
-import { PaymentStatus } from '~/common/enums/payment-status.enum';
-import { PaymentMethod } from '~/common/enums/payment.enum';
 
 @Injectable()
 export class InvoiceService {
     constructor(
         @InjectRepository(Invoice)
         private readonly invoiceRepository: Repository<Invoice>,
-
+        private readonly httpService: HttpService,
         private readonly dataSource: DataSource,
         private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly orderService: OrderService,
@@ -183,13 +184,11 @@ export class InvoiceService {
      * @returns A Buffer containing the PDF file data.
      */
     async generatePdf(invoiceId: string, customerId: string): Promise<Buffer> {
-        // 1. Fetch the complete invoice data
         const invoice = await this.getById(invoiceId, customerId);
         if (!invoice) {
             throw new NotFoundException('Invoice not found.');
         }
 
-        // 2. Read the HTML template file
         const templateHtml = fs.readFileSync(
             path.join(process.cwd(), 'src/core/invoice/templates/invoice.hbs'),
             'utf8',
@@ -216,7 +215,6 @@ export class InvoiceService {
                     return 'N/A';
                 }
 
-                // Cari transaksi yang berhasil
                 const successfulPayment = payments.find(
                     (p) =>
                         p.status === PaymentStatus.SETTLEMENT ||
@@ -232,11 +230,9 @@ export class InvoiceService {
                 }
 
                 if (successfulPayment.method === PaymentMethod.MIDTRANS) {
-                    // Coba dapatkan channel pembayaran dari gateway_response
                     const channel = (successfulPayment.gateway_response as any)
                         ?.payment_type;
                     if (channel) {
-                        // Ubah 'bank_transfer' menjadi 'Bank Transfer'
                         return channel
                             .replace(/_/g, ' ')
                             .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -248,22 +244,60 @@ export class InvoiceService {
             },
         );
 
-        // 3. Compile the template with Handlebars and inject data
         const template = hbs.compile(templateHtml);
         const html = template({
             invoice,
         });
 
-        // 4. Launch Puppeteer and generate the PDF
-        const browser = await puppeteer.launch({ args: ['--no-sandbox'] }); // '--no-sandbox' penting untuk lingkungan Docker/Linux
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-        });
-        await browser.close();
+        let browser;
+        try {
+            const browserlessEndpoint = `https://production-sfo.browserless.io/pdf?token=${configuration().browserless.apiKey}`;
 
-        return Buffer.from(pdfBuffer);
+            const apiPayload = {
+                html: html,
+                options: {
+                    format: 'A4',
+                    printBackground: true,
+                    margin: {
+                        top: '20px',
+                        right: '20px',
+                        bottom: '20px',
+                        left: '20px',
+                    },
+                },
+            };
+
+            const response = await this.httpService.axiosRef.post(
+                browserlessEndpoint,
+                apiPayload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    responseType: 'arraybuffer', // <-- PENTING: Minta respons sebagai data biner
+                },
+            );
+
+            await this.pushSubscriptionService.sendNotificationToUser(
+                invoice.order.customer.id,
+                {
+                    title: 'Sip, Tagihanmu Udah Di-Download!',
+                    body: `Cek folder download atau dokumen di perangkat kamu, ya.`,
+                    tag: NotificationType.INVOICE_DOWNLOADED,
+                },
+            );
+            return Buffer.from(response.data);
+        } catch (error) {
+            this.logger.error(
+                'Failed to generate PDF with Browserless:',
+                JSON.stringify(error),
+            );
+            throw new error.constructor(error.message);
+        } finally {
+            // Selalu pastikan browser ditutup
+            if (browser) {
+                await browser.close();
+            }
+        }
     }
 }

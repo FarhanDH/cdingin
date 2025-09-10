@@ -22,6 +22,7 @@ import { Payment } from './entities/payment.entity';
 import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { OrderResponse, toOrderResponse } from '../order/dto/order.response';
 import { Order } from '../order/entities/order.entity';
+import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
 
 @Injectable()
 export class PaymentService {
@@ -30,6 +31,7 @@ export class PaymentService {
         private readonly paymentRepository: Repository<Payment>,
         private readonly httpService: HttpService,
         private readonly invoiceService: InvoiceService,
+        private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly notificationService: NotificationService,
         private readonly dataSource: DataSource,
     ) {}
@@ -204,14 +206,22 @@ export class PaymentService {
             await queryRunner.manager.save(order);
 
             // 6. Send notification to the customer (after transaction is committed).
-            await this.notificationService.create({
+            const notification = await this.notificationService.create({
                 recipientId: order.customer.id,
                 orderId: order.id,
                 type: NotificationType.COMPLETED_ORDER,
-                title: 'Pembayaran Lunas!',
-                message: `Pembayaran tunai untuk pesanan #${order.id} telah diterima. Terima kasih!`,
+                title: 'Yeay! Pembayaran Lunas!',
+                message: `Pembayaran tunai telah diterima. Terima kasih!`,
             });
-            console.log('notification created');
+
+            await this.pushSubscriptionService.sendNotificationToUser(
+                notification.recipient.id,
+                {
+                    title: notification.title,
+                    body: notification.message,
+                    tag: notification.type,
+                },
+            );
             // Commit the transaction.
             await queryRunner.commitTransaction();
 
@@ -343,13 +353,22 @@ export class PaymentService {
                     message: `Pembayaran untuk pesanan #${order.id} telah lunas. Terima kasih!`,
                 });
                 // Notify the technician
-                await this.notificationService.create({
+                const notification = await this.notificationService.create({
                     recipientId: order.technician.id,
                     orderId: order.id,
                     type: NotificationType.PAYMENT_SUCCESS,
-                    title: 'Pelanggan Telah Membayar',
-                    message: `Pembayaran untuk pesanan #${order.id} telah diterima.`,
+                    title: 'Pelanggan Udah Bayar',
+                    message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat Midtrans.`,
                 });
+
+                await this.pushSubscriptionService.sendNotificationToUser(
+                    notification.recipient.id,
+                    {
+                        title: notification.title,
+                        body: notification.message,
+                        tag: notification.type,
+                    },
+                );
                 // Commit the transaction BEFORE sending notifications.
                 await queryRunner.commitTransaction();
             } else {

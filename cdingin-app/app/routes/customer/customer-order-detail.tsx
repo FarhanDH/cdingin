@@ -270,7 +270,7 @@ export default function CustomerOrderDetail() {
                 <div>
                     {order.status === "pending" && (
                         <Button
-                            className="w-full py-6 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 transition-all duration-150 ease-in-out text-md font-semibold cursor-pointer rounded-full"
+                            className="w-full h-12 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 text-md font-semibold cursor-pointer rounded-full capitalize !font-[Rubik]"
                             onClick={() => {
                                 setIsCancelSheetOpen(true);
                             }}

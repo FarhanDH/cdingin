@@ -7,10 +7,12 @@ import { InvoiceItem } from './entities/invoice-item.entity';
 import { Invoice } from './entities/invoice.entity';
 import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './invoice.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Invoice, InvoiceItem]),
+        HttpModule,
         OrderModule,
         NotificationModule,
         PushSubscriptionModule,

@@ -47,5 +47,8 @@ export const configuration = () => {
             username: process.env.MIDTRANS_USERNAME,
             password: process.env.MIDTRANS_PASSWORD,
         },
+        browserless: {
+            apiKey: process.env.BROWSERLESS_API_KEY,
+        },
     };
 };

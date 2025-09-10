@@ -31,7 +31,7 @@ self.addEventListener("push", (event) => {
     const title = data.title || "cdingin";
     const options = {
         body: data.body,
-        icon: "/web-app-manifest-192x192.png",
+        // icon: "/web-app-manifest-192x192.png",
         badge: "/badge-72x72.png",
         vibrate: [200, 100, 200],
         tag: data.tag,
