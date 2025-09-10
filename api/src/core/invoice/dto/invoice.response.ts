@@ -33,6 +33,12 @@ export class InvoiceResponseDto {
 }
 
 export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
+    const formatPaymentString = (str) =>
+        str
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
     return {
         id: invoice.id,
         order: toOrderResponse(invoice.order),
@@ -54,9 +60,11 @@ export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
             status: payment.status,
             method: payment.method,
             paymentChannel:
-                (
-                    payment.gateway_response as { payment_type: string }
-                )?.payment_type.toUpperCase() ?? null,
+                formatPaymentString(
+                    (
+                        payment.gateway_response as { payment_type: string }
+                    )?.payment_type.toUpperCase(),
+                ) ?? null,
         })),
     };
 };

@@ -680,7 +680,7 @@ export class OrderService {
         orderId: string,
     ): Promise<OrderResponse> {
         this.logger.debug(
-            `OrderService.getOneByIdForCustomer(user: ${user}) orderId: ${orderId}`,
+            `OrderService.getOneByIdForCustomer(user: ${user.sub}) orderId: ${orderId}`,
         );
         // Get the order by id and customer id
         const order = await this.orderRepository.findOne({

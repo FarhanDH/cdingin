@@ -5,6 +5,7 @@ import {
     Param,
     Post,
     Request,
+    Res,
     UseGuards,
 } from '@nestjs/common';
 import { ApiResponse } from '~/common/api-response.dto';
@@ -17,6 +18,7 @@ import { CreateInvoiceDto } from './dto/invoice.request';
 import { InvoiceResponseDto } from './dto/invoice.response';
 import { Invoice } from './entities/invoice.entity';
 import { InvoiceService } from './invoice.service';
+import { Response } from 'express';
 
 @Controller('invoices')
 export class InvoiceController {
@@ -53,5 +55,30 @@ export class InvoiceController {
             message: 'Invoice retrieved successfully.',
             data,
         };
+    }
+
+    @Get(':id/download')
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    async downloadInvoice(
+        @Param('id') invoiceId: string,
+        @Request() req: RequestWithUser,
+        @Res() res: Response,
+    ) {
+        const customerId = req.user.sub;
+        const pdfBuffer = await this.invoiceService.generatePdf(
+            invoiceId,
+            customerId,
+        );
+
+        // Set HTTP headers for file download
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=invoice-${invoiceId}.pdf`,
+        );
+
+        // Send the PDF buffer as the response
+        res.send(pdfBuffer);
     }
 }

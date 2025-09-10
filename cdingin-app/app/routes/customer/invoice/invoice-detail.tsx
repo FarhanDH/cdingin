@@ -49,8 +49,48 @@ export default function InvoiceDetailPage() {
     const [isPaymentGatewaySheetOpen, setIsPaymentGatewaySheetOpen] =
         useState(false);
     const [snapToken, setSnapToken] = useState<string | null>(null);
-
     const { embed, isScriptLoaded, reloadSnapScript } = useMidtrans();
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const handleDownload = async () => {
+        if (!invoice) return;
+        setIsDownloading(true);
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/invoices/${
+                    invoice.id
+                }/download`,
+                {
+                    withCredentials: true,
+                    responseType: "blob", // <-- PENTING: Minta data sebagai file biner
+                }
+            );
+
+            // Buat URL sementara untuk file yang diterima
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute(
+                "download",
+                `invoice-${invoice.invoiceNumber}.pdf`
+            );
+
+            // Klik link secara terprogram untuk memulai download
+            document.body.appendChild(link);
+            link.click();
+
+            // Bersihkan
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            // Tampilkan notifikasi sukses
+            toast("Tagihan berhasil di-download", customToastStyle);
+        } catch (error) {
+            toast("Gagal mengunduh tagihan.", customToastStyle);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     // Fetch invoice details
     useEffect(() => {
@@ -309,6 +349,18 @@ export default function InvoiceDetailPage() {
                     </div>
                 </div>
                 <InvoiceStamp status={invoice.status} />
+                <Button
+                    variant="outlined"
+                    className="h-11 w-full rounded-full text-md text-primary font-medium border-primary capitalize !font-[Rubik] active:scale-95"
+                    disabled={isDownloading}
+                    onClick={handleDownload}
+                >
+                    {isDownloading ? (
+                        <Spinner size={20} className="text-primary" />
+                    ) : (
+                        "Download Tagihan"
+                    )}
+                </Button>
             </main>
 
             {/* Footer Pilih Metode */}

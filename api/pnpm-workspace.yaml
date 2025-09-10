@@ -2,3 +2,4 @@ ignoredBuiltDependencies:
   - '@nestjs/core'
   - '@swc/core'
   - core-js
+  - puppeteer

@@ -20,6 +20,15 @@ import {
 } from './dto/invoice.response';
 import { InvoiceItem } from './entities/invoice-item.entity';
 import { Invoice } from './entities/invoice.entity';
+import path from 'path';
+import * as puppeteer from 'puppeteer';
+import * as fs from 'fs';
+import * as hbs from 'handlebars';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { Payment } from '../payment/entities/payment.entity';
+import { PaymentStatus } from '~/common/enums/payment-status.enum';
+import { PaymentMethod } from '~/common/enums/payment.enum';
 
 @Injectable()
 export class InvoiceService {
@@ -151,7 +160,9 @@ export class InvoiceService {
         const data = await this.invoiceRepository.findOne({
             where: { id, order: { customer: { id: userId } } },
             relations: {
+                payments: true,
                 order: {
+                    technician: true,
                     customer: true,
                 },
                 items: true,
@@ -163,5 +174,96 @@ export class InvoiceService {
         }
 
         return data;
+    }
+
+    /**
+     * Generates a PDF buffer for a given invoice.
+     * @param invoiceId - The ID of the invoice.
+     * @param customerId - The ID of the customer requesting the PDF.
+     * @returns A Buffer containing the PDF file data.
+     */
+    async generatePdf(invoiceId: string, customerId: string): Promise<Buffer> {
+        // 1. Fetch the complete invoice data
+        const invoice = await this.getById(invoiceId, customerId);
+        if (!invoice) {
+            throw new NotFoundException('Invoice not found.');
+        }
+
+        // 2. Read the HTML template file
+        const templateHtml = fs.readFileSync(
+            path.join(process.cwd(), 'src/core/invoice/templates/invoice.hbs'),
+            'utf8',
+        );
+
+        hbs.registerHelper('formatDate', function (dateString) {
+            return format(new Date(dateString), 'd MMMM yyyy', { locale: id });
+        });
+
+        hbs.registerHelper('formatFullDate', function (dateString) {
+            return format(new Date(dateString), 'd MMMM yyyy', {
+                locale: id,
+            });
+        });
+
+        hbs.registerHelper('formatCurrency', function (amount) {
+            return Number(amount).toLocaleString('id-ID');
+        });
+
+        hbs.registerHelper(
+            'formatPaymentMethod',
+            function (payments: Payment[]) {
+                if (!payments || payments.length === 0) {
+                    return 'N/A';
+                }
+
+                // Cari transaksi yang berhasil
+                const successfulPayment = payments.find(
+                    (p) =>
+                        p.status === PaymentStatus.SETTLEMENT ||
+                        p.status === PaymentStatus.SUCCESS,
+                );
+
+                if (!successfulPayment) {
+                    return 'Belum Dibayar';
+                }
+
+                if (successfulPayment.method === PaymentMethod.CASH) {
+                    return 'Tunai';
+                }
+
+                if (successfulPayment.method === PaymentMethod.MIDTRANS) {
+                    // Coba dapatkan channel pembayaran dari gateway_response
+                    const channel = (successfulPayment.gateway_response as any)
+                        ?.payment_type;
+                    if (channel) {
+                        // Ubah 'bank_transfer' menjadi 'Bank Transfer'
+                        return channel
+                            .replace(/_/g, ' ')
+                            .replace(/\b\w/g, (l) => l.toUpperCase());
+                    }
+                    return 'Pembayaran Digital';
+                }
+
+                return 'N/A';
+            },
+        );
+
+        // 3. Compile the template with Handlebars and inject data
+        const template = hbs.compile(templateHtml);
+        const html = template({
+            invoice,
+        });
+
+        // 4. Launch Puppeteer and generate the PDF
+        const browser = await puppeteer.launch({ args: ['--no-sandbox'] }); // '--no-sandbox' penting untuk lingkungan Docker/Linux
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+        });
+        await browser.close();
+
+        return Buffer.from(pdfBuffer);
     }
 }
