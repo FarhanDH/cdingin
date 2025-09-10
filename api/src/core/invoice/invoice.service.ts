@@ -112,9 +112,6 @@ export class InvoiceService {
             order.status = OrderStatusEnum.WAITING_PAYMENT;
             await queryRunner.manager.save(order);
 
-            // Commit the transaction.
-            await queryRunner.commitTransaction();
-
             const updatedOrder = await this.orderService.getById(orderId);
 
             const notification = await this.notificationService.create({
@@ -124,6 +121,9 @@ export class InvoiceService {
                 title: 'Tagihanmu udah siap!',
                 message: `Tagihan untuk pesanan ${order.id} sudah tersedia. Yuk, bayar sekarang!`,
             });
+
+            // Commit the transaction.
+            await queryRunner.commitTransaction();
 
             await this.pushSubscriptionService.sendNotificationToUser(
                 updatedOrder.customer.id,

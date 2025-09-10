@@ -50,7 +50,7 @@ export default function OtpStep({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit((data) =>
-                        onSubmit({ otp: data.otp }),
+                        onSubmit({ otp: data.otp })
                     )}
                     className="space-y-6"
                 >
@@ -105,7 +105,10 @@ export default function OtpStep({
                                                             .toString()
                                                             .padStart(2, "0")}`}
                                                     </span>
-                                                    <Spinner size={22} />
+                                                    <Spinner
+                                                        size={22}
+                                                        className="text-secondary"
+                                                    />
                                                 </>
                                             ) : (
                                                 <Button
@@ -144,7 +147,7 @@ export default function OtpStep({
                             else
                                 window.open(
                                     "https://mail.google.com/mail/mu/mp/679/#",
-                                    "_blank",
+                                    "_blank"
                                 );
                         }}
                     >

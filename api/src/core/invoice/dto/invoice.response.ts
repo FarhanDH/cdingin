@@ -1,9 +1,10 @@
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
-import { Invoice } from '../entities/invoice.entity';
+import { PaymentMethod } from '~/common/enums/payment.enum';
 import {
     OrderResponse,
     toOrderResponse,
 } from '~/core/order/dto/order.response';
+import { Invoice } from '../entities/invoice.entity';
 
 export class InvoiceItemResponseDto {
     id: number;
@@ -23,6 +24,12 @@ export class InvoiceResponseDto {
     createdAt: Date;
     updatedAt: Date;
     items: InvoiceItemResponseDto[];
+    payments: {
+        id: string;
+        status: string;
+        method: PaymentMethod;
+        paymentChannel: string;
+    }[];
 }
 
 export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
@@ -41,6 +48,15 @@ export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
             quantity: item.quantity,
             unitPrice: item.unit_price,
             totalPrice: item.total_price,
+        })),
+        payments: invoice.payments.map((payment) => ({
+            id: payment.id,
+            status: payment.status,
+            method: payment.method,
+            paymentChannel:
+                (
+                    payment.gateway_response as { payment_type: string }
+                )?.payment_type.toUpperCase() ?? null,
         })),
     };
 };

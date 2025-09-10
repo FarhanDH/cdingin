@@ -228,10 +228,7 @@ export default function TechnicianOrderSummary() {
 
             case "completed":
                 // dipicu oleh sistem setelah customer bayar
-                toast(
-                    `Lunas! Orderan selesai. Kerja bagus! ✨`,
-                    customToastStyle
-                );
+                toast(`Lunas! Orderan selesai! 🙌`, customToastStyle);
                 break;
 
             case "cancelled":
@@ -265,6 +262,39 @@ export default function TechnicianOrderSummary() {
 
             // Show notification
             showUpdateToast(newStatus, response.data.data.customer.fullName);
+        } catch (err) {
+            const errorMessage =
+                err instanceof AxiosError
+                    ? err.response?.data?.message
+                    : "Terjadi kesalahan";
+            toast(
+                errorMessage || "Gagal memperbarui status.",
+                customToastStyle
+            );
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleCashPayment = async () => {
+        if (!order) return;
+        setIsUpdating(true);
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/payments/invoices/${
+                    order.invoiceId
+                }/confirm-cash-payment`,
+                {},
+                { withCredentials: true }
+            );
+
+            // Update local state order with new data from response
+            setOrder(response.data.data);
+
+            showUpdateToast(
+                response.data.data.status,
+                response.data.data.customer.fullName
+            );
         } catch (err) {
             const errorMessage =
                 err instanceof AxiosError
@@ -362,7 +392,9 @@ export default function TechnicianOrderSummary() {
             case "waiting_payment":
                 return {
                     text: "Terima bayar tunai",
-                    action: () => updateOrderStatus("completed"),
+                    action: () => {
+                        handleCashPayment();
+                    },
                 };
             default:
                 return null;

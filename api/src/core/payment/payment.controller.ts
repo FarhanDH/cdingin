@@ -1,13 +1,22 @@
-import { Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
-import { PaymentService } from './payment.service';
+import {
+    Body,
+    Controller,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Request,
+    UseGuards,
+} from '@nestjs/common';
+import { ApiResponse } from '~/common/api-response.dto';
 import { Roles } from '~/common/decorators/roles.decorator';
 import { RoleEnum } from '~/common/enums/role.enum';
+import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { ApiResponse } from '~/common/api-response.dto';
-import { RequestWithUser } from '~/common/utils';
+import { OrderResponse } from '../order/dto/order.response';
 import { MidtransTokenResponse } from './dto/payment.response';
-import { Invoice } from '../invoice/entities/invoice.entity';
+import { PaymentService } from './payment.service';
 
 @Controller('payments')
 export class PaymentController {
@@ -37,11 +46,11 @@ export class PaymentController {
 
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(RoleEnum.TECHNICIAN)
-    @Post(':invoiceId/confirm-cash-payment')
+    @Post('/invoices/:invoiceId/confirm-cash-payment')
     async confirmCashPayment(
         @Param('invoiceId') invoiceId: string,
         @Request() req: RequestWithUser,
-    ): Promise<ApiResponse<Invoice>> {
+    ): Promise<ApiResponse<OrderResponse>> {
         const data = await this.paymentService.confirmCashPayment(
             invoiceId,
             req.user.sub,
@@ -51,5 +60,18 @@ export class PaymentController {
             message: 'Cash payment confirmed successfully.',
             data,
         };
+    }
+
+    /**
+     * Public endpoint to receive webhook notifications from Midtrans.
+     * No authentication guards are used here as the request comes from Midtrans servers.
+     * Security is handled by verifying the notification signature.
+     */
+    @Post('midtrans-webhook')
+    @HttpCode(HttpStatus.OK)
+    async handleMidtransWebhook(@Body() body: any) {
+        // We don't need to return anything in the response body.
+        // The service handles all logic asynchronously.
+        return await this.paymentService.handleMidtransWebhook(body);
     }
 }

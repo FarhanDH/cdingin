@@ -1,19 +1,18 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    OneToOne,
-    JoinColumn,
-    Relation,
     Column,
-    OneToMany,
     CreateDateColumn,
+    Entity,
+    JoinColumn,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+    Relation,
     UpdateDateColumn,
 } from 'typeorm';
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
-import { PaymentMethod } from '~/common/enums/payment.enum';
 import { Order } from '~/core/order/entities/order.entity';
-import { InvoiceItem } from './invoice-item.entity';
 import { Payment } from '~/core/payment/entities/payment.entity';
+import { InvoiceItem } from './invoice-item.entity';
 
 @Entity('invoices')
 export class Invoice {
@@ -42,13 +41,6 @@ export class Invoice {
 
     @Column({ type: 'timestamp with time zone', nullable: true })
     paid_at: Date | null;
-
-    @Column({
-        type: 'enum',
-        enum: PaymentMethod,
-        nullable: true,
-    })
-    payment_method: PaymentMethod | null;
 
     /** The list of items included in this invoice. */
     @OneToMany(() => InvoiceItem, (item) => item.invoice, { cascade: true })

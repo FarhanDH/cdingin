@@ -358,6 +358,7 @@ export class OrderService {
             where: { id: orderId },
             relations: {
                 invoice: {
+                    payments: true,
                     order: {
                         customer: true,
                         ac_units: true,

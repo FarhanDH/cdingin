@@ -1,14 +1,14 @@
 import {
-    Entity,
-    PrimaryColumn,
-    ManyToOne,
-    Relation,
     Column,
     CreateDateColumn,
+    Entity,
+    ManyToOne,
+    PrimaryColumn,
+    Relation,
     UpdateDateColumn,
 } from 'typeorm';
-import { PaymentGateway } from '~/common/enums/payment.enum';
-import { TransactionStatus } from '~/common/enums/transaction-status.enum';
+import { PaymentStatus } from '~/common/enums/payment-status.enum';
+import { PaymentMethod } from '~/common/enums/payment.enum';
 import { Invoice } from '~/core/invoice/entities/invoice.entity';
 
 @Entity('payments')
@@ -23,20 +23,19 @@ export class Payment {
 
     @Column({
         type: 'enum',
-        enum: TransactionStatus,
-        default: TransactionStatus.PENDING,
+        enum: PaymentStatus,
     })
-    status: TransactionStatus;
+    status: PaymentStatus;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     amount: number;
 
     @Column({
         type: 'enum',
-        enum: PaymentGateway,
-        default: PaymentGateway.MIDTRANS,
+        enum: PaymentMethod,
+        nullable: true,
     })
-    payment_gateway: PaymentGateway;
+    method: PaymentMethod | null;
 
     /** Store the full webhook response from the payment gateway for auditing. */
     @Column({ type: 'jsonb', nullable: true })

@@ -16,18 +16,18 @@ import {
     DialogTitle,
 } from "~/components/ui/dialog";
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from "~/components/ui/drawer";
-import { ScrollArea } from "~/components/ui/scroll-area";
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import {
     Table,
     TableBody,
+    TableCaption,
     TableCell,
     TableFooter,
     TableHead,
@@ -46,7 +46,8 @@ export default function InvoiceDetailPage() {
     const [isPaying, setIsPaying] = useState(false);
     const [isCashInfoOpen, setIsCashInfoOpen] = useState(false);
     const [customerAddress, setCustomerAddress] = useState<string>("");
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isPaymentGatewaySheetOpen, setIsPaymentGatewaySheetOpen] =
+        useState(false);
     const [snapToken, setSnapToken] = useState<string | null>(null);
 
     const { embed, isScriptLoaded, reloadSnapScript } = useMidtrans();
@@ -100,7 +101,7 @@ export default function InvoiceDetailPage() {
 
     // Embed Snap setiap kali drawer dibuka
     useEffect(() => {
-        if (isDrawerOpen && snapToken && isScriptLoaded) {
+        if (isPaymentGatewaySheetOpen && snapToken && isScriptLoaded) {
             const timer = setTimeout(() => {
                 // Cleanup sebelum embed ulang
                 const container = document.getElementById("snap-container");
@@ -112,7 +113,7 @@ export default function InvoiceDetailPage() {
                             "Pembayaran berhasil! Terima kasih.",
                             customToastStyle
                         );
-                        setIsDrawerOpen(false);
+                        setIsPaymentGatewaySheetOpen(false);
                         navigate(`/order/${orderId}`);
                     },
                     onPending: () => {
@@ -120,7 +121,7 @@ export default function InvoiceDetailPage() {
                             "Pembayaranmu sedang diproses.",
                             customToastStyle
                         );
-                        setIsDrawerOpen(false);
+                        setIsPaymentGatewaySheetOpen(false);
                         navigate(`/order/${orderId}`);
                     },
                     onError: () => {
@@ -128,7 +129,7 @@ export default function InvoiceDetailPage() {
                             "Pembayaran gagal. Coba lagi, ya.",
                             customToastStyle
                         );
-                        setIsDrawerOpen(false);
+                        setIsPaymentGatewaySheetOpen(false);
                     },
                     onClose: () => {
                         toast(
@@ -139,14 +140,21 @@ export default function InvoiceDetailPage() {
                         const container =
                             document.getElementById("snap-container");
                         if (container) container.innerHTML = "";
-                        setIsDrawerOpen(false);
+                        setIsPaymentGatewaySheetOpen(false);
                     },
                 });
             }, 100);
 
             return () => clearTimeout(timer);
         }
-    }, [isDrawerOpen, snapToken, isScriptLoaded, embed, navigate, orderId]);
+    }, [
+        isPaymentGatewaySheetOpen,
+        snapToken,
+        isScriptLoaded,
+        embed,
+        navigate,
+        orderId,
+    ]);
 
     // Handle digital payment
     const handleDigitalPayment = async () => {
@@ -164,7 +172,7 @@ export default function InvoiceDetailPage() {
             const midtransToken: MidtransTokenResponse = response.data.data;
 
             setSnapToken(midtransToken.token); // token baru
-            setIsDrawerOpen(true);
+            setIsPaymentGatewaySheetOpen(true);
         } catch (error) {
             const errorMessage =
                 error instanceof AxiosError
@@ -197,7 +205,12 @@ export default function InvoiceDetailPage() {
                 navigateTo={`/order/${orderId}`}
             />
             <main className="p-2 space-y-4">
-                <div className="bg-white p-2 flex justify-between items-center">
+                <div className="bg-white p-2 flex-col space-y-2 items-center">
+                    <InfoCard
+                        title="No."
+                        name={`#${invoice.invoiceNumber}`}
+                        isCentered={true}
+                    />
                     <DateInfo label="Tanggal Terbit" date={invoice.issuedAt} />
                 </div>
 
@@ -218,16 +231,33 @@ export default function InvoiceDetailPage() {
                         }`}
                     />
                 </div>
-                <InfoCard title="No." name={`#${invoice.invoiceNumber}`} />
 
                 {/* Rincian Tagihan */}
                 <div className="overflow-hidden">
                     <h3 className="font-semibold p-2">Rincian Tagihan</h3>
                     <div className="w-full">
                         <Table className="text-xs">
+                            {invoice.status === "paid" && (
+                                <TableCaption className="text-start">
+                                    Bayar Pakai{" "}
+                                    {invoice.payments.find(
+                                        (payment) =>
+                                            payment.status === "success" ||
+                                            payment.status === "settlement"
+                                    )?.method === "cash"
+                                        ? "Tunai"
+                                        : invoice.payments.find(
+                                              (payment) =>
+                                                  payment.status ===
+                                                      "success" ||
+                                                  payment.status ===
+                                                      "settlement"
+                                          )?.paymentChannel}
+                                </TableCaption>
+                            )}
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
-                                    <TableHead>QTY</TableHead>
+                                    <TableHead>Banyaknya</TableHead>
                                     <TableHead>Deskripsi</TableHead>
                                     <TableHead className="text-right">
                                         Harga
@@ -282,26 +312,32 @@ export default function InvoiceDetailPage() {
             </main>
 
             {/* Footer Pilih Metode */}
-            <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
-                <h3 className="font-semibold">Pilih Metode Pembayaran</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <Button
-                        variant="outlined"
-                        className="h-11 text-md text-primary font-medium border-primary capitalize !font-[Rubik] active:scale-95"
-                        disabled={isDrawerOpen}
-                        onClick={() => setIsCashInfoOpen(true)}
-                    >
-                        Bayar Tunai
-                    </Button>
-                    <Button
-                        className="h-11 text-md bg-primary font-medium text-white capitalize !font-[Rubik] active:scale-95"
-                        onClick={handleDigitalPayment}
-                        disabled={isPaying || !isScriptLoaded || isDrawerOpen}
-                    >
-                        {isPaying ? <Spinner size={20} /> : "Bayar Digital"}
-                    </Button>
-                </div>
-            </footer>
+            {invoice.status === "unpaid" && (
+                <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
+                    <h3 className="font-semibold">Pilih Metode Pembayaran</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Button
+                            variant="outlined"
+                            className="h-11 text-md text-primary font-medium border-primary capitalize !font-[Rubik] active:scale-95"
+                            disabled={isPaymentGatewaySheetOpen}
+                            onClick={() => setIsCashInfoOpen(true)}
+                        >
+                            Bayar Tunai
+                        </Button>
+                        <Button
+                            className="h-11 text-md bg-primary font-medium text-white capitalize !font-[Rubik] active:scale-95"
+                            onClick={handleDigitalPayment}
+                            disabled={
+                                isPaying ||
+                                !isScriptLoaded ||
+                                isPaymentGatewaySheetOpen
+                            }
+                        >
+                            {isPaying ? <Spinner size={20} /> : "Bayar Digital"}
+                        </Button>
+                    </div>
+                </footer>
+            )}
 
             {/* Cash Dialog */}
             <Dialog open={isCashInfoOpen} onOpenChange={setIsCashInfoOpen}>
@@ -322,11 +358,11 @@ export default function InvoiceDetailPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Midtrans Drawer Snap */}
-            <Drawer
-                open={isDrawerOpen}
+            {/* Midtrans Sheet Snap */}
+            <Sheet
+                open={isPaymentGatewaySheetOpen}
                 onOpenChange={(open) => {
-                    setIsDrawerOpen(open);
+                    setIsPaymentGatewaySheetOpen(open);
                     if (!open) {
                         const container =
                             document.getElementById("snap-container");
@@ -336,31 +372,26 @@ export default function InvoiceDetailPage() {
                     }
                 }}
             >
-                <DrawerContent
-                    className="max-w-lg mx-auto flex flex-col"
+                <SheetContent
+                    isXIconVisible={false}
+                    side="bottom"
+                    className="rounded-t-2xl max-w-lg mx-auto p-2 text-center"
                     onInteractOutside={(e) => e.preventDefault()}
                     onEscapeKeyDown={(e) => e.preventDefault()}
                 >
-                    <DrawerHeader className="border-b">
-                        <DrawerTitle>Pembayaran Digital</DrawerTitle>
-                        <DrawerDescription>
+                    <SheetHeader>
+                        <SheetTitle>Pembayaran Digital</SheetTitle>
+                        <SheetDescription>
                             Silakan pilih metode bayar
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <ScrollArea
-                        className="overflow-y-scroll"
-                        showScrollBar={false}
-                    >
-                        {/* <div className="flex-1 overflow-y-auto px-2"> */}
-                        {isDrawerOpen && (
-                            <div id="snap-container" className="w-full" />
-                        )}
-                        {/* </div> */}
-                    </ScrollArea>
-                    <DrawerFooter className="border-t">
+                        </SheetDescription>
+                    </SheetHeader>
+                    {isPaymentGatewaySheetOpen && (
+                        <div id="snap-container" className="w-full" />
+                    )}
+                    <SheetFooter>
                         <Button
                             onClick={() => {
-                                setIsDrawerOpen(false);
+                                setIsPaymentGatewaySheetOpen(false);
                                 const container =
                                     document.getElementById("snap-container");
                                 if (container) container.innerHTML = "";
@@ -372,9 +403,9 @@ export default function InvoiceDetailPage() {
                         >
                             Ga, jadi
                         </Button>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }

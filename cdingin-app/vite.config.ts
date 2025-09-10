@@ -484,11 +484,6 @@ export default defineConfig({
             // },
         }),
     ],
-    // resolve: {
-    //     alias: {
-    //         "@": path.resolve(__dirname, "./app"),
-    //     },
-    // },
 
     // server: {
     //     // port: 3000,

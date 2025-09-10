@@ -39,7 +39,10 @@ export const configuration = () => {
             secret: process.env.CRON_SECRET,
         },
         midtrans: {
+            isProduction: process.env
+                .MIDTRANS_IS_PRODUCTION as unknown as boolean,
             serverKey: process.env.MIDTRANS_SERVER_KEY,
+            clientKey: process.env.MIDTRANS_CLIENT_KEY,
             url: process.env.MIDTRANS_SANDBOX_URL,
             username: process.env.MIDTRANS_USERNAME,
             password: process.env.MIDTRANS_PASSWORD,
