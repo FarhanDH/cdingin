@@ -24,20 +24,21 @@ export class InvoiceResponseDto {
     createdAt: Date;
     updatedAt: Date;
     items: InvoiceItemResponseDto[];
-    payments: {
-        id: string;
-        status: string;
-        method: PaymentMethod;
-        paymentChannel: string;
-    }[];
+    payments:
+        | {
+              id: string;
+              status: string;
+              method: PaymentMethod;
+              paymentChannel: string;
+          }[]
+        | [];
 }
 
 export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
-    const formatPaymentString = (str) =>
-        str
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
+    const formatPaymentString = (str: string | null | undefined) => {
+        if (!str) return null;
+        return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    };
 
     return {
         id: invoice.id,
@@ -55,16 +56,15 @@ export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
             unitPrice: item.unit_price,
             totalPrice: item.total_price,
         })),
-        payments: invoice.payments.map((payment) => ({
-            id: payment.id,
-            status: payment.status,
-            method: payment.method,
-            paymentChannel:
-                formatPaymentString(
-                    (
-                        payment.gateway_response as { payment_type: string }
-                    )?.payment_type.toUpperCase(),
-                ) ?? null,
-        })),
+        payments:
+            invoice.payments.map((payment) => ({
+                id: payment.id,
+                status: payment.status,
+                method: payment.method,
+                paymentChannel: formatPaymentString(
+                    (payment.gateway_response as { payment_type: string })
+                        ?.payment_type,
+                ),
+            })) || [],
     };
 };

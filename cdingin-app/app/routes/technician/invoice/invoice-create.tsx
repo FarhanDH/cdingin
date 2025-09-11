@@ -1,14 +1,31 @@
-import { Button, Input } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import axios, { AxiosError } from "axios";
-import { Trash2, Plus } from "lucide-react";
-import { useState, useMemo } from "react";
-
-import { useParams, useNavigate } from "react-router";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
+import InvoiceItemDialog from "~/components/invoice/invoice-item-dialog";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "~/components/ui/table";
 import type { InvoiceItemForm } from "~/types/invoice.types";
+import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
 
 /**
  * A page for technicians to create and submit a new invoice for an order.
@@ -16,68 +33,49 @@ import type { InvoiceItemForm } from "~/types/invoice.types";
 export default function CreateInvoice() {
     const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
-    const [items, setItems] = useState<InvoiceItemForm[]>([
-        // Mulai dengan satu item default
-        { id: 1, description: "Jasa Servis AC", quantity: 1, unitPrice: 0 },
-    ]);
+    const [items, setItems] = useState<InvoiceItemForm[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isInputDialogOpen, setIsInputDialogOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<InvoiceItemForm | null>(
+        null
+    );
+    const [isSheetConfirmationOpen, setIsSheetConfirmationOpen] =
+        useState<boolean>(false);
 
     // --- LOGIC FOR MANAGING INVOICE ITEMS ---
-
-    /**
-     * Adds a new, empty item to the invoice list.
-     */
-    const handleAddItem = () => {
-        setItems([
-            ...items,
-            // Gunakan timestamp sebagai ID unik sementara
-            { id: Date.now(), description: "", quantity: 1, unitPrice: 0 },
-        ]);
+    const handleOpenAddDialog = () => {
+        setEditingItem(null); // Pastikan mode 'add'
+        setIsInputDialogOpen(true);
     };
 
-    /**
-     * Removes an item from the invoice list by its ID.
-     * @param id - The unique ID of the item to remove.
-     */
-    const handleRemoveItem = (id: number) => {
-        if (items.length <= 1) {
-            toast("Minimal harus ada satu item tagihan.", customToastStyle);
-            return;
+    const handleOpenEditDialog = (item: InvoiceItemForm) => {
+        setEditingItem(item); // Set item yang akan diedit
+        setIsInputDialogOpen(true);
+    };
+
+    const handleSaveItem = (itemToSave: InvoiceItemForm) => {
+        // Cek apakah ini item baru atau item yang sudah ada
+        const itemExists = items.some((item) => item.id === itemToSave.id);
+
+        if (itemExists) {
+            // Update item yang sudah ada
+            setItems(
+                items.map((item) =>
+                    item.id === itemToSave.id ? itemToSave : item
+                )
+            );
+        } else {
+            // Tambah item baru
+            setItems([...items, itemToSave]);
         }
-        setItems(items.filter((item) => item.id !== id));
     };
 
-    /**
-     * Updates a specific field of an item in the list.
-     * @param id - The ID of the item to update.
-     * @param field - The name of the field to update ('description', 'quantity', 'unitPrice').
-     * @param value - The new value for the field.
-     */
-    const handleItemChange = (
-        id: number,
-        field: keyof Omit<InvoiceItemForm, "id">,
-        value: string | number
-    ) => {
-        setItems(
-            items.map((item) => {
-                if (item.id === id) {
-                    const numericValue =
-                        field === "quantity" || field === "unitPrice"
-                            ? Number(value) || 0
-                            : value;
-                    return { ...item, [field]: numericValue };
-                }
-                return item;
-            })
-        );
+    const handleRemoveItem = (id: number) => {
+        setItems(items.filter((item) => item.id !== id));
     };
 
     // --- CALCULATIONS & SUBMISSION ---
 
-    /**
-     * Calculates the total amount of the invoice in real-time.
-     * `useMemo` ensures this calculation only runs when the `items` array changes.
-     */
     const totalAmount = useMemo(() => {
         return items.reduce(
             (sum, item) => sum + item.quantity * item.unitPrice,
@@ -149,85 +147,91 @@ export default function CreateInvoice() {
                 </h2>
 
                 {/* Dynamic list of invoice items */}
-                {items.map((item, index) => (
-                    <div
-                        key={item.id}
-                        className="bg-white p-4 rounded-lg shadow-sm border space-y-3"
-                    >
-                        <div className="flex justify-between items-center">
-                            <p className="font-semibold text-gray-600">
-                                Item #{index + 1}
-                            </p>
-                            <Button
-                                className="text-red-500 hover:bg-red-50"
-                                onClick={() => handleRemoveItem(item.id)}
-                            >
-                                <Trash2 size={18} />
-                            </Button>
-                        </div>
-
-                        {/* Description Input */}
-                        <Input
-                            type="text"
-                            placeholder="Deskripsi (e.g., Jasa Cuci AC)"
-                            value={item.description}
-                            onChange={(e) =>
-                                handleItemChange(
-                                    item.id,
-                                    "description",
-                                    e.target.value
-                                )
-                            }
-                            className="text-md"
-                        />
-
-                        {/* Quantity and Price Inputs */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">
-                                    Kuantitas
-                                </label>
-                                <Input
-                                    type="number"
-                                    placeholder="1"
-                                    value={item.quantity}
-                                    onChange={(e) =>
-                                        handleItemChange(
-                                            item.id,
-                                            "quantity",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="text-md"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">
-                                    Harga Satuan (Rp)
-                                </label>
-                                <Input
-                                    type="number"
-                                    placeholder="75000"
-                                    value={item.unitPrice}
-                                    onChange={(e) =>
-                                        handleItemChange(
-                                            item.id,
-                                            "unitPrice",
-                                            e.target.value
-                                        )
-                                    }
-                                    className="text-md"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                <div className="bg-white shadow-sm border">
+                    <Table className="rounded-lg">
+                        <TableHeader className="bg-gray-100 rounded-t-lg">
+                            <TableRow>
+                                <TableHead className="w-[60%]">
+                                    Deskripsi
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Jumlah
+                                </TableHead>
+                                <TableHead className="w-[80px] text-right">
+                                    Aksi
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {items.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={3}
+                                        className="text-center text-gray-500 h-24"
+                                    >
+                                        Belum ada item ditambahkan.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                items.map((item) => (
+                                    <TableRow key={item.id}>
+                                        {/* Item description */}
+                                        <TableCell className="font-medium">
+                                            <p>{item.description}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {item.quantity} x Rp
+                                                {item.unitPrice.toLocaleString(
+                                                    "id-ID"
+                                                )}
+                                            </p>
+                                        </TableCell>
+                                        {/* Amount QTY and price */}
+                                        <TableCell className="text-right font-medium">
+                                            Rp
+                                            {(
+                                                item.quantity * item.unitPrice
+                                            ).toLocaleString("id-ID")}
+                                        </TableCell>
+                                        {/* Action buttons */}
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <IconButton
+                                                    size="small"
+                                                    className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                                                    onClick={() =>
+                                                        handleOpenEditDialog(
+                                                            item
+                                                        )
+                                                    }
+                                                >
+                                                    <Pencil size={16} />
+                                                </IconButton>
+                                                <IconButton
+                                                    size="small"
+                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() =>
+                                                        handleRemoveItem(
+                                                            item.id
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 size={16} />
+                                                </IconButton>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
 
                 {/* Add Item Button */}
                 <Button
                     variant="outlined"
-                    className="w-full border-dashed"
-                    onClick={handleAddItem}
+                    className="w-full border-dashed border-primary capitalize text-primary !font-[Rubik] active:scale-95"
+                    onClick={handleOpenAddDialog}
+                    disabled={isSubmitting}
                 >
                     <Plus size={16} className="mr-2" />
                     Tambah Item Lain
@@ -245,13 +249,69 @@ export default function CreateInvoice() {
                     </span>
                 </div>
                 <Button
-                    onClick={handleSubmitInvoice}
-                    disabled={isSubmitting}
-                    className="w-full h-12 rounded-full text-base font-semibold capitalize bg-primary text-white hover:bg-primary/90 active:scale-95"
+                    onClick={() => setIsSheetConfirmationOpen(true)}
+                    disabled={isSubmitting || items.length <= 0}
+                    className="w-full h-12 rounded-full text-base !font-[Rubik] font-semibold normal-case bg-primary text-white hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isSubmitting ? <Spinner size={20} /> : "Kirim Tagihan"}
+                    {isSubmitting ? <Spinner size={20} /> : "Kirim tagihan"}
                 </Button>
             </footer>
+
+            <InvoiceItemDialog
+                isOpen={isInputDialogOpen}
+                onClose={() => setIsInputDialogOpen(false)}
+                onSave={handleSaveItem}
+                itemToEdit={editingItem}
+            />
+
+            <Sheet
+                open={isSheetConfirmationOpen}
+                onOpenChange={setIsSheetConfirmationOpen}
+            >
+                <SheetContent
+                    side="bottom"
+                    className="rounded-t-3xl max-w-lg mx-auto text-center"
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="-mb-8">
+                        <img
+                            src={technicianConfirmationIllustration}
+                            alt="Ilustrasi Peta"
+                            className="w-full mx-auto"
+                        />
+                        <SheetTitle className="text-xl font-bold">
+                            Pastiin tagihannya udah sesuai, ya
+                        </SheetTitle>
+                        <SheetDescription className="text-[16px] text-gray-600">
+                            Abis dikonfirmasi, udah gak bisa diubah lagi.
+                            Tagihan bakal langsung dikirim ke pelanggan biar
+                            cepat dibayar.
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    <SheetFooter className="grid grid-cols-2 gap-4">
+                        <Button
+                            onClick={() => setIsSheetConfirmationOpen(false)}
+                            disabled={isSubmitting}
+                            className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
+                        >
+                            Cek kembali
+                        </Button>
+                        <Button
+                            onClick={handleSubmitInvoice}
+                            disabled={isSubmitting}
+                            className="w-full h-12 rounded-full font-semibold text-md active:scale-95 cursor-pointer normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                        >
+                            {isSubmitting ? (
+                                <Spinner size={20} />
+                            ) : (
+                                "Oke, kirim"
+                            )}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }

@@ -30,7 +30,8 @@ export class InvoiceController {
     async create(
         @Param('orderId') orderId: string,
         @Body() createInvoiceDto: CreateInvoiceDto,
-    ): Promise<ApiResponse<InvoiceResponseDto>> {
+        // ): Promise<ApiResponse<InvoiceResponseDto>> {
+    ) {
         const data = await this.invoiceService.create(
             orderId,
             createInvoiceDto,
@@ -47,7 +48,7 @@ export class InvoiceController {
         @Request() request: RequestWithUser,
         @Param('invoiceId') invoiceId: string,
     ): Promise<ApiResponse<Invoice>> {
-        const data = await this.invoiceService.getById(
+        const data = await this.invoiceService.getByIdWithUserId(
             invoiceId,
             request.user.sub,
         );

@@ -112,13 +112,16 @@ export default function InvoiceDetailPage() {
                 navigateTo={`/technician/order/${orderId}/detail`}
             />
             <main className="p-2 space-y-4">
-                <div className="bg-white p-2 flex justify-between items-center">
+                <div className="bg-white p-2 flex-col space-y-2 items-center">
+                    <InfoCard
+                        title="No."
+                        name={`#${invoice.invoiceNumber}`}
+                        isCentered={true}
+                    />
                     <DateInfo label="Tanggal Terbit" date={invoice.issuedAt} />
-                    {/* Anda bisa menambahkan tanggal jatuh tempo di sini jika ada */}
-                    {/* <DateInfo label="Jatuh Tempo" date={invoice.dueDate} /> */}
                 </div>
 
-                {/* --- SENDER & RECEIVER INFO --- */}
+                {/* Info pengirim & penerima */}
                 <div className="grid grid-cols-2 gap-4 justify-between">
                     <InfoCard
                         title="Ditagihkan oleh"

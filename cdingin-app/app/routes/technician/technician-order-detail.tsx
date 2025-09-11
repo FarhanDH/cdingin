@@ -358,7 +358,7 @@ export default function TechnicianOrderDetail() {
                             </div>
                             <div className="text-sm text-gray-700">
                                 {formattedDate(order.serviceDate, {
-                                    time: true,
+                                    time: false,
                                 })}
                             </div>
                         </div>

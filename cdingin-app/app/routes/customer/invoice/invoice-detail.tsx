@@ -227,7 +227,7 @@ export default function InvoiceDetailPage() {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <Spinner size={40} />
+                <Spinner size={40} className="text-primary" />
             </div>
         );
     }
@@ -370,14 +370,14 @@ export default function InvoiceDetailPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <Button
                             variant="outlined"
-                            className="h-11 text-md text-primary font-medium border-primary capitalize !font-[Rubik] active:scale-95"
+                            className="h-12 text-base text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95 rounded-full"
                             disabled={isPaymentGatewaySheetOpen}
                             onClick={() => setIsCashInfoOpen(true)}
                         >
-                            Bayar Tunai
+                            Bayar tunai
                         </Button>
                         <Button
-                            className="h-11 text-md bg-primary font-medium text-white capitalize !font-[Rubik] active:scale-95"
+                            className="h-12 text-base bg-primary font-medium text-white normal-case !font-[Rubik] active:scale-95 rounded-full"
                             onClick={handleDigitalPayment}
                             disabled={
                                 isPaying ||
@@ -385,7 +385,7 @@ export default function InvoiceDetailPage() {
                                 isPaymentGatewaySheetOpen
                             }
                         >
-                            {isPaying ? <Spinner size={20} /> : "Bayar Digital"}
+                            {isPaying ? <Spinner size={20} /> : "Bayar digital"}
                         </Button>
                     </div>
                 </footer>
@@ -395,17 +395,17 @@ export default function InvoiceDetailPage() {
             <Dialog open={isCashInfoOpen} onOpenChange={setIsCashInfoOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Pembayaran Tunai</DialogTitle>
-                        <DialogDescription className="pt-2">
+                        <DialogTitle>Langsung Bayar ke Teknisi</DialogTitle>
+                        <DialogDescription className="">
                             Siapin uang pas, yaa 😉. Biar teknisi ga repot cari
                             kembalian.
                         </DialogDescription>
                     </DialogHeader>
                     <Button
                         onClick={() => setIsCashInfoOpen(false)}
-                        className="mt-4 w-full capitalize text-white bg-primary !font-[Rubik] active:scale-95 h-11 rounded-full"
+                        className=" w-full text-base normal-case text-white bg-primary !font-[Rubik] active:scale-95 h-11 rounded-full"
                     >
-                        Oke, Siap
+                        Oke, siap
                     </Button>
                 </DialogContent>
             </Dialog>

@@ -1,9 +1,11 @@
 import {
+    Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogContentText,
     DialogTitle,
+    IconButton,
 } from "@mui/material";
 import axios from "axios";
 import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
@@ -23,7 +25,6 @@ import addNote from "~/assets/add-note.png";
 import noteFilled from "~/assets/note-filled.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
-import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import CustomDay from "~/components/ui/custom-day";
 import {
@@ -46,6 +47,15 @@ import {
 } from "~/types/schedule.types";
 import "../../../app.css";
 import cashImage from "../../../assets/cash.png";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
+import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
 
 interface SummaryStepProps {
     formData: Partial<OrderFormData>;
@@ -67,8 +77,11 @@ export default function SummaryStep({
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
     const [availability, setAvailability] = useState<AvailabilityData[]>([]);
     const [isLoadingAvailability, setIsLoadingAvailability] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [tempDate, setTempDate] = useState<Date | undefined>();
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [isSheetConfirmationOpen, setIsSheetConfirmationOpen] =
+        useState<boolean>(false);
 
     const totalQuantityInCart =
         formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
@@ -280,11 +293,10 @@ export default function SummaryStep({
                                     </div>
                                 </div>
                                 <Button
-                                    variant={"outline"}
                                     onClick={() =>
                                         navigateToStep("ac-problems")
                                     }
-                                    className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95"
+                                    className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 normal-case text-base !font-[Rubik]"
                                 >
                                     Ganti
                                 </Button>
@@ -315,10 +327,8 @@ export default function SummaryStep({
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
+                                                    <IconButton
+                                                        className="rounded-full border border-primary text-primary cursor-pointer active:scale-95"
                                                         onClick={() =>
                                                             handleDecreaseQuantity(
                                                                 unit
@@ -326,14 +336,12 @@ export default function SummaryStep({
                                                         }
                                                     >
                                                         <Minus className="w-4 h-4" />
-                                                    </Button>
+                                                    </IconButton>
                                                     <span className="font-semibold text-lg w-4 text-center">
                                                         {unit.quantity}
                                                     </span>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="w-8 h-8 rounded-full border-primary text-primary cursor-pointer active:scale-95"
+                                                    <IconButton
+                                                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95 border"
                                                         onClick={() =>
                                                             handleIncreaseQuantity(
                                                                 unit
@@ -341,7 +349,7 @@ export default function SummaryStep({
                                                         }
                                                     >
                                                         <Plus className="w-4 h-4" />
-                                                    </Button>
+                                                    </IconButton>
                                                 </div>
                                             </div>
                                             {index <
@@ -372,11 +380,10 @@ export default function SummaryStep({
                                         </p>
                                     </div>
                                     <Button
-                                        variant={"outline"}
                                         onClick={() =>
                                             navigateToStep("ac-type")
                                         }
-                                        className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95"
+                                        className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 text-base normal-case !font-[Rubik]"
                                     >
                                         Tambah
                                     </Button>
@@ -410,20 +417,13 @@ export default function SummaryStep({
 
                             {/* Confirm Button */}
                             <Button
-                                onClick={() => {
-                                    if (selectedDate) {
-                                        onConfirm({
-                                            note,
-                                            serviceDate: selectedDate,
-                                        });
-                                    }
-                                }}
+                                onClick={() => setIsSheetConfirmationOpen(true)}
                                 disabled={
                                     !selectedDate ||
                                     !formData.acUnits ||
                                     formData.acUnits.length === 0
                                 }
-                                className="flex-1 h-12 px-4 rounded-full flex bg-primary text-white justify-between items-center active:scale-95 cursor-pointer"
+                                className="flex-1 h-12 px-4 rounded-full flex bg-primary text-white justify-between items-center active:scale-95 cursor-pointer font-semibold border-[1.5px] border-primary text-base normal-case !font-[Rubik]"
                             >
                                 <div className="text-left -space-y-0.5">
                                     <p className="font-semibold text-lg">
@@ -431,7 +431,7 @@ export default function SummaryStep({
                                             ? "Pilih tanggal servis"
                                             : "Jadwalin service"}
                                     </p>
-                                    <p className="text-[11px] font-light mb-1">
+                                    <p className="text-[11px] font-light mb-1 !font-[Rubik]">
                                         {selectedDate?.toLocaleDateString(
                                             "id-ID",
                                             {
@@ -459,6 +459,68 @@ export default function SummaryStep({
                     </div>
                 </div>
             </main>
+
+            {/* Confirmation Sheet */}
+            <Sheet
+                open={isSheetConfirmationOpen}
+                onOpenChange={setIsSheetConfirmationOpen}
+            >
+                <SheetContent
+                    side="bottom"
+                    className="rounded-t-3xl max-w-lg mx-auto text-center"
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="-mb-8">
+                        <img
+                            src={technicianConfirmationIllustration}
+                            alt="Ilustrasi Peta"
+                            className="w-full mx-auto"
+                        />
+                        <SheetTitle className="text-xl font-bold">
+                            Pastiin pesananmu udah sesuai, ya
+                        </SheetTitle>
+                        <SheetDescription className="text-[16px] text-gray-600">
+                            Abis dikonfirmasi, udah gak bisa diubah lagi.
+                            Pesanan bakal langsung dikirim ke teknisi.
+                        </SheetDescription>
+                    </SheetHeader>
+
+                    <SheetFooter className="grid grid-cols-2 gap-4">
+                        <Button
+                            onClick={() => setIsSheetConfirmationOpen(false)}
+                            disabled={isSubmitting}
+                            className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
+                        >
+                            Cek kembali
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                if (selectedDate) {
+                                    onConfirm({
+                                        note,
+                                        serviceDate: selectedDate,
+                                    });
+                                    setIsSheetConfirmationOpen(false);
+                                    setIsSubmitting(true);
+                                }
+                            }}
+                            disabled={
+                                !selectedDate ||
+                                !formData.acUnits ||
+                                formData.acUnits.length === 0
+                            }
+                            className="w-full h-12 rounded-full font-semibold text-md active:scale-95 cursor-pointer normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                        >
+                            {isSubmitting ? (
+                                <Spinner size={20} />
+                            ) : (
+                                "Lanjut aja"
+                            )}
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
 
             {/* Calender Drawer */}
             <Drawer open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
@@ -515,8 +577,7 @@ export default function SummaryStep({
                                 handleDateSelect(tempDate);
                             }}
                             disabled={!tempDate}
-                            variant={"default"}
-                            className="w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95"
+                            className="w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
                         >
                             Set jadwal
                         </Button>
@@ -553,7 +614,7 @@ export default function SummaryStep({
                         <DialogActions>
                             <Button
                                 onClick={() => setIsLimitAlertOpen(false)}
-                                className="cursor-pointer active:scale-95 rounded-sm"
+                                className="bg-primary text-white cursor-pointer active:scale-95 rounded-sm normal-case !font-[Rubik]"
                             >
                                 Oke, siap
                             </Button>
@@ -567,19 +628,19 @@ export default function SummaryStep({
                     onClose={setIsDeleteAlertOpen}
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
-                    className="max-w-md mx-auto"
+                    className="max-w-md mx-auto !font-[Rubik]"
                 >
                     <div className="flex flex-col -space-y-3">
                         <DialogTitle
                             id="alert-dialog-title"
-                            className="text-base font-semibold"
+                            className="text-base font-semibold !font-[Rubik]"
                         >
                             Hapus Unit AC?
                         </DialogTitle>
                         <DialogContent>
                             <DialogContentText
                                 id="alert-dialog-description"
-                                className="text-sm font"
+                                className="text-sm font !font-[Rubik]"
                             >
                                 Apakah kamu yakin ingin hapus unit AC ini dari
                                 daftar servicemu?
@@ -587,8 +648,7 @@ export default function SummaryStep({
                         </DialogContent>
                         <DialogActions>
                             <Button
-                                variant={"outline"}
-                                className="w-20 text-primary border-primary cursor-pointer active:scale-95"
+                                className="w-20 text-primary border-primary cursor-pointer active:scale-95 border normal-case !font-[Rubik]"
                                 onClick={() => {
                                     setUnitToDelete(null);
                                     setIsDeleteAlertOpen(false);
@@ -597,7 +657,7 @@ export default function SummaryStep({
                                 Tidak
                             </Button>
                             <Button
-                                className="cursor-pointer active:scale-95 rounded-sm"
+                                className="bg-primary text-white cursor-pointer active:scale-95 rounded-sm normal-case !font-[Rubik]"
                                 onClick={() => {
                                     handleConfirmDelete();
                                 }}

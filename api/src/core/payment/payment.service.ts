@@ -60,7 +60,7 @@ export class PaymentService {
         invoiceId: string,
         customerId: string,
     ): Promise<MidtransTokenResponse> {
-        const invoice = await this.invoiceService.getById(
+        const invoice = await this.invoiceService.getByIdWithUserId(
             invoiceId,
             customerId,
         );
@@ -143,7 +143,6 @@ export class PaymentService {
                 ],
                 // lock: { mode: 'pessimistic_write' },
             });
-            console.log('invoice: ', invoice);
 
             if (!invoice) {
                 throw new NotFoundException(

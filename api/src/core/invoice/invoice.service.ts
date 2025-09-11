@@ -24,10 +24,7 @@ import { OrderService } from '../order/order.service';
 import { Payment } from '../payment/entities/payment.entity';
 import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
 import { CreateInvoiceDto } from './dto/invoice.request';
-import {
-    InvoiceResponseDto,
-    toInvoiceResponseDto,
-} from './dto/invoice.response';
+import { toInvoiceResponseDto } from './dto/invoice.response';
 import { InvoiceItem } from './entities/invoice-item.entity';
 import { Invoice } from './entities/invoice.entity';
 
@@ -55,16 +52,23 @@ export class InvoiceService {
     async create(
         orderId: string,
         createInvoiceDto: CreateInvoiceDto,
-    ): Promise<InvoiceResponseDto> {
+        // ): Promise<InvoiceResponseDto> {
+    ) {
+        this.logger.debug(
+            `InvoiceService.create(): orderId: ${orderId}, createInvoiceDto: ${JSON.stringify(createInvoiceDto)}`,
+        );
+
+        // Begin a transaction
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
 
         try {
-            // Find the order and lock it for update to prevent race conditions.
-            const order = await queryRunner.manager.findOne(Order, {
+            /// Find the order and lock it for update to prevent race conditions.
+            const order: Order = await queryRunner.manager.findOne(Order, {
                 where: { id: orderId },
                 lock: { mode: 'pessimistic_write' },
+                transaction: true,
             });
 
             if (!order) {
@@ -73,24 +77,33 @@ export class InvoiceService {
                 );
             }
 
-            const existingInvoice = await queryRunner.manager.findOne(Invoice, {
-                where: { order: { id: orderId } },
-                relations: {
-                    order: {
-                        customer: true,
+            const existingInvoice: Invoice = await queryRunner.manager.findOne(
+                Invoice,
+                {
+                    where: { order: { id: orderId } },
+                    lock: {
+                        mode: 'pessimistic_write',
+                        tables: ['orders'],
+                    },
+                    transaction: true,
+                    relations: {
+                        order: {
+                            customer: true,
+                        },
                     },
                 },
-            });
+            );
 
             if (existingInvoice) {
+                this.logger.warn('Invoice already exists for this order.');
                 throw new ConflictException(
-                    'An invoice for this order already exists.',
+                    'Tagihan untuk pesanan ini udah ada.',
                 );
             }
 
             if (order.status !== OrderStatusEnum.ON_WORKING) {
                 throw new ConflictException(
-                    'Invoice can only be created for orders that are "on working".',
+                    'Tagihan hanya bisa dibuat jika service udah selesai.',
                 );
             }
 
@@ -106,6 +119,7 @@ export class InvoiceService {
                     total_price: totalPrice,
                 });
             });
+            await queryRunner.manager.save(invoiceItemsToSave);
 
             // Create the main invoice entity.
             const newInvoice = queryRunner.manager.create(Invoice, {
@@ -116,35 +130,47 @@ export class InvoiceService {
                 issued_at: new Date(),
                 items: invoiceItemsToSave,
             });
+            await queryRunner.manager.save(newInvoice);
 
-            const savedInvoice = await queryRunner.manager.save(newInvoice);
-
+            // Update the order status to WAITING_PAYMENT.
             order.status = OrderStatusEnum.WAITING_PAYMENT;
             await queryRunner.manager.save(order);
+            // Commit the transaction.
+            await queryRunner.commitTransaction();
 
-            const updatedOrder = await this.orderService.getById(orderId);
+            // Return the created invoice.
+            const createdInvoice = await this.invoiceRepository.findOne({
+                where: { order: { id: orderId } },
+                relations: {
+                    items: true,
+                    payments: true,
+                    order: {
+                        customer: true,
+                        technician: true,
+                        ac_units: true,
+                        invoice: true,
+                    },
+                },
+            });
 
             const notification = await this.notificationService.create({
-                recipientId: updatedOrder.customer.id,
-                orderId: updatedOrder.id,
+                recipientId: createdInvoice.order.customer.id,
+                orderId: createdInvoice.order.id,
                 type: NotificationType.INVOICE_CREATED,
                 title: 'Tagihanmu udah siap!',
                 message: `Tagihan untuk pesanan ${order.id} sudah tersedia. Yuk, bayar sekarang!`,
             });
 
-            // Commit the transaction.
-            await queryRunner.commitTransaction();
-
             await this.pushSubscriptionService.sendNotificationToUser(
-                updatedOrder.customer.id,
+                notification.recipient.id,
                 {
                     title: notification.title,
                     body: notification.message,
                     tag: notification.type,
                 },
             );
-
-            return toInvoiceResponseDto(savedInvoice);
+            // return createdInvoice;
+            return toInvoiceResponseDto(createdInvoice);
         } catch (error) {
             await queryRunner.rollbackTransaction();
             this.logger.error(
@@ -157,7 +183,24 @@ export class InvoiceService {
         }
     }
 
-    async getById(id: string, userId: string): Promise<Invoice> {
+    async getByOrderId(id: string): Promise<Invoice> {
+        this.logger.debug(`InvoiceService.getById: ${id}`);
+        const data = await this.invoiceRepository.findOne({
+            where: { order: { id } },
+            relations: {
+                payments: true,
+                order: {
+                    technician: true,
+                    customer: true,
+                },
+                items: true,
+            },
+        });
+
+        return data;
+    }
+
+    async getByIdWithUserId(id: string, userId: string): Promise<Invoice> {
         const data = await this.invoiceRepository.findOne({
             where: { id, order: { customer: { id: userId } } },
             relations: {
@@ -184,7 +227,7 @@ export class InvoiceService {
      * @returns A Buffer containing the PDF file data.
      */
     async generatePdf(invoiceId: string, customerId: string): Promise<Buffer> {
-        const invoice = await this.getById(invoiceId, customerId);
+        const invoice = await this.getByIdWithUserId(invoiceId, customerId);
         if (!invoice) {
             throw new NotFoundException('Invoice not found.');
         }

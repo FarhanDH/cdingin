@@ -24,6 +24,7 @@ import SummaryStep from "~/customer/order/new/summary.step";
 import type {
     CreateOrderRequestDto,
     OrderFormData,
+    OrderItem,
     OrderStep,
 } from "~/types/order.types";
 
@@ -79,9 +80,10 @@ export default function NewOrder() {
     const [formData, setFormData] = useState<Partial<OrderFormData>>({});
     const [loading, setLoading] = useState(false);
     const [successState, setSuccessState] = useState<SuccessState>("idle");
-    // State untuk melacak step saat ini, dimulai dari index 0
+    // State to track the current step
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const currentStep: Step = steps[currentStepIndex];
+    const [order, setOrder] = useState<OrderItem | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -215,6 +217,7 @@ export default function NewOrder() {
                 setSuccessState("animating");
                 setLoading(false);
             }
+            setOrder(response.data.data);
         } catch (error) {
             if (error instanceof AxiosError) {
                 toast(
@@ -332,7 +335,7 @@ export default function NewOrder() {
                             Tunggu konfirmasi dari teknisi, ya.
                         </SheetDescription>
                         <Button
-                            onClick={() => navigate("/orders")}
+                            onClick={() => navigate(`/order/${order?.id}`)}
                             variant={"default"}
                             className="w-full h-12 rounded-full text-[16px] font-semibold active:scale-95 cursor-pointer"
                         >

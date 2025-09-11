@@ -1,3 +1,4 @@
+import { IconButton } from "@mui/material";
 import { ArrowLeft, Menu } from "lucide-react";
 import { Link } from "react-router";
 
@@ -28,7 +29,12 @@ export default function Header({
                 <div className={`flex items-center gap-3`}>
                     {showBack && (
                         <Link to={navigateTo}>
-                            <ArrowLeft size={24} className="text-gray-500" />
+                            <IconButton size="small" className="m-0">
+                                <ArrowLeft
+                                    size={24}
+                                    className="text-gray-500"
+                                />
+                            </IconButton>
                         </Link>
                     )}
                     <h1 className={`text-lg font-semibold `}>{title}</h1>

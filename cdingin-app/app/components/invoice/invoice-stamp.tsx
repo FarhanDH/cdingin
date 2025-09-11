@@ -27,7 +27,7 @@ export const InvoiceStamp = ({ status }: { status: InvoiceStatus }) => {
 
     return (
         <div
-            className={`absolute top-5/7 left-1/2 mx-auto text-center transform -rotate-12 opacity-80 border-2 font-black px-8 py-2 rounded-lg text-lg ${colorClass}`}
+            className={`absolute top-80 left-1/2 mx-auto text-center transform -rotate-12 opacity-80 border-2 font-black px-8 py-2 rounded-lg text-lg ${colorClass}`}
             style={{
                 letterSpacing: "0.2em",
                 transform: "rotate(-12deg) translateX(-50%) translateY(-50%)",

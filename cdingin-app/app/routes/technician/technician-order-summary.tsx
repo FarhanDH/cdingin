@@ -365,9 +365,6 @@ export default function TechnicianOrderSummary() {
                             technicianDistanceWithServiceLocation >
                             SERVICE_RADIUS_METERS
                         ) {
-                            const distance = Math.round(
-                                technicianDistanceWithServiceLocation
-                            );
                             toast(
                                 `Masih sekitar ${distance} dari lokasi. Coba majuan lagi.`,
                                 customToastStyle
