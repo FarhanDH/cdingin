@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
@@ -13,6 +12,7 @@ import {
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import { customToastStyle } from "~/common/custom-toast-style";
+import { Button } from "@mui/material";
 
 // List of cancellation reasons
 const customerCancelReasons = [
@@ -118,7 +118,7 @@ export default function CancelOrderSheet({
                                     <Label
                                         key={reason.id}
                                         htmlFor={reason.id}
-                                        className="font-medium text-lg cursor-pointer border-t pt-4 pr-4 justify-between text-gray-900"
+                                        className="font-medium text-lg cursor-pointer border-t pt-4 pr-4 justify-between text-gray-900 hover:bg-gray-100"
                                     >
                                         {reason.label}
                                         <RadioGroupItem
@@ -135,18 +135,16 @@ export default function CancelOrderSheet({
 
                     <SheetFooter className="mt-6 grid grid-cols-2 gap-6">
                         <Button
-                            variant="outline"
                             onClick={onClose}
                             disabled={isSubmitting}
-                            className="w-full h-[48px] rounded-full font-semibold text-md bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer"
+                            className="w-full h-[48px] normal-case rounded-full font-semibold text-md bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer !font-[Rubik] text-base disabled:bg-white/50 disabled:cursor-not-allowed"
                         >
                             Tunggu Dulu
                         </Button>
                         <Button
-                            variant="destructive"
                             onClick={handleCancelSubmit}
                             disabled={!selectedReason || isSubmitting}
-                            className="w-full h-[48px] rounded-full font-semibold text-md active:scale-95 cursor-pointer"
+                            className="w-full h-[48px] rounded-full font-semibold text-md active:scale-95 cursor-pointer bg-primary text-white normal-case !font-[Rubik] text-base disabled:bg-primary/50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
                                 <Spinner size={20} />

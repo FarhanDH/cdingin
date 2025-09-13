@@ -1,4 +1,5 @@
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { Button } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
@@ -6,7 +7,6 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import technicianImg from "~/assets/technician-smile-phone-nobg.png";
 import { customToastStyle } from "~/common/custom-toast-style";
-import { Button } from "~/components/ui/button";
 import {
     Sheet,
     SheetContent,
@@ -185,7 +185,7 @@ export default function NewOrder() {
             },
             floor: data.floor,
         }));
-        console.log("formData: ", formData);
+
         handleNext();
     };
 
@@ -293,7 +293,7 @@ export default function NewOrder() {
                 >
                     <Dialog open={loading} modal>
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                            <Spinner size={30} />
+                            <Spinner size={30} className="text-primary" />
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -336,8 +336,7 @@ export default function NewOrder() {
                         </SheetDescription>
                         <Button
                             onClick={() => navigate(`/order/${order?.id}`)}
-                            variant={"default"}
-                            className="w-full h-12 rounded-full text-[16px] font-semibold active:scale-95 cursor-pointer"
+                            className="w-full h-12 rounded-full text-[16px] font-semibold active:scale-95 cursor-pointer bg-primary text-white normal-case !font-[Rubik] text-base"
                         >
                             Oke, siap
                         </Button>

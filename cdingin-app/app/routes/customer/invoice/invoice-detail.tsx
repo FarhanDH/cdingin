@@ -351,14 +351,14 @@ export default function InvoiceDetailPage() {
                 <InvoiceStamp status={invoice.status} />
                 <Button
                     variant="outlined"
-                    className="h-11 w-full rounded-full text-md text-primary font-medium border-primary capitalize !font-[Rubik] active:scale-95"
+                    className="h-12 w-full rounded-full text-md text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95"
                     disabled={isDownloading}
                     onClick={handleDownload}
                 >
                     {isDownloading ? (
                         <Spinner size={20} className="text-primary" />
                     ) : (
-                        "Download Tagihan"
+                        "Download tagihan"
                     )}
                 </Button>
             </main>

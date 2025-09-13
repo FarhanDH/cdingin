@@ -19,6 +19,7 @@ import Spinner from "~/components/ui/spinner";
 import {
     Table,
     TableBody,
+    TableCaption,
     TableCell,
     TableFooter,
     TableHead,
@@ -146,6 +147,24 @@ export default function InvoiceDetailPage() {
                     {/* Container untuk tabel */}
                     <div className="w-full">
                         <Table className="text-xs ">
+                            {invoice.status === "paid" && (
+                                <TableCaption className="text-start">
+                                    Bayar Pakai{" "}
+                                    {invoice.payments.find(
+                                        (payment) =>
+                                            payment.status === "success" ||
+                                            payment.status === "settlement"
+                                    )?.method === "cash"
+                                        ? "Tunai"
+                                        : invoice.payments.find(
+                                              (payment) =>
+                                                  payment.status ===
+                                                      "success" ||
+                                                  payment.status ===
+                                                      "settlement"
+                                          )?.paymentChannel}
+                                </TableCaption>
+                            )}
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="">QTY</TableHead>

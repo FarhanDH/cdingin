@@ -1,6 +1,6 @@
+import { Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "~/components/ui/button";
 import {
     Form,
     FormControl,
@@ -68,14 +68,15 @@ export default function OtpStep({
                         }}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="font-normal">
+                                <FormLabel className="font-normal flex items-center justify-between">
                                     <p>
                                         OTP{" "}
                                         <span className="text-[#f34b1b]">
                                             *
                                         </span>
-                                    </p>{" "}
+                                    </p>
                                 </FormLabel>
+
                                 <FormControl>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -95,49 +96,52 @@ export default function OtpStep({
                                             min={0}
                                             minLength={4}
                                             maxLength={4}
+                                            max={9999}
                                             inputMode="numeric"
                                         />
-                                        <div className="flex gap-2 items-center min-w-[70px]">
-                                            {seconds > 0 ? (
-                                                <>
-                                                    <span className="text-sm font-semibold mt-1">
-                                                        {`0:${seconds
-                                                            .toString()
-                                                            .padStart(2, "0")}`}
-                                                    </span>
-                                                    <Spinner
-                                                        size={22}
-                                                        className="text-secondary"
-                                                    />
-                                                </>
-                                            ) : (
-                                                <Button
-                                                    variant={"secondary"}
-                                                    className="text-white rounded-full text-sm font-semibold cursor-pointer mr-8.5"
-                                                    onClick={() => {
-                                                        setSeconds(30);
-                                                        onResend();
-                                                    }}
-                                                >
-                                                    Kirim Ulang
-                                                </Button>
-                                            )}
-                                        </div>
                                     </div>
                                 </FormControl>
-                                {error && (
-                                    <FormDescription className="text-[#f34b1b] text-sm ">
+
+                                <FormDescription className="flex justify-between">
+                                    <p className="text-[#f34b1b] text-sm">
                                         {error}
-                                    </FormDescription>
-                                )}
+                                    </p>
+                                    {/* Resend OTP Button */}
+                                    <div className="gap-2 items-center -mt-15">
+                                        {seconds > 0 ? (
+                                            <div className="flex gap-2 mt-4 items-center">
+                                                <span className="text-sm font-semibold text-gray-900">
+                                                    {`0:${seconds
+                                                        .toString()
+                                                        .padStart(2, "0")}`}
+                                                </span>
+                                                <Spinner
+                                                    size={22}
+                                                    className="text-secondary"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                className="bg-secondary normal-case w-24 text-white rounded-full text-xs font-semibold cursor-pointer p-3 !font-[Rubik] active:scale-95"
+                                                onClick={() => {
+                                                    setSeconds(30);
+                                                    onResend();
+                                                }}
+                                            >
+                                                Kirim Ulang
+                                            </Button>
+                                        )}
+                                    </div>
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
+
+                    {/* Open email button */}
                     <Button
                         type="button"
-                        variant={"outline"}
-                        className="-mt-8 rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 items-center text-primary border-primary"
+                        className="-mt-5 rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 items-center text-primary normal-case border border-primary !font-[Rubik] bg-white"
                         onClick={() => {
                             if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                                 window.open("message://", "_blank");
@@ -153,10 +157,12 @@ export default function OtpStep({
                     >
                         Buka Email
                     </Button>
+
+                    {/* Submit Button */}
                     <Button
                         type="submit"
                         disabled={!form.watch("otp") || loading}
-                        className={`w-full block h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95`}
+                        className={`bg-primary normal-case text-white w-full block h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed !font-[Rubik]`}
                     >
                         Lanjut
                     </Button>

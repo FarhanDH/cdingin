@@ -1,202 +1,205 @@
-import { useState } from 'react';
-import Header from '~/components/header';
+import { useState } from "react";
+import Header from "~/components/header";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  AlertDialogPortal,
-  AlertDialogTitle,
-} from '~/components/ui/alert-dialog';
-import { Button } from '~/components/ui/button';
-import type { AcUnitDetail } from '~/types/order.types';
-import AcUnitCard from './ac-unit-card';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
+    AlertDialogPortal,
+    AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import type { AcUnitDetail } from "~/types/order.types";
+import AcUnitCard from "./ac-unit-card";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 import {
-  DialogActions,
-  DialogContentText,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from '@mui/material';
-import { set } from 'date-fns';
+    Button,
+    DialogActions,
+    DialogContentText,
+    DialogTitle,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+} from "@mui/material";
+import { set } from "date-fns";
 
 interface AcTypeStepProps {
-  initialAcUnits: AcUnitDetail[];
-  onSubmit: (data: { acUnits: AcUnitDetail[] }) => void;
-  onBack: () => void;
+    initialAcUnits: AcUnitDetail[];
+    onSubmit: (data: { acUnits: AcUnitDetail[] }) => void;
+    onBack: () => void;
 }
 
 export default function AcTypeStep({
-  initialAcUnits,
-  onSubmit,
-  onBack,
+    initialAcUnits,
+    onSubmit,
+    onBack,
 }: Readonly<AcTypeStepProps>) {
-  const [acUnits, setAcUnits] = useState<AcUnitDetail[]>(
-    initialAcUnits.length > 0 ? initialAcUnits : [],
-  );
-  const [isTotalUnitLimitAlertOpen, setIsTotalUnitLimitAlertOpen] =
-    useState(false);
-
-  const calculateTotalQuantity = (units: AcUnitDetail[]) => {
-    return units.reduce((acc, unit) => acc + unit.quantity, 0);
-  };
-
-  const handleAddUnit = () => {
-    const totalQuantity = calculateTotalQuantity(acUnits);
-    if (totalQuantity >= 10) {
-      setIsTotalUnitLimitAlertOpen(true);
-      return;
-    }
-
-    setAcUnits([
-      ...acUnits,
-      {
-        id: Math.random().toString(36),
-        acType: null,
-        pk: '',
-        brand: '',
-        quantity: 1,
-      },
-    ]);
-  };
-
-  const handleRemoveUnit = (id: string) => {
-    setAcUnits(acUnits.filter((unit) => unit.id !== id));
-  };
-
-  const handleUpdateUnit = (
-    id: string,
-    field: keyof AcUnitDetail,
-    value: AcUnitDetail[keyof AcUnitDetail],
-  ) => {
-    if (field === 'quantity') {
-      const totalQuantity = calculateTotalQuantity(acUnits);
-      const currentUnit = acUnits.find((unit) => unit.id === id);
-      const newQuantity = value as number;
-
-      // Jika kuantitas bertambah DAN total sudah mencapai batas
-      if (newQuantity > (currentUnit?.quantity ?? 0) && totalQuantity >= 10) {
-        setIsTotalUnitLimitAlertOpen(true);
-        return;
-      }
-    }
-
-    // GUARD CLAUSE 2: Cek untuk menghapus unit jika kuantitas < 1
-    if (field === 'quantity' && typeof value === 'number' && value < 1) {
-      handleRemoveUnit(id);
-      return;
-    }
-
-    // DEFAULT ACTION: Jika semua pengecekan lolos, lakukan update state
-    setAcUnits(
-      acUnits.map((unit) =>
-        unit.id === id ? { ...unit, [field]: value } : unit,
-      ),
+    const [acUnits, setAcUnits] = useState<AcUnitDetail[]>(
+        initialAcUnits.length > 0 ? initialAcUnits : []
     );
-  };
+    const [isTotalUnitLimitAlertOpen, setIsTotalUnitLimitAlertOpen] =
+        useState(false);
 
-  const isNextDisabled =
-    acUnits.length === 0 ||
-    acUnits.some((unit) => !unit.acType || !unit.pk || !unit.brand);
+    const calculateTotalQuantity = (units: AcUnitDetail[]) => {
+        return units.reduce((acc, unit) => acc + unit.quantity, 0);
+    };
 
-  const handleSubmit = () => {
-    onSubmit({ acUnits });
-  };
+    const handleAddUnit = () => {
+        const totalQuantity = calculateTotalQuantity(acUnits);
+        if (totalQuantity >= 10) {
+            setIsTotalUnitLimitAlertOpen(true);
+            return;
+        }
 
-  return (
-    <div className="bg-white min-h-screen">
-      <Header title="Detail Unit AC" isSticky />
+        setAcUnits([
+            ...acUnits,
+            {
+                id: Math.random().toString(36),
+                acType: null,
+                pk: "",
+                brand: "",
+                quantity: 1,
+            },
+        ]);
+    };
 
-      <main>
-        <div className="p-4 pb-40 bg-white">
-          {acUnits.length === 0 && (
-            <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
-              <p className="text-gray-600">Anda belum menambahkan unit AC.</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Klik tombol di bawah untuk tambah unit AC.
-              </p>
-            </div>
-          )}
+    const handleRemoveUnit = (id: string) => {
+        setAcUnits(acUnits.filter((unit) => unit.id !== id));
+    };
 
-          {acUnits.map((unit, index) => (
-            <AcUnitCard
-              key={unit.id}
-              unit={unit}
-              index={index}
-              onUpdate={handleUpdateUnit}
-              onRemove={handleRemoveUnit}
-            />
-          ))}
+    const handleUpdateUnit = (
+        id: string,
+        field: keyof AcUnitDetail,
+        value: AcUnitDetail[keyof AcUnitDetail]
+    ) => {
+        if (field === "quantity") {
+            const totalQuantity = calculateTotalQuantity(acUnits);
+            const currentUnit = acUnits.find((unit) => unit.id === id);
+            const newQuantity = value as number;
 
-          <Button
-            variant="outline"
-            className="w-full mt-4 text-secondary border-secondary cursor-pointer active:scale-95"
-            onClick={handleAddUnit}
-          >
-            {acUnits.length === 0
-              ? '[+] Tambah Tipe AC'
-              : '[+] Tambah Tipe AC Lain'}
-          </Button>
-        </div>
+            // Jika kuantitas bertambah DAN total sudah mencapai batas
+            if (
+                newQuantity > (currentUnit?.quantity ?? 0) &&
+                totalQuantity >= 10
+            ) {
+                setIsTotalUnitLimitAlertOpen(true);
+                return;
+            }
+        }
 
-        {/* Navigation Buttons */}
-        <div className="w-full p-4 gap-2 flex fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border pr-5">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="w-1/2 h-12 rounded-full text-md text-primary border-primary cursor-pointer"
-          >
-            Kembali
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isNextDisabled}
-            className="w-1/2 h-12 rounded-full text-md font-semibold cursor-pointer"
-          >
-            Lanjut
-          </Button>
-        </div>
-      </main>
+        // GUARD CLAUSE 2: Cek untuk menghapus unit jika kuantitas < 1
+        if (field === "quantity" && typeof value === "number" && value < 1) {
+            handleRemoveUnit(id);
+            return;
+        }
 
-      {/* Limit Unit Alert */}
-      <Dialog
-        open={isTotalUnitLimitAlertOpen}
-        onClose={() => setIsTotalUnitLimitAlertOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <div className="flex flex-col -space-y-3">
-          <DialogTitle
-            id="alert-dialog-title"
-            className="text-base font-semibold"
-          >
-            Wah, Banyak Banget AC-nya! 😱
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText
-              id="alert-dialog-description"
-              className="text-sm font"
+        // DEFAULT ACTION: Jika semua pengecekan lolos, lakukan update state
+        setAcUnits(
+            acUnits.map((unit) =>
+                unit.id === id ? { ...unit, [field]: value } : unit
+            )
+        );
+    };
+
+    const isNextDisabled =
+        acUnits.length === 0 ||
+        acUnits.some((unit) => !unit.acType || !unit.pk || !unit.brand);
+
+    const handleSubmit = () => {
+        onSubmit({ acUnits });
+    };
+
+    return (
+        <div className="bg-white min-h-screen">
+            <Header title="Detail Unit AC" isSticky />
+
+            <main>
+                <div className="p-4 pb-40 bg-white">
+                    {acUnits.length === 0 && (
+                        <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
+                            <p className="text-gray-600">
+                                Anda belum menambahkan unit AC.
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Klik tombol di bawah untuk tambah unit AC.
+                            </p>
+                        </div>
+                    )}
+
+                    {acUnits.map((unit, index) => (
+                        <AcUnitCard
+                            key={unit.id}
+                            unit={unit}
+                            index={index}
+                            onUpdate={handleUpdateUnit}
+                            onRemove={handleRemoveUnit}
+                        />
+                    ))}
+
+                    <Button
+                        className="w-full mt-4 text-secondary border border-secondary cursor-pointer active:scale-95 normal-case"
+                        onClick={handleAddUnit}
+                    >
+                        {acUnits.length === 0
+                            ? "[+] Tambah Tipe AC"
+                            : "[+] Tambah Tipe AC Lain"}
+                    </Button>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="w-full p-4 gap-2 flex fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border pr-5">
+                    <Button
+                        onClick={onBack}
+                        className="w-1/2 h-12 rounded-full text-base text-primary border-primary cursor-pointer border normal-case active:scale-95 !font-[Rubik]"
+                    >
+                        Kembali
+                    </Button>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isNextDisabled}
+                        className="w-1/2 h-12 rounded-full font-semibold cursor-pointer active:scale-95 bg-primary text-white normal-case !font-[Rubik] text-base disabled:bg-primary/50 disabled:text-white/50 disabled:cursor-not-allowed"
+                    >
+                        Lanjut
+                    </Button>
+                </div>
+            </main>
+
+            {/* Limit Unit Alert */}
+            <Dialog
+                open={isTotalUnitLimitAlertOpen}
+                onClose={() => setIsTotalUnitLimitAlertOpen(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
             >
-              Maaf, untuk saat ini dibatesin 10 unit AC dulu, ya.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setIsTotalUnitLimitAlertOpen(false)}
-              className="cursor-pointer active:scale-95 rounded-sm"
-            >
-              Oke, siap
-            </Button>
-          </DialogActions>
+                <div className="flex flex-col -space-y-3">
+                    <DialogTitle
+                        id="alert-dialog-title"
+                        className="text-base font-semibold"
+                    >
+                        Wah, Banyak Banget AC-nya! 😱
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText
+                            id="alert-dialog-description"
+                            className="text-sm font"
+                        >
+                            Maaf, untuk saat ini dibatesin 10 unit AC dulu, ya.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => setIsTotalUnitLimitAlertOpen(false)}
+                            className="cursor-pointer active:scale-95 rounded-sm"
+                        >
+                            Oke, siap
+                        </Button>
+                    </DialogActions>
+                </div>
+            </Dialog>
         </div>
-      </Dialog>
-    </div>
-  );
+    );
 }

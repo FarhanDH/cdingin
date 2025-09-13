@@ -53,7 +53,6 @@ export default function CustomerOrderList() {
                         withCredentials: true,
                     }
                 );
-                console.log(response.data);
 
                 setOrders(response.data.data);
             } catch (error) {

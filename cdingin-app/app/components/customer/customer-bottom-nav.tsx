@@ -4,12 +4,13 @@ import {
     BottomNavigationAction,
     Paper,
 } from "@mui/material";
-import { ListOrdered } from "lucide-react";
+import { ListOrdered, NotebookIcon } from "lucide-react";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import axios from "axios";
+import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 
 /**
  * A reusable bottom navigation component for the customer section.
@@ -37,7 +38,6 @@ export default function CustomerBottomNav() {
                     }/notifications/unread-count`,
                     { withCredentials: true }
                 );
-                console.log(response.data);
                 setUnreadCount(response.data.data.unreadCount);
             } catch (error) {
                 console.error("Gagal mengambil jumlah notifikasi:", error);
@@ -73,7 +73,7 @@ export default function CustomerBottomNav() {
                     value="/orders"
                     icon={
                         <>
-                            <ListOrdered
+                            <StickyNote2Icon
                                 className={
                                     activeTab === "/orders"
                                         ? `!text-primary `

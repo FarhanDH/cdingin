@@ -21,8 +21,8 @@ export default defineConfig({
                 enabled: true,
             },
             manifest: {
-                name: "cdingin",
-                short_name: "cdingin",
+                name: "Cdingin",
+                short_name: "Cdingin",
                 description: "Service AC jadi mudah, tinggal ngeklik doang",
                 start_url: "/orders",
                 display: "standalone",

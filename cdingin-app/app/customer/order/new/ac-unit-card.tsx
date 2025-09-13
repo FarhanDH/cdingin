@@ -1,5 +1,4 @@
 import { AirVent, Minus, Plus, Trash2 } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -11,6 +10,7 @@ import standingACIcon from "~/assets/standing-ac.png";
 import cassetteACIcon from "~/assets/cassette-ac.png";
 import splitACIcon from "~/assets/split-ac.png";
 import type { AcUnitDetail } from "~/types/order.types";
+import { Button, IconButton } from "@mui/material";
 
 // Daftar pilihan untuk dropdown
 export const acTypes = [
@@ -73,14 +73,13 @@ export default function AcUnitCard({
         <div className="bg-white border p-4 rounded-xl shadow-md mb-4 w-full space-y-4 max-w-lg mx-auto">
             <div className="flex justify-between items-center">
                 <h3 className="font-semibold text-lg">Unit AC #{index + 1}</h3>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-pointer"
+                <IconButton
+                    className="cursor-pointer hover:text-red-600 hover:bg-red-50"
                     onClick={() => onRemove(unit.id)}
+                    size="small"
                 >
                     <Trash2 className="w-5 h-5 text-red-500" />
-                </Button>
+                </IconButton>
             </div>
 
             {/* Tipe AC */}
@@ -189,29 +188,27 @@ export default function AcUnitCard({
             <div className="flex justify-between items-center pt-2">
                 <label className="font-medium">Jumlah Unit</label>
                 <div className="flex items-center gap-4">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95"
+                    <IconButton
+                        className="rounded-full border border-primary text-primary cursor-pointer active:scale-95"
+                        size="medium"
                         onClick={() =>
                             onUpdate(unit.id, "quantity", unit.quantity - 1)
                         }
                     >
                         <Minus className="w-4 h-4" />
-                    </Button>
+                    </IconButton>
                     <span className="font-semibold text-lg">
                         {unit.quantity}
                     </span>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95"
+                    <IconButton
+                        className="rounded-full border border-primary text-primary cursor-pointer active:scale-95"
+                        size="medium"
                         onClick={() =>
                             onUpdate(unit.id, "quantity", unit.quantity + 1)
                         }
                     >
                         <Plus className="w-4 h-4" />
-                    </Button>
+                    </IconButton>
                 </div>
             </div>
         </div>

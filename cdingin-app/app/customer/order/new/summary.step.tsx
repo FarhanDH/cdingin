@@ -423,7 +423,7 @@ export default function SummaryStep({
                                     !formData.acUnits ||
                                     formData.acUnits.length === 0
                                 }
-                                className="flex-1 h-12 px-4 rounded-full flex bg-primary text-white justify-between items-center active:scale-95 cursor-pointer font-semibold border-[1.5px] border-primary text-base normal-case !font-[Rubik]"
+                                className="flex-1 h-12 px-4 rounded-full flex bg-primary text-white justify-between items-center active:scale-95 cursor-pointer font-semibold border-[1.5px] border-primary text-base normal-case !font-[Rubik] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <div className="text-left -space-y-0.5">
                                     <p className="font-semibold text-lg">

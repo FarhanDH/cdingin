@@ -52,8 +52,6 @@ export class ScheduleService {
                 .groupBy('DATE(orders.service_date)')
                 .getRawMany();
 
-            console.log('Raw result from DB:', result);
-
             return result.map((item) => ({
                 date: item.date, // 'date' sudah string
                 totalUnitsBooked: parseInt(item.totalUnitsBooked, 10),

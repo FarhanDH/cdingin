@@ -1,5 +1,5 @@
+import { Button } from "@mui/material";
 import { useForm } from "react-hook-form";
-import { Button } from "~/components/ui/button";
 import {
     Form,
     FormControl,
@@ -26,7 +26,7 @@ export default function NameStep({
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit((data) =>
-                        onSubmit({ name: data.name }),
+                        onSubmit({ name: data.name })
                     )}
                     className="space-y-6"
                 >
@@ -78,7 +78,7 @@ export default function NameStep({
                     <Button
                         type="submit"
                         disabled={!form.watch("name") || loading}
-                        className={`w-full block h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95`}
+                        className={`bg-primary normal-case text-white text-base !font-[Rubik] w-full block h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95`}
                     >
                         Lanjut
                     </Button>

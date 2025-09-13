@@ -22,11 +22,11 @@ export default function EmailStep({
     const form = useForm();
 
     return (
-        <div className="bg-white">
+        <div className="bg-white flex flex-col">
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit((data) =>
-                        onSubmit({ email: data.email as string }),
+                        onSubmit({ email: data.email as string })
                     )}
                     className="space-y-6"
                 >
@@ -73,12 +73,20 @@ export default function EmailStep({
                     <Button
                         type="submit"
                         disabled={!form.watch("email") || loading}
-                        className="w-full h-[48px] rounded-full text-center text-[16px] font-semibold cursor-pointer active:scale-95 items-center bg-primary disabled:bg-primary/50 disabled:text-white text-white capitalize"
+                        className="w-full h-[48px] rounded-full text-center text-base !font-[Rubik] font-semibold cursor-pointer active:scale-95 items-center bg-primary disabled:bg-primary/50 disabled:text-white text-white capitalize"
                     >
                         Lanjut
                     </Button>
                 </form>
             </Form>
+
+            {/* Footer */}
+            <div className="absolute bottom-9 left-0 right-0 text-center w-full flex gap-1 justify-center items-center">
+                <p className="text-[#272727] text-xs">from </p>
+                <p className="text-primary font font-medium text-base">
+                    Herdi Jaya Service
+                </p>
+            </div>
         </div>
     );
 }

@@ -36,7 +36,7 @@ export default function TechnicianBottomNav() {
                     }/notifications/unread-count`,
                     { withCredentials: true }
                 );
-                console.log(response.data);
+
                 setUnreadCount(response.data.data.unreadCount);
             } catch (error) {
                 console.error("Gagal mengambil jumlah notifikasi:", error);

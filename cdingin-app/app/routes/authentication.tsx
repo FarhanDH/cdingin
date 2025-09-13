@@ -14,7 +14,7 @@ import type { UserResponse } from "~/types/auth.type";
 
 export default function Authentication() {
     const [step, setStep] = useState<"email" | "otp" | "name" | "phone">(
-        "email",
+        "email"
     );
     const [user, setUser] = useState<UserResponse | null>(null);
     const [error, setError] = useState("");
@@ -28,14 +28,14 @@ export default function Authentication() {
         setError("");
         try {
             // Call /email/send-otp API
-            await axios.post(
+            const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/email/send-otp`,
                 {
                     email: data.email,
                 },
                 {
                     withCredentials: true,
-                },
+                }
             );
             // If success, go to OTP step
             setUser({
@@ -48,7 +48,7 @@ export default function Authentication() {
             if (error instanceof AxiosError) {
                 setError(
                     error.response?.data?.message ??
-                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya"
                 );
                 throw new Error(error.response?.data.message);
             }
@@ -68,7 +68,7 @@ export default function Authentication() {
                     email: user?.user.email,
                     otp: data.otp,
                 },
-                { withCredentials: true },
+                { withCredentials: true }
             );
             // If not new, go to order page
             // If new, go to name step
@@ -100,7 +100,7 @@ export default function Authentication() {
                                 fontSize: "16px",
                                 justifyContent: "center",
                             },
-                        },
+                        }
                     );
                     navigate("/orders");
                 } else {
@@ -118,7 +118,7 @@ export default function Authentication() {
                                 fontSize: "16px",
                                 justifyContent: "center",
                             },
-                        },
+                        }
                     );
                     navigate("/technician/orders");
                 }
@@ -127,7 +127,7 @@ export default function Authentication() {
             if (error instanceof AxiosError) {
                 setError(
                     error.response?.data?.message ??
-                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya"
                 );
                 // Vibrate the device
                 if (navigator.vibrate) {
@@ -142,14 +142,17 @@ export default function Authentication() {
 
     const handleResendOtp = async () => {
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/email/send-otp`, {
-                email: user?.user.email,
-            });
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/email/send-otp`,
+                {
+                    email: user?.user.email,
+                }
+            );
         } catch (error) {
             if (error instanceof AxiosError) {
                 setError(
                     error.response?.data?.message ??
-                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya"
                 );
                 throw new Error(error.response?.data.message);
             }
@@ -180,7 +183,7 @@ export default function Authentication() {
                     fullName: user?.user.fullName,
                     phoneNumber: data.phone,
                 },
-                { withCredentials: true },
+                { withCredentials: true }
             );
 
             setUser({ ...response.data });
@@ -198,7 +201,7 @@ export default function Authentication() {
                         fontSize: "16px",
                         justifyContent: "center",
                     },
-                },
+                }
             );
             // Navigate to orders page
             navigate("/orders");
@@ -206,7 +209,7 @@ export default function Authentication() {
             if (error instanceof AxiosError) {
                 setError(
                     error.response?.data?.message ??
-                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
+                        "Yah, kayaknya ada yang salah. Coba lagi nanti, ya"
                 );
                 throw new Error(error.response?.data.message);
             }
@@ -225,7 +228,7 @@ export default function Authentication() {
                 >
                     <Dialog open={loading} modal>
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                            <Spinner size={30} />
+                            <Spinner size={30} className="text-primary" />
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -264,7 +267,11 @@ export default function Authentication() {
                     />
                 )}
                 {step === "phone" && (
-                    <PhoneStep onSubmit={handlePhoneSubmit} loading={loading} />
+                    <PhoneStep
+                        onSubmit={handlePhoneSubmit}
+                        loading={loading}
+                        error={error}
+                    />
                 )}
             </div>
         </>

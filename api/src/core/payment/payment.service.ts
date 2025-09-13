@@ -247,7 +247,6 @@ export class PaymentService {
         this.logger.debug(
             `Received Midtrans webhook: ${JSON.stringify(notificationPayload)}`,
         );
-        console.log('Received Midtrans webhook: ', notificationPayload);
 
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
@@ -265,8 +264,6 @@ export class PaymentService {
                         },
                     },
                 );
-
-            console.log('midtransResponse: ', midtransResponse);
 
             const transactionId = midtransResponse.order_id;
             const transactionStatus = midtransResponse.transaction_status;

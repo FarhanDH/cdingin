@@ -47,7 +47,7 @@ export default function NotificationPermissionSheet({
                 </SheetHeader>
                 <Button
                     onClick={onConfirm}
-                    className="w-full h-12 rounded-full text-[16px] font-semibold bg-primary capitalize text-white active:scale-95"
+                    className="w-full h-12 rounded-full text-[16px] font-semibold bg-primary normal-case text-white active:scale-95"
                 >
                     Oke, izinkan
                 </Button>
