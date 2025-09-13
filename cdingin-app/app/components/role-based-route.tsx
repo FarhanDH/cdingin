@@ -18,7 +18,7 @@ export default function RoleBasedRoute({
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <Spinner size={40} />
+                <Spinner size={40} className="text-primary" />
             </div>
         );
     }

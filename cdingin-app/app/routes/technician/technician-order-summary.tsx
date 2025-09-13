@@ -35,6 +35,14 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import "leaflet/dist/leaflet.css";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
+import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -47,6 +55,7 @@ export default function TechnicianOrderSummary() {
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
+    const [isPhoneSheetOpen, setIsPhoneSheetOpen] = useState(false);
     const { text: statusText, color: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
@@ -398,6 +407,13 @@ export default function TechnicianOrderSummary() {
         }
     };
 
+    // Show the phone sheet only if the order status is "pending"
+    useEffect(() => {
+        if (order?.status === "pending") {
+            setIsPhoneSheetOpen(true);
+        }
+    }, [order?.status]);
+
     const nextAction = getNextAction();
 
     if (isLoading || isUpdating) {
@@ -669,15 +685,15 @@ export default function TechnicianOrderSummary() {
                         onClick={() =>
                             navigate(`/technician/order/${order.id}/detail`)
                         }
-                        className="py-4 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 pt-6 flex justify-center items-center text-base font-medium cursor-pointer w-full text-gray-900 capitalize rounded-none"
+                        className="py-4 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 pt-6 flex justify-center items-center text-base font-normal cursor-pointer w-full text-gray-900 normal-case rounded-none !font-[Rubik]"
                     >
-                        Lihat Pesanan
+                        Lihat pesanan
                         <ChevronRight />
                     </Button>
                     {order.status !== "cancelled" &&
                         order.status !== "completed" && (
                             <Button
-                                className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 text-md font-medium border-gray-200 cursor-pointer text-red-600 capitalize"
+                                className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 border-gray-200 cursor-pointer text-red-600 normal-case !font-[Rubik]"
                                 onClick={() => setIsCancelSheetOpen(true)}
                             >
                                 Batalkan pesanan
@@ -712,6 +728,39 @@ export default function TechnicianOrderSummary() {
                 onOpenChange={setIsLocationPermissionSheetOpen}
                 onActivate={handleActivateLocation}
             />
+
+            <Sheet open={isPhoneSheetOpen} onOpenChange={setIsPhoneSheetOpen}>
+                <SheetContent
+                    side="bottom"
+                    className="rounded-t-2xl max-w-lg mx-auto text-center"
+                    // Prevent close sheet beyond interaction
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="">
+                        <div className="rounded-4xl">
+                            <img
+                                src={phoneWhatsapp}
+                                alt="Ilustrasi Peta"
+                                className="w-full mx-auto"
+                            />
+                        </div>
+                        <SheetTitle className="text-xl font-bold">
+                            Pastiin hubungin pelanggan dulu!
+                        </SheetTitle>
+                        <SheetDescription className="text-[16px] text-gray-600">
+                            Sebelum terima pesanan, pastiin dulu pesanan
+                            pelanggan lewat telepon atau WhatsApp ya
+                        </SheetDescription>
+                        <Button
+                            onClick={() => setIsPhoneSheetOpen(false)}
+                            className="bg-primary text-base text-white normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-6 active:scale-95"
+                        >
+                            Oke, siap
+                        </Button>
+                    </SheetHeader>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }

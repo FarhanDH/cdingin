@@ -315,13 +315,13 @@ export default function InvoiceDetailPage() {
                                             {item.description}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            Rp{" "}
+                                            Rp
                                             {Number(
                                                 item.unitPrice
                                             ).toLocaleString("id-ID")}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            Rp{" "}
+                                            Rp
                                             {Number(
                                                 item.totalPrice
                                             ).toLocaleString("id-ID")}
@@ -338,7 +338,7 @@ export default function InvoiceDetailPage() {
                                         Total
                                     </TableCell>
                                     <TableCell className="text-right text-primary font-semibold text-base">
-                                        Rp{" "}
+                                        Rp
                                         {Number(
                                             invoice.totalAmount
                                         ).toLocaleString("id-ID")}

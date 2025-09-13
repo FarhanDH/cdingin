@@ -482,7 +482,7 @@ export default function SummaryStep({
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
                             Abis dikonfirmasi, udah gak bisa diubah lagi.
-                            Pesanan bakal langsung dikirim ke teknisi.
+                            Pesanananmu bakal langsung dikirim ke teknisi.
                         </SheetDescription>
                     </SheetHeader>
 
@@ -531,7 +531,7 @@ export default function SummaryStep({
                         </DrawerTitle>
                         {isLoadingAvailability ? (
                             <div className="flex justify-center items-center h-80">
-                                <Spinner size={50} />
+                                <Spinner size={50} className="text-primary" />
                             </div>
                         ) : (
                             <Calendar
@@ -577,7 +577,7 @@ export default function SummaryStep({
                                 handleDateSelect(tempDate);
                             }}
                             disabled={!tempDate}
-                            className="w-full block h-[48px] rounded-full text-center text-md font-semibold cursor-pointer active:scale-95 normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                            className="w-full block h-[48px] rounded-full text-center font-semibold cursor-pointer active:scale-95 normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
                         >
                             Set jadwal
                         </Button>

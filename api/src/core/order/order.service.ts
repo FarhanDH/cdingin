@@ -192,6 +192,7 @@ export class OrderService {
                     title: savedNotifications[0].title,
                     body: savedNotifications[0].message,
                     tag: savedNotifications[0].type,
+                    link: `/technician/order/${savedOrder.id}`,
                 },
             );
             // Get new order for response
@@ -472,6 +473,7 @@ export class OrderService {
                     title: savedNotification.title,
                     body: savedNotification.message,
                     tag: savedNotification.type,
+                    link: `/order/${order.id}`,
                 },
             );
 

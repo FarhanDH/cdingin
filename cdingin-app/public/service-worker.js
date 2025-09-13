@@ -36,14 +36,80 @@ self.addEventListener("push", (event) => {
         vibrate: [200, 100, 200],
         tag: data.tag,
         renotify: true,
+        data: {
+            link: data.link || "/",
+        },
     };
     // Wait until the notification is shown before the service worker goes back to sleep.
     event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Notification handle click
+/**
+ * Listen for the 'notificationclick' event, which is triggered when the user clicks on a notification.
+ */
 self.addEventListener("notificationclick", (event) => {
+    /**
+     * Close the notification after the user clicks on it.
+     */
     event.notification.close();
-    // Open specific URL when notification clicked
-    event.waitUntil(clients.openWindow("/notifications"));
+
+    /**
+     * Get the link associated with the notification.
+     */
+    const link = event.notification.data.link;
+
+    /**
+     * Get all window clients associated with the service worker.
+     */
+    const promiseChain = self.clients
+        .matchAll({
+            type: "window",
+            includeUncontrolled: true,
+        })
+        .then((windowClients) => {
+            /**
+             * Find a matching window client with the same URL as the notification link.
+             */
+            let matchingClient = null;
+
+            for (const client of windowClients) {
+                /**
+                 * Get the URL of the current client, removing the trailing slash if present.
+                 */
+                const clientUrl = client.url.endsWith("/")
+                    ? client.url.slice(0, -1)
+                    : client.url;
+                /**
+                 * Get the URL of the notification link, removing the trailing slash if present.
+                 */
+                const linkUrl = new URL(
+                    link,
+                    self.location.origin
+                ).href.endsWith("/")
+                    ? new URL(link, self.location.origin).href.slice(0, -1)
+                    : new URL(link, self.location.origin).href;
+
+                /**
+                 * If a matching client is found, focus it and break out of the loop.
+                 */
+                if (clientUrl === linkUrl) {
+                    matchingClient = client;
+                    break;
+                }
+            }
+
+            /**
+             * If a matching client is found, focus it. Otherwise, open a new window with the notification link.
+             */
+            if (matchingClient) {
+                return matchingClient.focus();
+            } else {
+                return self.clients.openWindow(link);
+            }
+        });
+
+    /**
+     * Wait until the promise chain is resolved.
+     */
+    event.waitUntil(promiseChain);
 });

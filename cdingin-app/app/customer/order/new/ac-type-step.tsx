@@ -1,31 +1,15 @@
-import { useState } from "react";
-import Header from "~/components/header";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogOverlay,
-    AlertDialogPortal,
-    AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
-import type { AcUnitDetail } from "~/types/order.types";
-import AcUnitCard from "./ac-unit-card";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
 import {
     Button,
     DialogActions,
     DialogContentText,
     DialogTitle,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
 } from "@mui/material";
-import { set } from "date-fns";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import { useState } from "react";
+import Header from "~/components/header";
+import type { AcUnitDetail } from "~/types/order.types";
+import AcUnitCard from "./ac-unit-card";
 
 interface AcTypeStepProps {
     initialAcUnits: AcUnitDetail[];
@@ -122,7 +106,7 @@ export default function AcTypeStep({
                     {acUnits.length === 0 && (
                         <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
                             <p className="text-gray-600">
-                                Anda belum menambahkan unit AC.
+                                Kamu belum menambahkan unit AC.
                             </p>
                             <p className="text-sm text-gray-500 mt-1">
                                 Klik tombol di bawah untuk tambah unit AC.
