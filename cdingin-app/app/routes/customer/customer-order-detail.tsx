@@ -12,6 +12,16 @@ import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 import cashImage from "~/assets/cash.png";
+import Spinner from "~/components/ui/spinner";
+import { Dialog, DialogContent } from "@radix-ui/react-dialog";
+import type { Route } from "./+types/customer-order-detail";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Detail Pesanan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function CustomerOrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -68,7 +78,19 @@ export default function CustomerOrderDetail() {
     }, [orderId]);
 
     if (isLoading) {
-        return <h1>Loading...</h1>;
+        return (
+            <div
+                className={`flex items-center justify-center fixed top-0 left-0 right-0 bottom-0 ${
+                    isLoading ? "bg-black/20" : ""
+                }`}
+            >
+                <Dialog open={isLoading} modal>
+                    <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
+                        <Spinner size={30} className="text-primary" />
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
     }
 
     if (error) {

@@ -192,7 +192,7 @@ export class OrderService {
                     title: savedNotifications[0].title,
                     body: savedNotifications[0].message,
                     tag: savedNotifications[0].type,
-                    link: `/technician/order/${savedOrder.id}`,
+                    link: `/technician/notifications`,
                 },
             );
             // Get new order for response
@@ -473,7 +473,8 @@ export class OrderService {
                     title: savedNotification.title,
                     body: savedNotification.message,
                     tag: savedNotification.type,
-                    link: `/order/${order.id}`,
+                    link: `/notifications`,
+                    notificationId: savedNotification.id,
                 },
             );
 
@@ -585,6 +586,7 @@ export class OrderService {
                     title: savedNotifications[0].title,
                     body: savedNotifications[0].message,
                     tag: savedNotifications[0].type,
+                    link: `/technician/notifications`,
                 },
             );
             return toOrderResponse(order);
@@ -662,6 +664,7 @@ export class OrderService {
                     title: savedNotification.title,
                     body: savedNotification.message,
                     tag: savedNotification.type,
+                    link: `/notifications`,
                 },
             );
             return toOrderResponse(order);

@@ -7,6 +7,7 @@ import { Button, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { ChevronRight, HomeIcon, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -19,10 +20,18 @@ import {
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import noteFilled from "~/assets/note-filled.png";
-import { calculateDistanceInMeters } from "~/common/utils";
+import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
 import { customToastStyle } from "~/common/custom-toast-style";
+import { calculateDistanceInMeters } from "~/common/utils";
 import EnableLocationSheet from "~/components/enable-location-sheet";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import SwipeButton from "~/components/ui/swipe-button";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
@@ -34,17 +43,16 @@ import {
     type OrderItem,
     type OrderStatus,
 } from "~/types/order.types";
-import "leaflet/dist/leaflet.css";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from "~/components/ui/sheet";
-import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
+import type { Route } from "./+types/technician-order-summary";
 
 const SERVICE_RADIUS_METERS = 200;
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Ringkasan Pesanan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function TechnicianOrderSummary() {
     const { orderId } = useParams<{ orderId: string }>();

@@ -37,6 +37,14 @@ import {
 import { useMidtrans } from "~/hooks/use-midtrans";
 import type { InvoiceResponse } from "~/types/invoice.types";
 import type { MidtransTokenResponse } from "~/types/payment.type";
+import type { Route } from "./+types/invoice-detail";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Detail Tagihan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function InvoiceDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -351,7 +359,7 @@ export default function InvoiceDetailPage() {
                 <InvoiceStamp status={invoice.status} />
                 <Button
                     variant="outlined"
-                    className="h-12 w-full rounded-full text-md text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95"
+                    className="h-12 w-full rounded-full text-base text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95"
                     disabled={isDownloading}
                     onClick={handleDownload}
                 >

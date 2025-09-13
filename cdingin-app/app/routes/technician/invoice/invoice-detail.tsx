@@ -27,6 +27,14 @@ import {
     TableRow,
 } from "~/components/ui/table";
 import { type InvoiceResponse } from "~/types/invoice.types";
+import type { Route } from "./+types/invoice-detail";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Detail Tagihan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 /**
  * A page for customers to view their invoice details and choose a payment method.

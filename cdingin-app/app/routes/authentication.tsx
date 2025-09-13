@@ -11,6 +11,14 @@ import PhoneStep from "~/authentication/phone-step";
 import Spinner from "~/components/ui/spinner";
 import { useAuth } from "~/contexts/auth.context";
 import type { UserResponse } from "~/types/auth.type";
+import type { Route } from "./+types/authentication";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Autentikasi | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function Authentication() {
     const [step, setStep] = useState<"email" | "otp" | "name" | "phone">(

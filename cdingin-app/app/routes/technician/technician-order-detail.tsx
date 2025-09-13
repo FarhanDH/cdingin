@@ -16,6 +16,14 @@ import Spinner from "~/components/ui/spinner";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
+import type { Route } from "./+types/technician-order-detail";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Detail Pesanan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function TechnicianOrderDetail() {
     const { orderId } = useParams<{ orderId: string }>();

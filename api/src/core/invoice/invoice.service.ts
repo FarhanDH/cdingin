@@ -167,6 +167,7 @@ export class InvoiceService {
                     title: notification.title,
                     body: notification.message,
                     tag: notification.type,
+                    link: '/notifications',
                 },
             );
             // return createdInvoice;
@@ -317,16 +318,18 @@ export class InvoiceService {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    responseType: 'arraybuffer', // <-- PENTING: Minta respons sebagai data biner
+                    responseType: 'arraybuffer', // !IMPORTANT
                 },
             );
 
+            // Send push notification to customer
             await this.pushSubscriptionService.sendNotificationToUser(
                 invoice.order.customer.id,
                 {
                     title: 'Sip, Tagihanmu Udah Di-Download!',
                     body: `Cek folder download atau dokumen di perangkat kamu, ya.`,
                     tag: NotificationType.INVOICE_DOWNLOADED,
+                    link: `/notifications`,
                 },
             );
             return Buffer.from(response.data);

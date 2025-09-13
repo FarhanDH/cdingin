@@ -13,16 +13,16 @@ import { configuration } from '~/common/configuration';
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
 import { NotificationType } from '~/common/enums/notification-type.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
+import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { PaymentMethod } from '~/common/enums/payment.enum';
 import { Invoice } from '../invoice/entities/invoice.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { NotificationService } from '../notification/notification.service';
-import { MidtransTokenResponse } from './dto/payment.response';
-import { Payment } from './entities/payment.entity';
-import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { OrderResponse, toOrderResponse } from '../order/dto/order.response';
 import { Order } from '../order/entities/order.entity';
 import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
+import { MidtransTokenResponse } from './dto/payment.response';
+import { Payment } from './entities/payment.entity';
 
 @Injectable()
 export class PaymentService {
@@ -219,6 +219,7 @@ export class PaymentService {
                     title: notification.title,
                     body: notification.message,
                     tag: notification.type,
+                    link: '/notifications',
                 },
             );
             // Commit the transaction.
@@ -339,30 +340,45 @@ export class PaymentService {
                 await queryRunner.manager.save(invoice);
                 await queryRunner.manager.save(order);
 
-                // 6. Send notifications (outside the transaction).
                 // Notify the customer
-                await this.notificationService.create({
-                    recipientId: order.customer.id,
-                    orderId: order.id,
-                    type: NotificationType.PAYMENT_SUCCESS,
-                    title: 'Pembayaran Berhasil!',
-                    message: `Pembayaran untuk pesanan #${order.id} telah lunas. Terima kasih!`,
-                });
-                // Notify the technician
-                const notification = await this.notificationService.create({
-                    recipientId: order.technician.id,
-                    orderId: order.id,
-                    type: NotificationType.PAYMENT_SUCCESS,
-                    title: 'Pelanggan Udah Bayar',
-                    message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat Midtrans.`,
-                });
+                const customerNotification =
+                    await this.notificationService.create({
+                        recipientId: order.customer.id,
+                        orderId: order.id,
+                        type: NotificationType.PAYMENT_SUCCESS,
+                        title: 'Yeay! Pembayaran berhasil!',
+                        message: `Cihuuy, pembayaranmu berhasil. Makasih dan semoga AC-mu tetap adem.`,
+                    });
 
+                // Notify the technician
+                const technicianNotification =
+                    await this.notificationService.create({
+                        recipientId: order.technician.id,
+                        orderId: order.id,
+                        type: NotificationType.PAYMENT_SUCCESS,
+                        title: 'Pelanggan Udah Bayar',
+                        message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat Midtrans.`,
+                    });
+
+                // Send notifications to technician
                 await this.pushSubscriptionService.sendNotificationToUser(
-                    notification.recipient.id,
+                    technicianNotification.recipient.id,
                     {
-                        title: notification.title,
-                        body: notification.message,
-                        tag: notification.type,
+                        title: technicianNotification.title,
+                        body: technicianNotification.message,
+                        tag: technicianNotification.type,
+                        link: '/technician/notifications',
+                    },
+                );
+
+                // Send notifications to customer
+                await this.pushSubscriptionService.sendNotificationToUser(
+                    customerNotification.recipient.id,
+                    {
+                        title: customerNotification.title,
+                        body: customerNotification.message,
+                        tag: customerNotification.type,
+                        link: '/notifications',
                     },
                 );
                 // Commit the transaction BEFORE sending notifications.

@@ -38,6 +38,7 @@ self.addEventListener("push", (event) => {
         renotify: true,
         data: {
             link: data.link || "/",
+            notificationId: data.notificationId,
         },
     };
     // Wait until the notification is shown before the service worker goes back to sleep.

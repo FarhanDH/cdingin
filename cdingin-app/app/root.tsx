@@ -7,6 +7,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import NotFoundPage from "./pages/not-found";
+import axios from "axios";
 
 export const links: Route.LinksFunction = () => [
     { rel: "icon", href: "/favicon.ico" },
@@ -41,8 +42,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 .register("/service-worker.js")
                 .then(() => console.log("SW registered"))
                 .catch((err) => console.error("SW failed", err));
+
+            const handleMessage = (event) => {
+                // Cek apakah pesan berasal dari service worker dan memiliki tipe yang benar
+                if (event.data && event.data.type === "NOTIFICATION_CLICK") {
+                    const { notificationId } = event.data;
+                    // Panggil fungsi untuk menandai notifikasi sebagai sudah dibaca
+                    markNotificationAsRead(notificationId);
+                }
+            };
+
+            navigator.serviceWorker.addEventListener("message", handleMessage);
+
+            return () => {
+                navigator.serviceWorker.removeEventListener(
+                    "message",
+                    handleMessage
+                );
+            };
         }
     }, []);
+
+    const markNotificationAsRead = async (notificationId: string) => {
+        try {
+            await axios.post(
+                `${
+                    import.meta.env.VITE_API_URL
+                }/notifications/${notificationId}/read`,
+                {},
+                { withCredentials: true }
+            );
+            // Setelah berhasil, Anda bisa memperbarui state atau me-refresh data notifikasi
+            // Misalnya:
+            // fetchNotifications();
+        } catch (error) {
+            console.error("Failed to mark notification as read:", error);
+        }
+    };
+
     return (
         <html lang="id">
             <head>

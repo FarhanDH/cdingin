@@ -27,6 +27,14 @@ import type {
     OrderItem,
     OrderStep,
 } from "~/types/order.types";
+import type { Route } from "./+types/new-order";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Buat Pesanan | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 // Order Steps
 const steps: OrderStep[] = [

@@ -15,6 +15,8 @@ export type PayloadMessage = {
     body: string;
     tag: NotificationType;
     link?: string;
+    notificationId?: string;
+    userId?: string;
 };
 
 @Injectable()
