@@ -1,14 +1,20 @@
 import { Button } from "@mui/material";
 import { Label } from "@radix-ui/react-label";
-import { HomeIcon, LampFloorIcon } from "lucide-react";
 import { useState, type JSX } from "react";
 import Header from "~/components/header";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "~/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 type PropertyType = {
     id: string;
     name: string;
-    icon: JSX.Element;
+    icon?: JSX.Element;
 };
 
 interface PropertyTypeStepProps {
@@ -22,41 +28,52 @@ const propertyTypes = [
     {
         id: "home",
         name: "Rumah",
-        icon: <HomeIcon className="w-10 h-10 text-[#006C7F]" />,
     },
     {
         id: "boarding-house",
         name: "Kost",
-        icon: <HomeIcon className="w-10 h-10 text-[#006C7F]" />,
+        //
     },
     {
         id: "hotel",
         name: "Hotel",
-        icon: <HomeIcon className="w-10 h-10 text-[#006C7F]" />,
     },
     {
         id: "office",
         name: "Kantor",
-        icon: <HomeIcon className="w-10 h-10 text-[#006C7F]" />,
     },
     {
         id: "shop",
         name: "Toko",
-        icon: <HomeIcon className="w-10 h-10 text-[#006C7F]" />,
     },
 ];
 
+const floorOptions = Array.from({ length: 20 }, (_, i) => i + 1);
+
+/**
+ * A step in the new order flow that asks for the property type.
+ *
+ * @param {Object} props - The props passed to the component.
+ * @param {Function} props.onSubmit - The function to call when the form is submitted.
+ * @param {Function} props.onBack - The function to call when the back button is clicked.
+ * @param {Object} props.initialPropertyType - The initial property type.
+ * @param {number} props.initialFloor - The initial floor.
+ * @returns {React.ReactElement} - The component element.
+ */
 export default function PropertyTypeStep({
     onSubmit,
     onBack,
     initialPropertyType,
     initialFloor,
 }: Readonly<PropertyTypeStepProps>) {
-    // State sekarang menyimpan seluruh objek property, bukan hanya ID
-    const [selectedProperty, setSelectedProperty] = useState(
-        () => propertyTypes.find((p) => p.name === initialPropertyType) || null
-    );
-    const [floor, setFloor] = useState(initialFloor || 1);
+    const [selectedProperty, setSelectedProperty] =
+        useState<PropertyType | null>(
+            () =>
+                propertyTypes.find((p) => p.id === initialPropertyType?.id) ||
+                null
+        );
+
+    const [floor, setFloor] = useState(initialFloor || "");
 
     const handleSubmit = () => {
         if (selectedProperty && floor) {
@@ -65,7 +82,7 @@ export default function PropertyTypeStep({
     };
 
     return (
-        <>
+        <div className="flex flex-col h-full bg-white">
             <Header title="Tipe Properti" isSticky />
             <div className="p-4 pb-28">
                 <h1 className="text-xl font-semibold mb-4">
@@ -83,13 +100,13 @@ export default function PropertyTypeStep({
                         <Label
                             key={property.id}
                             htmlFor={property.id}
-                            className={`flex items-center gap-3 border p-3 rounded-lg cursor-pointer ${
+                            className={`flex items-center gap-3 border-[1.5px] p-3 rounded-lg cursor-pointer ${
                                 selectedProperty?.id === property.id
-                                    ? "border-blue-500 bg-blue-50"
+                                    ? "border-primary bg-secondary/10"
                                     : "border-gray-300"
                             }`}
                         >
-                            {property.icon}
+                            {/* {property.icon} */}
                             <p className="font-medium text-xl flex-1">
                                 {property.name}
                             </p>
@@ -102,23 +119,29 @@ export default function PropertyTypeStep({
                     ))}
                 </RadioGroup>
 
+                {/* Floor Input */}
                 <h1 className="text-xl font-semibold my-4">
-                    Lantai Berapa AC-nya?
+                    Di lantai Berapa AC-nya?
                 </h1>
-                <div className="flex items-center gap-3 border border-gray-300 p-3 rounded-lg">
-                    <LampFloorIcon size={40} className="text-[#006C7F]" />
-                    <input
-                        type="number"
-                        value={floor}
-                        onChange={(e) => setFloor(parseInt(e.target.value, 10))}
-                        inputMode="numeric"
-                        id="floor"
-                        name="floor"
-                        min={1}
-                        placeholder="Cth: 2"
-                        className="w-full text-lg font-medium focus:outline-none focus:border-[#222222] border-b"
-                    />
-                </div>
+                <Select
+                    value={floor ? String(floor) : ""}
+                    onValueChange={(value) => setFloor(value)}
+                >
+                    <SelectTrigger className="w-full text-base font-medium focus:outline-none focus:border-[#222222] border p-3 rounded-lg h-auto border-gray-300 cursor-pointer">
+                        <SelectValue placeholder="Pilih Lantai" />
+                    </SelectTrigger>
+                    <SelectContent className="h-[200px]">
+                        {floorOptions.map((floorNum) => (
+                            <SelectItem
+                                key={floorNum}
+                                value={String(floorNum)}
+                                className="cursor-pointer"
+                            >
+                                Lantai {floorNum}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="w-full p-4 gap-2 flex fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border pr-5">
@@ -137,6 +160,6 @@ export default function PropertyTypeStep({
                     Lanjut
                 </Button>
             </div>
-        </>
+        </div>
     );
 }

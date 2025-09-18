@@ -1,4 +1,8 @@
-import { AirVent, Minus, Plus, Trash2 } from "lucide-react";
+import { IconButton } from "@mui/material";
+import { Minus, Plus, Trash2 } from "lucide-react";
+import cassetteACIcon from "~/assets/cassette-ac.png";
+import splitACIcon from "~/assets/split-ac.png";
+import standingACIcon from "~/assets/standing-ac.png";
 import {
     Select,
     SelectContent,
@@ -6,11 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "~/components/ui/select";
-import standingACIcon from "~/assets/standing-ac.png";
-import cassetteACIcon from "~/assets/cassette-ac.png";
-import splitACIcon from "~/assets/split-ac.png";
 import type { AcUnitDetail } from "~/types/order.types";
-import { Button, IconButton } from "@mui/material";
 
 // Daftar pilihan untuk dropdown
 export const acTypes = [

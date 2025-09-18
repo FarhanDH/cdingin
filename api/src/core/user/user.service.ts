@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    ConflictException,
+    Injectable,
+    Logger,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCustomerProfileRequest } from './dto/user.request';
@@ -14,28 +19,73 @@ export class UserService {
     ) {}
     private readonly logger = new Logger(UserService.name);
 
+    /**
+     * Completes the profile of a customer after initial registration.
+     * This method sets the full name, phone number, and avatar for a user.
+     * It ensures that the phone number is not already in use by another user.
+     *
+     * @param request - The profile data to be saved.
+     * @returns The updated user entity.
+     * @throws {NotFoundException} If the user with the given email is not found.
+     * @throws {ConflictException} If the phone number is already associated with another account.
+     */
+    /**
+     * Completes the profile of a customer after initial registration.
+     * This method sets the full name, phone number, and avatar for a user.
+     * It ensures that the phone number is not already in use by another user.
+     *
+     * @param request - The profile data to be saved.
+     * @returns The updated user entity.
+     * @throws {NotFoundException} If the user with the given email is not found.
+     * @throws {ConflictException} If the phone number is already associated with another account.
+     */
     async registerCustomerProfile(
         request: CreateCustomerProfileRequest,
     ): Promise<User> {
         this.logger.debug(
-            `registerCustomerProfile: ${JSON.stringify(request)}`,
+            `Attempting to register customer profile for email: ${request.email}`,
         );
+
+        // Normalize phone number by removing leading '0'
+        let phoneNumber = request.phoneNumber;
+        if (phoneNumber.startsWith('0')) {
+            phoneNumber = phoneNumber.substring(1);
+        }
+        console.log(phoneNumber);
 
         const user = await this.userRepository.findOne({
             where: { email: request.email },
         });
 
         if (!user) {
-            this.logger.warn(`email ${request.email} not found`);
+            this.logger.warn(`User with email ${request.email} not found.`);
             throw new NotFoundException('Hmm, emailmu belum terdaftar');
         }
 
+        // Check if the phone number is already in use by another user
+        const existingUserWithPhone = await this.userRepository.findOne({
+            where: { phone_number: phoneNumber },
+        });
+
+        if (existingUserWithPhone && existingUserWithPhone.id !== user.id) {
+            this.logger.warn(
+                `Phone number ${phoneNumber} is already in use by another user.`,
+            );
+            throw new ConflictException(
+                'Nomor HP sudah terdaftar, silakan gunakan nomor HP lain.',
+            );
+        }
+
         user.full_name = request.fullName;
-        user.phone_number = request.phoneNumber;
+        user.phone_number = phoneNumber;
         user.avatar_url = `https://ui-avatars.com/api/?background=random&color=random&rounded=true&size=128&length=1&bold=true&name=${request.fullName}`;
         user.is_profile_completed = true;
 
         await this.userRepository.save(user);
+
+        this.logger.debug(
+            `Successfully completed profile for user ID: ${user.id}`,
+        );
 
         return user;
     }

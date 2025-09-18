@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import mapPin from "~/assets/map-pin.png";
 import { ChevronRight, HomeIcon, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -88,6 +89,11 @@ export default function TechnicianOrderSummary() {
         technicianPosition,
         serviceLocationPosition
     );
+
+    const mapPinIcon = L.icon({
+        iconUrl: mapPin, // path to your image
+        iconSize: [25, 41], // size of the icon
+    });
 
     /**
      * Checks the current status of the geolocation permission.
@@ -456,6 +462,7 @@ export default function TechnicianOrderSummary() {
                 </div>
             )}
 
+            {/* Map */}
             <div className="w-full">
                 <MapContainer
                     center={[
@@ -495,7 +502,10 @@ export default function TechnicianOrderSummary() {
                     )}
                     {/* Service location marker */}
                     {serviceLocationPosition && (
-                        <Marker position={serviceLocationPosition} />
+                        <Marker
+                            position={serviceLocationPosition}
+                            icon={mapPinIcon}
+                        />
                     )}
                     {/* Route Polyline (now dynamic) */}
                     {route.length > 0 && (

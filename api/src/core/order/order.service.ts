@@ -83,6 +83,13 @@ export class OrderService {
             // Check schedule availability
             // Convert the service date string from the DTO to a Date object.
             const serviceDate = new Date(createOrderDto.serviceDate);
+
+            if (serviceDate.getDay() === 0) {
+                throw new BadRequestException(
+                    'Layanan tidak tersedia di hari Minggu.',
+                );
+            }
+
             // Get the start of the day for the service date.
             const dayStart = startOfDay(serviceDate);
             // Get the end of the day for the service date.
@@ -165,36 +172,53 @@ export class OrderService {
             );
             // Save all the associated AC unit entities to the database within the transaction.
             await queryRunner.manager.save(acUnitsToSave);
-
             // Commit transaction
             // If all operations are successful, commit the transaction to make changes permanent.
             await queryRunner.commitTransaction();
 
             const technicians = await this.userService.getAllTechnicians();
 
-            const savedNotification = technicians.map(async (technician) => {
-                return await this.notificationService.create({
-                    orderId: savedOrder.id,
-                    recipientId: technician.id,
-                    title: 'Order Baru!',
-                    message: 'Ada pesanan baru dari pelanggan',
-                    type: NotificationType.NEW_ORDER,
-                });
-            });
-            const savedNotifications = await Promise.all(savedNotification);
+            if (technicians.length > 0) {
+                const notificationCreationPromise = Promise.all(
+                    technicians.map((technician) =>
+                        this.notificationService.create({
+                            orderId: savedOrder.id,
+                            recipientId: technician.id,
+                            title: 'Order Baru!',
+                            message: 'Ada pesanan baru dari pelanggan',
+                            type: NotificationType.NEW_ORDER,
+                        }),
+                    ),
+                );
 
-            // Send new order notification to technicians
-            const technicianSubscriptions =
-                await this.pushSubscriptionService.getAllTechnicianSubscriptions();
-            await this.pushSubscriptionService.sendNotifications(
-                technicianSubscriptions,
-                {
-                    title: savedNotifications[0].title,
-                    body: savedNotifications[0].message,
-                    tag: savedNotifications[0].type,
-                    link: `/technician/notifications`,
-                },
-            );
+                const technicianSubscriptionsPromise =
+                    this.pushSubscriptionService.getAllTechnicianSubscriptions();
+
+                const [, technicianSubscriptions] = await Promise.all([
+                    notificationCreationPromise,
+                    technicianSubscriptionsPromise,
+                ]);
+
+                if (technicianSubscriptions?.length > 0) {
+                    await this.pushSubscriptionService.sendNotifications(
+                        technicianSubscriptions,
+                        {
+                            title: 'Order Baru!',
+                            body: 'Ada pesanan baru dari pelanggan',
+                            tag: NotificationType.NEW_ORDER,
+                            link: `/technician/notifications`,
+                        },
+                    );
+                }
+            } else {
+                this.logger.warn(
+                    'No technicians found to notify for new order.',
+                );
+                throw new NotFoundException(
+                    'Kayaknya teknisi lagi gak ada. Coba lagi nanti',
+                );
+            }
+
             // Get new order for response
             const completeOrder = await this.orderRepository.findOne({
                 where: { id: savedOrder.id },
@@ -209,7 +233,9 @@ export class OrderService {
             // Rollback transaction
             await queryRunner.rollbackTransaction();
             this.logger.error(error);
-            throw new InternalServerErrorException(error.message);
+            throw new error.constructor(
+                error.message || 'Failed to create order',
+            );
         } finally {
             // Release query runner
             await queryRunner.release();
@@ -716,38 +742,38 @@ export class OrderService {
         switch (status) {
             case OrderStatusEnum.CONFIRMED:
                 return {
-                    title: 'Pesananmu Udah Diterima ✅',
-                    body: `Teknisi udah terima pesananmu, tunggu sampai harinya yaa`,
+                    title: 'Pesanan Udah Diterima ✅',
+                    body: `Teknisi udah terima pesanan, tunggu sampai harinya yaa`,
                     tag,
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: '🛵 Teknisi OTW!',
-                    body: `Teknisi sedang menuju ke lokasi servicemu. Siap-siap, ya!`,
+                    title: 'Teknisi OTW! 🛵',
+                    body: `Teknisi sedang menuju ke lokasi service. Siap-siap, ya!`,
                     tag,
                 };
             case OrderStatusEnum.ON_WORKING:
                 return {
                     title: 'Teknisi Sudah Tiba!',
-                    body: `Teknisi sudah sampai!, dan lagi nge-cek AC-mu. Sabar yaa`,
+                    body: `Teknisi sudah sampai!, dan lagi nge-cek AC-nya. Sabar yaa`,
                     tag,
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: '🗒️ Tagihan Siap',
+                    title: 'Tagihan Siap 🗒️',
                     body: `Invoice udah dibuat. Yuk, segera selesaikan pembayarannya.`,
                     tag,
                 };
             case OrderStatusEnum.COMPLETED:
                 return {
-                    title: '🙌 Yeay! Service Udah Selesai',
+                    title: 'Yeay! Service Udah Selesai 🙌',
                     body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin `,
                     tag,
                 };
             case OrderStatusEnum.CANCELLED:
                 return {
-                    title: '💔 Pesananmu Dibatalkan',
-                    body: `Maaf ya, teknisi belum bisa kerjain pesananmu. Coba atur pesanan baru, ya.`,
+                    title: 'Pesanan Dibatalkan 💔',
+                    body: `Maaf ya, teknisi belum bisa kerjain pesanan-nya. Coba atur pesanan baru, ya.`,
                     tag: NotificationType.CANCELLED_ORDER,
                 };
             default:

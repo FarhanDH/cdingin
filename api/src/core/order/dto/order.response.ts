@@ -66,7 +66,7 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
         (total, acUnit) => total + acUnit.quantity,
         0,
     ),
-    invoiceId: order.invoice?.id,
+    invoiceId: order.invoice?.id || null,
     cancellationReason: order.cancellation_reason,
     cancellationNote: order.cancellation_note,
     cancelledBy: order.cancelled_by,

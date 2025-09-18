@@ -169,7 +169,8 @@ export default function CreateInvoice() {
                                         colSpan={3}
                                         className="text-center text-gray-500 h-24"
                                     >
-                                        Belum ada item ditambahkan.
+                                        Silakan tambahkan item untuk membuat
+                                        tagihan.
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -234,7 +235,7 @@ export default function CreateInvoice() {
                     disabled={isSubmitting}
                 >
                     <Plus size={16} className="mr-2" />
-                    Tambah Item Lain
+                    {items.length === 0 ? "Tambah item" : "Tambah item lagi"}
                 </Button>
             </main>
 

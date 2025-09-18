@@ -435,18 +435,21 @@ export default function InvoiceDetailPage() {
                 <SheetContent
                     isXIconVisible={false}
                     side="bottom"
-                    className="rounded-t-2xl max-w-lg mx-auto p-2 text-center"
+                    className="rounded-t-2xl max-w-lg mx-auto p-2 text-center h-full sm:max-h-none"
                     onInteractOutside={(e) => e.preventDefault()}
                     onEscapeKeyDown={(e) => e.preventDefault()}
                 >
-                    <SheetHeader>
+                    <SheetHeader className="border-b-2 border-dashed">
                         <SheetTitle>Pembayaran Digital</SheetTitle>
                         <SheetDescription>
                             Silakan pilih metode bayar
                         </SheetDescription>
                     </SheetHeader>
                     {isPaymentGatewaySheetOpen && (
-                        <div id="snap-container" className="w-full" />
+                        <div
+                            id="snap-container"
+                            className="w-full h-full sm:max-h-none"
+                        />
                     )}
                     <SheetFooter>
                         <Button
@@ -459,7 +462,7 @@ export default function InvoiceDetailPage() {
                                 setSnapToken(null);
                             }}
                             variant="outlined"
-                            className="w-full capitalize text-primary border-primary bg-white !font-[Rubik] active:scale-95 rounded-full h-11"
+                            className="w-full text-primary border-primary bg-white !font-[Rubik] active:scale-95 rounded-full h-12 text-base normal-case"
                         >
                             Ga, jadi
                         </Button>

@@ -1,6 +1,6 @@
 export const customToastStyle = {
     style: {
-        backgroundColor: "#242424",
+        backgroundColor: "#333333",
         color: "#fff",
         opacity: "0.95",
         borderRadius: "20px",

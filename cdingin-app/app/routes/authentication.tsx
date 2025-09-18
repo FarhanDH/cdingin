@@ -12,6 +12,7 @@ import Spinner from "~/components/ui/spinner";
 import { useAuth } from "~/contexts/auth.context";
 import type { UserResponse } from "~/types/auth.type";
 import type { Route } from "./+types/authentication";
+import { customToastStyle } from "~/common/custom-toast-style";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -98,17 +99,7 @@ export default function Authentication() {
                         `Halo halo, ${
                             response.data.data.user.fullName?.split(" ")[0]
                         }`,
-                        {
-                            style: {
-                                backgroundColor: "#242424",
-                                color: "#fff",
-                                opacity: "0.9",
-                                borderRadius: "20px",
-                                padding: "10px",
-                                fontSize: "16px",
-                                justifyContent: "center",
-                            },
-                        }
+                        customToastStyle
                     );
                     navigate("/orders");
                 } else {
@@ -116,17 +107,7 @@ export default function Authentication() {
                         `Orderan siap disikat, ${
                             response.data.data.user.fullName?.split(" ")[0]
                         }`,
-                        {
-                            style: {
-                                backgroundColor: "#242424",
-                                color: "#fff",
-                                opacity: "0.9",
-                                borderRadius: "20px",
-                                padding: "10px",
-                                fontSize: "16px",
-                                justifyContent: "center",
-                            },
-                        }
+                        customToastStyle
                     );
                     navigate("/technician/orders");
                 }
@@ -199,17 +180,7 @@ export default function Authentication() {
 
             toast(
                 `Halo halo, ${response.data.data.user.fullName?.split(" ")[0]}`,
-                {
-                    style: {
-                        backgroundColor: "#242424",
-                        color: "#fff",
-                        opacity: "0.9",
-                        borderRadius: "20px",
-                        padding: "10px",
-                        fontSize: "16px",
-                        justifyContent: "center",
-                    },
-                }
+                customToastStyle
             );
             // Navigate to orders page
             navigate("/orders");

@@ -28,6 +28,7 @@ import type {
     OrderStep,
 } from "~/types/order.types";
 import type { Route } from "./+types/new-order";
+import successLottie from "~/assets/lottie/success.json";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -39,8 +40,8 @@ export function meta(args: Route.MetaArgs) {
 // Order Steps
 const steps: OrderStep[] = [
     "ac-problems",
-    "location",
     "ac-type",
+    "location",
     "property-type",
     "summary",
 ];
@@ -227,12 +228,11 @@ export default function NewOrder() {
             }
             setOrder(response.data.data);
         } catch (error) {
-            if (error instanceof AxiosError) {
-                toast(
-                    "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",
-                    customToastStyle
-                );
-            }
+            const errorMessage =
+                error instanceof AxiosError
+                    ? error.response?.data?.message
+                    : "Yah, kayaknya ada yang salah. Coba lagi nanti, ya";
+            toast(errorMessage, customToastStyle);
         } finally {
             setLoading(false);
         }
@@ -311,7 +311,8 @@ export default function NewOrder() {
             {successState === "animating" && (
                 <div className="h-screen flex items-center justify-center">
                     <DotLottieReact
-                        src="https://lottie.host/c68a2567-7d30-4c79-9b82-ba4f7edca4fc/JnzotXvT5y.lottie"
+                        // src="https://lottie.host/c68a2567-7d30-4c79-9b82-ba4f7edca4fc/JnzotXvT5y.lottie"
+                        data={successLottie}
                         loop
                         autoplay
                         style={{ width: "300px", height: "300px" }}
@@ -319,7 +320,7 @@ export default function NewOrder() {
                 </div>
             )}
 
-            {/* Success Drawer if order created */}
+            {/* Success Sheet if order created */}
             <Sheet open={successState === "showingSheet"}>
                 <SheetContent
                     isXIconVisible={false}

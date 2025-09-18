@@ -204,7 +204,7 @@ export class PaymentService {
             queryRunner.manager.create(Order, order);
             await queryRunner.manager.save(order);
 
-            // 6. Send notification to the customer (after transaction is committed).
+            //   Send notification to the customer (after transaction is committed).
             const notification = await this.notificationService.create({
                 recipientId: order.customer.id,
                 orderId: order.id,
@@ -347,7 +347,7 @@ export class PaymentService {
                         orderId: order.id,
                         type: NotificationType.PAYMENT_SUCCESS,
                         title: 'Yeay! Pembayaran berhasil!',
-                        message: `Cihuuy, pembayaranmu berhasil. Makasih dan semoga AC-mu tetap adem.`,
+                        message: `Cihuuy, pembayaran berhasil. Makasih dan semoga AC-nya tetap adem.`,
                     });
 
                 // Notify the technician

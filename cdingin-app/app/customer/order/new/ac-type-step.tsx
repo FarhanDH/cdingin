@@ -106,7 +106,7 @@ export default function AcTypeStep({
                     {acUnits.length === 0 && (
                         <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">
                             <p className="text-gray-600">
-                                Kamu belum menambahkan unit AC.
+                                Silakan tambahkan unit AC.
                             </p>
                             <p className="text-sm text-gray-500 mt-1">
                                 Klik tombol di bawah untuk tambah unit AC.

@@ -1,8 +1,9 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
+import fs from 'fs';
+import path from 'path';
 import { AuthService } from '../auth/auth.service';
 import { OtpRequest } from '../auth/dto/auth.request';
-import { join } from 'path';
 
 @Injectable()
 export class EmailService {

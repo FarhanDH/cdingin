@@ -39,7 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker
-                .register("/service-worker.js")
+                .register("/service-worker.js", { scope: "/" })
                 .then(() => console.log("SW registered"))
                 .catch((err) => console.error("SW failed", err));
 

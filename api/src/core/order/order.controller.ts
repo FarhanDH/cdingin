@@ -36,7 +36,8 @@ export class OrderController {
     async createForCustomer(
         @Request() request: RequestWithUser,
         @Body() createOrderDto: CreateOrderRequestDto,
-    ): Promise<ApiResponse<OrderResponse>> {
+        // ): Promise<ApiResponse<OrderResponse>> {
+    ) {
         const data = await this.orderService.createForCustomer(
             request.user,
             createOrderDto,

@@ -15,16 +15,21 @@ export default defineConfig({
             srcDir: "public",
             injectManifest: {
                 swSrc: "/public/service-worker.js",
+                // globPatterns: ["**/*.{js,css,html,ico,png,svg,json}"],
+                additionalManifestEntries: [{ url: "/", revision: null }],
             },
+            outDir: "dist",
+            strategies: "injectManifest",
             registerType: "autoUpdate",
             devOptions: {
                 enabled: true,
+                type: "module",
             },
             manifest: {
                 name: "Cdingin",
                 short_name: "Cdingin",
                 description: "Service AC jadi mudah, tinggal ngeklik doang",
-                start_url: "/orders",
+                start_url: "/",
                 display: "standalone",
                 background_color: "#ffffff",
                 theme_color: "#ffffff",
@@ -484,6 +489,10 @@ export default defineConfig({
             // },
         }),
     ],
+    build: {
+        outDir: "dist", // This is usually the default, but it's good to be explicit
+        assetsDir: "assets",
+    },
 
     // server: {
     //     // port: 3000,

@@ -44,18 +44,18 @@ export default function EnableLocationSheet({
                         className="w-full mx-auto mb-4"
                     />
                     <SheetTitle className="text-xl font-bold">
-                        Aktifkan layanan lokasi HP-mu
+                        Aktifkan layanan lokasi HP
                     </SheetTitle>
                     <SheetDescription className="text-[16px] text-gray-600">
                         {userRole === "customer"
-                            ? "Biar teknisi lebih gampang mastiin posisi servicenya, dan lebih cepat sampai ke lokasimu."
+                            ? "Biar teknisi lebih gampang mastiin posisi servicenya, dan lebih cepat sampai ke lokasi."
                             : "Dengan lokasi aktif, kamu bisa lebih mudah menemukan lokasi pelanggan."}
                     </SheetDescription>
                     <Button
                         onClick={onActivate}
-                        className="w-full h-12 rounded-full text-md font-semibold mt-6 bg-primary text-white active:scale-95"
+                        className="w-full h-12 rounded-full text-md font-medium mt-6 bg-primary text-white active:scale-95 !font-[Rubik] normal-case text-base"
                     >
-                        Aktifkan Lokasi
+                        Aktifin Lokasi
                     </Button>
                 </SheetHeader>
             </SheetContent>

@@ -31,7 +31,7 @@ export default function ProblemsStep({
         setSelectedProblems((prev) =>
             prev.includes(problemName)
                 ? prev.filter((p) => p !== problemName)
-                : [...prev, problemName],
+                : [...prev, problemName]
         );
     };
 
@@ -45,7 +45,7 @@ export default function ProblemsStep({
             <div className="p-4 pb-28">
                 {" "}
                 {/* Tambahkan padding bottom agar tidak tertutup tombol navigasi */}
-                <h1 className="text-xl font-semibold mb-4">AC kamu kenapa?</h1>
+                <h1 className="text-xl font-semibold mb-4">AC-nya kenapa?</h1>
                 {acServices.map((service) => {
                     const isChecked = selectedProblems.includes(service.name);
                     return (

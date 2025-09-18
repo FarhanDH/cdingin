@@ -27,18 +27,12 @@ export class ScheduleService {
             `ScheduleService.getScheduleAvailability(startDate: ${startDate}, endDate: ${endDate})`,
         );
         try {
+            // Query the database to sum the quantity of AC units booked for each day between the start date and end date
             const result = await this.orderRepository
                 .createQueryBuilder('orders')
-                // --- PERBAIKAN DI SINI ---
-                // Tambahkan JOIN untuk menghubungkan ke tabel ac_units
-                // 'orders.ac_units' adalah nama properti relasi di entitas Order
-                // 'ac_units' adalah alias yang akan kita gunakan untuk merujuk ke tabel ac_units
                 .innerJoin('orders.ac_units', 'ac_units')
-
                 .select('DATE(orders.service_date)', 'date')
-                // Sekarang kita bisa menggunakan alias 'ac_units'
                 .addSelect('SUM(ac_units.quantity)', 'totalUnitsBooked')
-
                 .where('orders.service_date BETWEEN :startDate AND :endDate', {
                     startDate,
                     endDate,
@@ -53,7 +47,7 @@ export class ScheduleService {
                 .getRawMany();
 
             return result.map((item) => ({
-                date: item.date, // 'date' sudah string
+                date: item.date,
                 totalUnitsBooked: parseInt(item.totalUnitsBooked, 10),
             }));
         } catch (error) {

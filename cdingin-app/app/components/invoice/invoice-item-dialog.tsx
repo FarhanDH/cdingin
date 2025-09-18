@@ -19,6 +19,18 @@ interface InvoiceItemDialogProps {
     onSave: (item: InvoiceItemForm) => void;
     itemToEdit: InvoiceItemForm | null;
 }
+
+// Helper function to format a number to IDR currency string
+const formatToIDR = (value: number) => {
+    if (!value || isNaN(value)) return "";
+    return new Intl.NumberFormat("id-ID").format(value);
+};
+
+// Helper function to parse an IDR currency string to a number
+const parseFromIDR = (value: string) => {
+    return parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
+};
+
 /**
 A dialog component for adding or editing an invoice item.
 It operates in two modes: 'add' and 'edit'.
@@ -50,16 +62,21 @@ export default function InvoiceItemDialog({
             });
         }
     }, [itemToEdit, isOpen]);
+
     const handleChange = (
-        field: keyof Omit<InvoiceItemForm, "id">,
+        field: keyof Omit<InvoiceItemForm, "id" | "unitPrice">,
         value: string
     ) => {
         const numericValue =
-            field === "quantity" || field === "unitPrice"
-                ? Number(value) || 0
-                : value;
+            field === "quantity" ? parseInt(value, 10) || 0 : value;
         setItem({ ...item, [field]: numericValue });
     };
+
+    const handleUnitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const numericValue = parseFromIDR(e.target.value);
+        setItem({ ...item, unitPrice: numericValue });
+    };
+
     const handleSave = () => {
         if (!item.description || item.quantity <= 0 || item.unitPrice <= 0) {
             toast(
@@ -71,6 +88,7 @@ export default function InvoiceItemDialog({
         onSave(item);
         onClose();
     };
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="">
@@ -99,8 +117,8 @@ export default function InvoiceItemDialog({
                             <label className="text-sm">Banyaknya</label>
                             <Input
                                 type="number"
-                                value={item.quantity}
-                                placeholder="1"
+                                value={item.quantity || ""}
+                                placeholder="0"
                                 min={1}
                                 onChange={(e) =>
                                     handleChange("quantity", e.target.value)
@@ -110,13 +128,11 @@ export default function InvoiceItemDialog({
                         <div>
                             <label className="text-sm">Harga Satuan (Rp)</label>
                             <Input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
-                                min={0}
-                                value={item.unitPrice}
-                                onChange={(e) =>
-                                    handleChange("unitPrice", e.target.value)
-                                }
+                                value={formatToIDR(item.unitPrice)}
+                                onChange={handleUnitPriceChange}
                             />
                         </div>
                     </div>

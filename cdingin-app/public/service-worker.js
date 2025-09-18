@@ -1,16 +1,53 @@
 /// <reference lib="webworker" />
+try {
+    importScripts(
+        "https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js"
+    );
+} catch (e) {
+    console.error("Workbox gagal dimuat", e);
+}
 
-// const {
-//     cleanupOutdatedCaches,
-//     precacheAndRoute,
-// } = require("workbox-precaching");
+if (self.workbox) {
+    const { precaching, routing, strategies } = self.workbox;
 
-// // declare const self: ServiceWorkerGlobalScope;
-// cleanupOutdatedCaches();
+    console.log(`Workbox berhasil dimuat!`);
 
-// // This is the injection point for the precache manifest
-// precacheAndRoute(self.__WB_MANIFEST);
-// self.__WB_MANIFEST;
+    precaching.cleanupOutdatedCaches();
+    precaching.precacheAndRoute(self.__WB_MANIFEST || []);
+
+    // --- PERBAIKAN UTAMA DI SINI ---
+    // Buat strategi cache-first untuk navigasi.
+    // Ini akan mencoba mengambil dari cache dulu, lalu jaringan.
+    // 'app-shell' adalah nama cache yang umum untuk ini.
+    const navigationStrategy = new strategies.CacheFirst({
+        cacheName: "app-shell",
+    });
+
+    // Daftarkan rute baru KHUSUS untuk permintaan navigasi.
+    routing.registerRoute(
+        // Kondisi: Jalankan aturan ini jika 'request.mode' adalah 'navigate'.
+        // Ini adalah cara Workbox untuk mengidentifikasi saat pengguna mencoba
+        // membuka halaman baru (bukan saat meminta gambar atau API).
+        ({ request }) => request.mode === "navigate",
+
+        // Handler: Jika kondisinya cocok, gunakan strategi yang sudah kita buat.
+        async (args) => {
+            try {
+                // Coba layani dari cache/jaringan seperti biasa.
+                return await navigationStrategy.handle(args);
+            } catch (error) {
+                // JARING PENGAMAN: Jika gagal (misalnya, offline dan halaman belum di-cache),
+                // SELALU kembalikan 'index.html' yang sudah di-precache.
+                // Ganti "/index.html" dengan "/" karena Workbox sekarang mengidentifikasi
+                // halaman utama dengan URL root.
+                return precaching.matchPrecache("/");
+            }
+        }
+    );
+    // ---------------------------------
+} else {
+    console.log(`Workbox gagal dimuat!`);
+}
 
 self.addEventListener("install", (event) => {
     console.log("Service Worker installing.");
@@ -31,7 +68,7 @@ self.addEventListener("push", (event) => {
     const title = data.title || "cdingin";
     const options = {
         body: data.body,
-        // icon: "/web-app-manifest-192x192.png",
+        icon: "/web-app-manifest-192x192.png",
         badge: "/badge-72x72.png",
         vibrate: [200, 100, 200],
         tag: data.tag,

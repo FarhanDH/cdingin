@@ -233,11 +233,8 @@ export class InvoiceService {
             throw new NotFoundException('Invoice not found.');
         }
 
-        const templateHtml = fs.readFileSync(
-            path.join(process.cwd(), 'src/core/invoice/templates/invoice.hbs'),
-            'utf8',
-        );
-
+        const templatePath = __dirname + '/templates/invoice.hbs';
+        const templateHtml = fs.readFileSync(templatePath, 'utf8');
         hbs.registerHelper('formatDate', function (dateString) {
             return format(new Date(dateString), 'd MMMM yyyy', { locale: id });
         });

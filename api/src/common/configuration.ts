@@ -2,6 +2,7 @@ export const configuration = () => {
     return {
         env: process.env.NODE_ENV,
         frontendUrl: process.env.FRONTEND_URL,
+        domain: process.env.DOMAIN,
         port: process.env.PORT || 3002,
         database: {
             type: process.env.DATABASE_TYPE,

@@ -82,6 +82,8 @@ export default function SummaryStep({
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [isSheetConfirmationOpen, setIsSheetConfirmationOpen] =
         useState<boolean>(false);
+    const [isNoteDrawerOpen, setIsNoteDrawerOpen] = useState(false);
+    const [tempNote, setTempNote] = useState<string>("");
 
     const totalQuantityInCart =
         formData.acUnits?.reduce((acc, unit) => acc + unit.quantity, 0) || 0;
@@ -93,12 +95,22 @@ export default function SummaryStep({
         }
     };
 
+    const handleNoteDone = () => {
+        setNote(tempNote);
+        setIsNoteDrawerOpen(false);
+    };
+
+    const handleOpenNoteDrawer = () => {
+        setTempNote(note);
+        setIsNoteDrawerOpen(true);
+    };
+
     const handleOpenCalendar = () => {
-        fetchAvailability(); // Fetch the latest schedule ONLY when the calendar is opened
+        fetchScheduleAvailability(); // Fetch the latest schedule ONLY when the calendar is opened
         setIsCalendarOpen(true);
     };
 
-    const fetchAvailability = useCallback(async () => {
+    const fetchScheduleAvailability = useCallback(async () => {
         setIsLoadingAvailability(true);
         try {
             // Ambil jadwal untuk bulan ini dan bulan depan
@@ -187,7 +199,7 @@ export default function SummaryStep({
 
     return (
         <>
-            <Header title="Konfirmasi pesananmu" isSticky showBorder={false} />
+            <Header title="Konfirmasi pesanan" isSticky showBorder={false} />
             <main>
                 <div className="">
                     <div className="flex flex-col bg-gray-50 min-h-screen">
@@ -249,29 +261,31 @@ export default function SummaryStep({
 
                             {/* Note for technician */}
                             <div className="mt-4 relative">
-                                <label
-                                    htmlFor="notes"
-                                    className="block text-sm"
-                                >
-                                    <Textarea
-                                        id="notes"
-                                        placeholder="Catatan buat teknisi (opsional)"
-                                        maxLength={100}
-                                        value={note}
-                                        onChange={(e) =>
-                                            setNote(e.target.value)
-                                        }
-                                        className="pl-10 text-sm resize-none bg-gray-200 rounded-lg"
-                                    />
-                                    <img
-                                        src={addNote}
-                                        alt="add-note"
-                                        className="w-4.5 absolute left-2 top-2.5"
-                                    />
-                                    <p className="absolute right-2 bottom-1 text-muted-foreground text-xs">
-                                        {note.length} / 100
-                                    </p>
-                                </label>
+                                {note ? (
+                                    <Button
+                                        className="w-full bg-gray-100 normal-case !font-[Rubik] rounded-none border-none text-black flex p-0 text-start items-center justify-between gap-2 cursor-pointer"
+                                        onClick={handleOpenNoteDrawer}
+                                    >
+                                        <div className="w-1.5 bg-gray-500 self-stretch"></div>
+                                        <p className="text-black text-xs font-light !font-[Rubik] w-full py-0.5">
+                                            {note}
+                                        </p>
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="flex items-center border bg-gray-100 border-gray-300 rounded-full normal-case gap-2 justify-center py-2 px-4 active:scale-95"
+                                        onClick={handleOpenNoteDrawer}
+                                    >
+                                        <img
+                                            src={addNote}
+                                            alt="add-note"
+                                            className="w-[13.3px]"
+                                        />
+                                        <p className="text-black text-xs font-medium !font-[Rubik]">
+                                            Catatan
+                                        </p>
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
@@ -478,11 +492,11 @@ export default function SummaryStep({
                             className="w-full mx-auto"
                         />
                         <SheetTitle className="text-xl font-bold">
-                            Pastiin pesananmu udah sesuai, ya
+                            Pastiin pesanan udah sesuai, ya
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
                             Abis dikonfirmasi, udah gak bisa diubah lagi.
-                            Pesanananmu bakal langsung dikirim ke teknisi.
+                            Pesanan bakal langsung dikirim ke teknisi.
                         </SheetDescription>
                     </SheetHeader>
 
@@ -550,7 +564,9 @@ export default function SummaryStep({
                                                 new Date().getDate()
                                             )
                                         ) ||
-                                    // Condition 2: Use the dynamically calculated disabledDates
+                                    // Condition 2: Disable Sundays
+                                    date.getDay() === 0 ||
+                                    // Condition 3: Use the dynamically calculated disabledDates
                                     disabledDates.some(
                                         (disabledDate) =>
                                             disabledDate.getDate() ===
@@ -567,7 +583,7 @@ export default function SummaryStep({
                                     Day: (props) => <CustomDay {...props} />,
                                 }}
                                 autoFocus
-                                className={`w-full min-h-80 border rounded-lg `}
+                                className={`w-full h-full border rounded-lg `}
                             />
                         )}
                     </DrawerHeader>
@@ -582,6 +598,41 @@ export default function SummaryStep({
                             Set jadwal
                         </Button>
                     </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
+
+            {/* Note Drawer */}
+            <Drawer open={isNoteDrawerOpen} onOpenChange={setIsNoteDrawerOpen}>
+                <DrawerContent className="max-w-lg mx-auto h-full flex flex-col rounded-none">
+                    <DrawerHeader className="border-b-[1.5px] border-dashed">
+                        <DrawerTitle className="text-xl font-semibold text-start">
+                            Catatan buat teknisi
+                        </DrawerTitle>
+                    </DrawerHeader>
+                    <label
+                        htmlFor="notes"
+                        className="text-sm px-1 border-b-[1.5px] h-40 border-dashed"
+                    >
+                        <Textarea
+                            id="notes"
+                            placeholder="Tulis catatan untuk teknisi di sini"
+                            maxLength={200}
+                            value={tempNote}
+                            onChange={(e) => setTempNote(e.target.value)}
+                            className="h-full text-sm resize-none border-none shadow-none rounded-lg focus-visible:ring-0 focus-visible:ring-offset-0 border-t-gray-300 border-b-gray-300 font-light text-black"
+                        />
+                    </label>
+                    <div className="mt-4 flex justify-between items-center px-4">
+                        <p className="right-2 bottom-1 text-gray-800 text-xs">
+                            {tempNote.length} / 200
+                        </p>
+                        <Button
+                            onClick={handleNoteDone}
+                            className=" rounded-full text-center font-normal cursor-pointer active:scale-95 normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-"
+                        >
+                            Selesai
+                        </Button>
+                    </div>
                 </DrawerContent>
             </Drawer>
 

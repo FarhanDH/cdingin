@@ -82,7 +82,7 @@ export class CreateOrderRequestDto {
 
     @IsInt()
     @IsPositive()
-    @Max(10)
+    @Max(20)
     floor: number;
 
     @IsArray()
@@ -92,7 +92,9 @@ export class CreateOrderRequestDto {
 
     @IsDate()
     @Type(() => Date)
-    @MinDate(new Date())
+    @MinDate(new Date(), {
+        message: 'Jadwal service tidak bisa sebelum atau hari ini',
+    })
     serviceDate: string;
 
     @IsString()
