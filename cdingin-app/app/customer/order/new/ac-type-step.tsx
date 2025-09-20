@@ -169,7 +169,7 @@ export default function AcTypeStep({
                     <DialogContent>
                         <DialogContentText
                             id="alert-dialog-description"
-                            className="text-sm font"
+                            className="text-sm font !font-[Rubik]"
                         >
                             Maaf, untuk saat ini dibatesin 10 unit AC dulu, ya.
                         </DialogContentText>
@@ -177,7 +177,7 @@ export default function AcTypeStep({
                     <DialogActions>
                         <Button
                             onClick={() => setIsTotalUnitLimitAlertOpen(false)}
-                            className="cursor-pointer active:scale-95 rounded-sm"
+                            className="cursor-pointer active:scale-95 rounded-sm text-white normal-case bg-primary !font-[Rubik]"
                         >
                             Oke, siap
                         </Button>

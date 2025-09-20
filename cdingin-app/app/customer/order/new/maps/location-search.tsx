@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import axios from "axios";
 import { debounce } from "lodash";
 import { Search, X } from "lucide-react";
@@ -59,7 +59,7 @@ export default function LocationSearch({
                                 addressdetails: 1,
                                 limit: 5,
                             },
-                        },
+                        }
                     );
                     // Set the search results to the response from Nominatim.
                     setResults(response.data);
@@ -71,10 +71,10 @@ export default function LocationSearch({
                 }
             },
             // Wait for 500ms after the user stops typing before calling the actual search function.
-            500,
+            500
         ),
         // No dependencies for the debounced search function.
-        [],
+        []
     );
 
     /**
@@ -136,7 +136,7 @@ export default function LocationSearch({
     };
 
     return (
-        <div className="relative w-full rounded-full">
+        <div className="relative w-full rounded-full bg-white">
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -147,33 +147,33 @@ export default function LocationSearch({
                     className="pl-10 h-12 text-md rounded-full"
                 />
                 {query && (
-                    <Button
+                    <IconButton
                         onClick={clearSearch}
                         className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                         <X className="h-5 w-5 text-gray-500" />
-                    </Button>
+                    </IconButton>
                 )}
             </div>
-
             {/* Search Results */}
             {(results.length > 0 || isLoading) && (
-                <div className="absolute top-full  w-full bg-white rounded-lg shadow-lg border z-30">
+                <div className="absolute top-full w-full bg-white rounded-3xl shadow-lg border z-30">
                     {isLoading && (
                         <div className="p-4 text-center text-gray-500">
                             Mencari...
                         </div>
                     )}
-                    <ul className="divide-y">
+                    <ul className="divide-y divide-gray-200">
                         {results.map((result) => (
                             <li
                                 key={result.place_id}
-                                className="p-4 hover:bg-gray-100 cursor-pointer"
+                                className="p-4 hover:bg-gray-100 cursor-pointer hover:rounded-3xl"
                             >
                                 <Button
                                     onClick={() => handleResultClick(result)}
+                                    className="w-full text-left flex  gap-2 items-center justify-between text-sm !font-[Rubik] normal-case"
                                 >
-                                    <p className="font-semibold">
+                                    <p className="font-semibold text-primary">
                                         {result.display_name.split(",")[0]}
                                     </p>
                                     <p className="text-sm text-gray-600 truncate">

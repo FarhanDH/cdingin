@@ -1,19 +1,30 @@
 import ErrorIcon from "@mui/icons-material/Error";
+import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
-import { Button } from "@mui/material";
+import { Button, Fab } from "@mui/material";
+import { Dialog, DialogContent } from "@radix-ui/react-dialog";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 import axios from "axios";
-import { AirVent, HomeIcon, Wallet } from "lucide-react";
+import L, { latLng } from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { AirVent, MoveLeft, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
+import cashImage from "~/assets/cash.png";
+import mapPin from "~/assets/map-pin.png";
 import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
-import Header from "~/components/header";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+} from "~/components/ui/drawer";
+import Spinner from "~/components/ui/spinner";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
-import cashImage from "~/assets/cash.png";
-import Spinner from "~/components/ui/spinner";
-import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import type { Route } from "./+types/customer-order-detail";
 
 export function meta(args: Route.MetaArgs) {
@@ -33,6 +44,11 @@ export default function CustomerOrderDetail() {
         order?.status || "pending"
     );
     const navigate = useNavigate();
+
+    const mapPinIcon = L.icon({
+        iconUrl: mapPin, // path to your image
+        iconSize: [25, 41], // size of the icon
+    });
 
     const fetchOrderDetail = async () => {
         try {
@@ -103,205 +119,284 @@ export default function CustomerOrderDetail() {
 
     return (
         <div className="">
-            <Header
+            {/* <Header
                 title="Detail pesananmu"
                 showBack
                 isSticky
                 showBorder={false}
-            />
+                navigateTo="/orders"
+            /> */}
 
-            <div className="p-2 min-h-screen bg-gray-100 flex flex-col gap-2">
-                {/* Service Address */}
-                <div className="p-4 bg-white rounded-xl">
-                    <div className="flex items-start text-center justify-between">
-                        <div className="flex items-start text-center gap-4">
-                            <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                <LocationPinIcon className="w-20 text-white" />
-                            </div>
-                            <p className="text-gray-700 text-sm">
-                                Alamat service
-                            </p>
-                        </div>
-                        <span
-                            className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
-                        >
-                            {statusText}
-                        </span>
-                    </div>
-
-                    <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
-                        <div>
-                            <div>
-                                <p className="font-semibold text-start text-xl text-gray-700 ">
-                                    {order.serviceLocation.address ||
-                                        "Lokasi belum diisi"}{" "}
-                                </p>
-
-                                {/* Address Note for technician */}
-                                {order.serviceLocation.note && (
-                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                        {/* <img
-                                            src={noteFilled}
-                                            alt="noteSuccess"
-                                            className="w-4"
-                                        /> */}
-                                        <HomeIcon className="text-green-600" />
-                                        <p className="text-gray-800 text-xs w-full">
-                                            {order.serviceLocation.note}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Property Type */}
-                                <div className="flex items-center mt-1 gap-4 text-sm">
-                                    <p className="font-medium text-gray-800">
-                                        {order.propertyType ||
-                                            "Tipe properti belum dipilih"}
-                                    </p>
-                                    <p className="text-gray-600">
-                                        Lantai {order.propertyFloor || "-"}
-                                    </p>
-                                </div>
-                                {/* Note for technician */}
-                                {order.note && (
-                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                        <img
-                                            src={noteFilled}
-                                            alt="noteSuccess"
-                                            className="w-4 ml-0.5"
-                                        />
-                                        <p className="text-gray-800 text-xs">
-                                            {order.note}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* AC Problems */}
-                <div className="p-4 bg-white rounded-xl">
-                    <div className="flex items-center text-start">
-                        <div className="flex gap-4">
-                            <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                <ErrorIcon className="w-20 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="font-semibold text-lg">
-                                    Layanan / Keluhan
-                                </h1>
-                                <ul className="list-disc ml-4 text-sm text-gray-800">
-                                    {order.problems?.map((problem, index) => (
-                                        <li key={index}>{problem}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Detail Unit AC */}
-                <div className="p-4 bg-white rounded-xl">
-                    <div className="flex items-start text-start gap-4">
-                        <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
-                            <AirVent className="text-white w-18" />
-                        </div>
-                        <div className="flex flex-col w-full">
-                            <h1 className="text-gray-700 text-sm mb-2">
-                                Detail Unit AC
-                            </h1>
-                            {order.acUnits.map((acUnit, index) => (
-                                <div key={acUnit.id}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <div>
-                                                <h1 className="font-medium text-md">
-                                                    {
-                                                        acTypes.find(
-                                                            (type) =>
-                                                                type.id ===
-                                                                acUnit.acTypeName
-                                                        )?.name
-                                                    }{" "}
-                                                    {acUnit.acCapacity}
-                                                </h1>
-                                                <p className="text-sm font-normal text-gray-700">
-                                                    {acUnit.brand ||
-                                                        "Tidak ditentukan"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <span className="font-normal text-sm w-4 text-center text-gray-700">
-                                            {acUnit.quantity}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
-                                <div className="mt-2 flex items-center justify-between">
-                                    <h1 className="font-semibold text-md">
-                                        Total Unit
-                                    </h1>
-                                    <span className="text-sm text-center font-semibold w-4">
-                                        {order.totalUnits}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Order Id & Dates */}
-                <div className="bg-white p-4 mb-6 rounded-xl">
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="font-medium">Order ID</div>
-                        <div className="font-medium">{order.id}</div>
-                    </div>
-                    <div className="flex justify-between items-center mb-1">
-                        <div className="text-sm text-gray-700">
-                            Tanggal service
-                        </div>
-                        <div className="text-sm text-gray-700">
-                            {formattedDate(order.serviceDate, { time: false })}
-                        </div>
-                    </div>
-                    <div className="flex justify-between items-center mb-1">
-                        <div className="text-sm text-gray-700">
-                            Waktu pemesanan
-                        </div>
-                        {/* Created time */}
-                        <div className="text-sm text-gray-700">
-                            {formattedDate(order.createdAt, { time: true })}
-                        </div>
-                    </div>
-
-                    {order.updatedAt !== order.createdAt && (
-                        <div className="flex justify-between items-center mb-1">
-                            <div className="text-sm text-gray-700">
-                                Waktu diperbarui
-                            </div>
-                            <div className="text-sm text-gray-700">
-                                {formattedDate(order.updatedAt, { time: true })}
-                            </div>
-                        </div>
+            {/* Map */}
+            <div className="w-full">
+                <MapContainer
+                    center={[
+                        order.serviceLocation.latitude,
+                        order.serviceLocation.longitude,
+                    ]}
+                    zoom={17}
+                    style={{ height: "660px", width: "100%" }}
+                    preferCanvas={true}
+                    className="z-0"
+                    zoomAnimation={true}
+                    zoomControl={false}
+                >
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        className="absolute -top-10 left-0 right-0 mx-auto"
+                    />
+                    {/* Service location marker */}
+                    {order.serviceLocation && (
+                        <Marker
+                            position={latLng(
+                                order.serviceLocation.latitude,
+                                order.serviceLocation.longitude
+                            )}
+                            icon={mapPinIcon}
+                        />
                     )}
-                </div>
+                </MapContainer>
+            </div>
 
-                {/* Button */}
-                <div>
-                    {order.status === "pending" && (
-                        <Button
-                            className="w-full h-12 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 text-md font-semibold cursor-pointer rounded-full capitalize !font-[Rubik]"
+            {/* Drawer */}
+            <Drawer open={true} snapPoints={[0.4, 1]} activeSnapPoint={0.4}>
+                <DrawerContent
+                    className="max-w-lg mx-auto rounded-t-3xl"
+                    isOverlay={false}
+                >
+                    {/* Back button */}
+                    <div className="absolute -top-15 left-4 flex items-center gap-2">
+                        <Fab
+                            size="medium"
+                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer active:scale-95"
                             onClick={() => {
-                                setIsCancelSheetOpen(true);
+                                setIsLoading(true);
+                                navigate("/orders");
                             }}
                         >
-                            Batalkan pesanan
-                        </Button>
-                    )}
-                </div>
-            </div>
+                            <MoveLeft className="text-gray-600" />
+                        </Fab>
+                    </div>
+                    <DrawerHeader className="bg-white">
+                        <DrawerTitle className="text-base font-bold text-gray-800">
+                            Detail pesanan
+                        </DrawerTitle>
+                    </DrawerHeader>
+
+                    <ScrollArea className="flex-grow overflow-y-auto bg-gray-100">
+                        <div className="p-4 flex flex-col gap-2">
+                            {/* Service Address */}
+                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
+                                <div className="flex items-start text-center justify-between">
+                                    <div className="flex items-start text-center gap-4">
+                                        <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <LocationPinIcon className="w-20 text-white" />
+                                        </div>
+                                        <p className="text-gray-700 text-sm">
+                                            Alamat service
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
+                                    >
+                                        {statusText}
+                                    </span>
+                                </div>
+
+                                <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
+                                    <div>
+                                        <div>
+                                            <p className="font-semibold text-start text-lg text-gray-700 ">
+                                                {order.serviceLocation
+                                                    .address ||
+                                                    "Lokasi belum diisi"}{" "}
+                                            </p>
+
+                                            {/* Address Note for technician */}
+                                            {order.serviceLocation.note && (
+                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                    <HomeFilledIcon className="text-green-600" />
+                                                    <p className="text-gray-800 text-xs w-full">
+                                                        {
+                                                            order
+                                                                .serviceLocation
+                                                                .note
+                                                        }
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {/* Property Type */}
+                                            <div className="flex items-center mt-1 gap-4 text-sm">
+                                                <p className="font-medium text-gray-800">
+                                                    {order.propertyType ||
+                                                        "Tipe properti belum dipilih"}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    Lantai{" "}
+                                                    {order.propertyFloor || "-"}
+                                                </p>
+                                            </div>
+                                            {/* Note for technician */}
+                                            {order.note && (
+                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                    <img
+                                                        src={noteFilled}
+                                                        alt="noteSuccess"
+                                                        className="w-4 ml-0.5"
+                                                    />
+                                                    <p className="text-gray-800 text-xs">
+                                                        {order.note}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* AC Problems */}
+                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
+                                <div className="flex items-center text-start">
+                                    <div className="flex gap-4">
+                                        <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <ErrorIcon className="w-20 text-white" />
+                                        </div>
+                                        <div>
+                                            <h1 className="font-semibold text-lg">
+                                                Layanan / Keluhan
+                                            </h1>
+                                            <ul className="list-disc ml-4 text-sm text-gray-800">
+                                                {order.problems?.map(
+                                                    (problem, index) => (
+                                                        <li key={index}>
+                                                            {problem}
+                                                        </li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Detail Unit AC */}
+                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
+                                <div className="flex items-start text-start gap-4">
+                                    <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                        <AirVent className="text-white w-18" />
+                                    </div>
+                                    <div className="flex flex-col w-full">
+                                        <h1 className="text-gray-700 text-sm mb-2">
+                                            Detail Unit AC
+                                        </h1>
+                                        {order.acUnits.map((acUnit, index) => (
+                                            <div key={acUnit.id}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div>
+                                                            <h1 className="font-medium text-md">
+                                                                {
+                                                                    acTypes.find(
+                                                                        (
+                                                                            type
+                                                                        ) =>
+                                                                            type.id ===
+                                                                            acUnit.acTypeName
+                                                                    )?.name
+                                                                }{" "}
+                                                                {
+                                                                    acUnit.acCapacity
+                                                                }
+                                                            </h1>
+                                                            <p className="text-sm font-normal text-gray-700">
+                                                                {acUnit.brand ||
+                                                                    "Tidak ditentukan"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="font-normal text-sm w-4 text-center text-gray-700">
+                                                        {acUnit.quantity}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <h1 className="font-semibold text-md">
+                                                    Total Unit
+                                                </h1>
+                                                <span className="text-sm text-center font-semibold w-4">
+                                                    {order.totalUnits}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Order Id & Dates */}
+                            <div className="bg-white p-4 mb-6 rounded-xl shadow-xs border border-gray-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="font-medium">Order ID</div>
+                                    <div className="font-medium">
+                                        {order.id}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="text-xs text-gray-700">
+                                        Tanggal service
+                                    </div>
+                                    <div className="text-xs text-gray-700">
+                                        {formattedDate(order.serviceDate, {
+                                            time: false,
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="text-xs text-gray-700">
+                                        Waktu pemesanan
+                                    </div>
+                                    {/* Created time */}
+                                    <div className="text-xs text-gray-700">
+                                        {formattedDate(order.createdAt, {
+                                            time: true,
+                                        })}
+                                    </div>
+                                </div>
+
+                                {order.updatedAt !== order.createdAt && (
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="text-xs text-gray-700">
+                                            Waktu diperbarui
+                                        </div>
+                                        <div className="text-xs text-gray-700">
+                                            {formattedDate(order.updatedAt, {
+                                                time: true,
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Button */}
+                            <div>
+                                {order.status === "pending" && (
+                                    <Button
+                                        className="w-full h-12 text-base text-red-500 bg-destructive/20 hover:bg-destructive/30 active:bg-destructive/40 active:scale-95 text-md font-semibold cursor-pointer rounded-full capitalize !font-[Rubik]"
+                                        onClick={() => {
+                                            setIsCancelSheetOpen(true);
+                                        }}
+                                    >
+                                        Batalkan pesanan
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </ScrollArea>
+                </DrawerContent>
+            </Drawer>
 
             {order.invoiceId && (
                 <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">

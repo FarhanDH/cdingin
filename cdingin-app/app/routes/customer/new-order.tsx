@@ -338,7 +338,7 @@ export default function NewOrder() {
                             className="w-48 mx-auto" // Ukuran disesuaikan
                         />
                         <SheetTitle className="text-2xl font-bold pt-4">
-                            Sip, orderan kamu udah masuk!
+                            Sip, pesanan udah masuk!
                         </SheetTitle>
                         <SheetDescription className="text-md text-gray-600 mb-2">
                             Tunggu konfirmasi dari teknisi, ya.

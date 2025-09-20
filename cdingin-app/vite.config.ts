@@ -498,8 +498,8 @@ export default defineConfig({
     //     // port: 3000,
 
     //     allowedHosts: [
-    //         "6300e0494be2.ngrok-free.app",
-    //         "https://6300e0494be2.ngrok-free.app",
+    //         "eba058e3c1b6.ngrok-free.app",
+    //         "https://eba058e3c1b6.ngrok-free.app",
     //     ],
     // },
 });

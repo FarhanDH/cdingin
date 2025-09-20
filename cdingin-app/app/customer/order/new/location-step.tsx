@@ -277,7 +277,7 @@ export default function LocationStep({
             {/* Map Area */}
             <div className="absolute inset-0 z-0">
                 {/* Search bar */}
-                <div className="absolute top-2 z-50 bg-white rounded-full w-full">
+                <div className="absolute top-2 z-50 rounded-full w-full p-4">
                     <LocationSearch onLocationSelect={handleLocationSelect} />
                 </div>
                 <LocationPicker
@@ -302,7 +302,7 @@ export default function LocationStep({
             <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border rounded-t-2xl">
                 {/* Back Button */}
                 <Fab
-                    size="small"
+                    size="medium"
                     // aria-label="add"
                     onClick={onBack}
                     className="absolute -top-15 left-4 z-10 bg-white p-2 rounded-full shadow-md cursor-pointer active:scale-95"
