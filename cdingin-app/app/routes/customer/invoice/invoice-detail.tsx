@@ -385,7 +385,7 @@ export default function InvoiceDetailPage() {
                             Bayar tunai
                         </Button>
                         <Button
-                            className="h-12 text-base bg-primary font-medium text-white normal-case !font-[Rubik] active:scale-95 rounded-full"
+                            className="h-12 text-base bg-primary font-medium text-white normal-case !font-[Rubik] active:scale-95 rounded-full disabled:bg-primary/50 disabled:cursor-not-allowed"
                             onClick={handleDigitalPayment}
                             disabled={
                                 isPaying ||

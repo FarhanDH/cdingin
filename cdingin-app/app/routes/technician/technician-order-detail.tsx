@@ -137,7 +137,7 @@ export default function TechnicianOrderDetail() {
                 {/* Order Content */}
                 <div className="p-4 min-h-screen flex flex-col gap-2">
                     {/* Customer Card */}
-                    <div className="p-4 bg-white rounded-xl">
+                    <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
                         <div className="flex gap-4">
                             {/* Person Icon */}
                             <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
@@ -149,7 +149,7 @@ export default function TechnicianOrderDetail() {
                                         <p className="text-gray-700 text-sm text-start">
                                             Dipesan oleh
                                         </p>
-                                        <p className="font-semibold text-xl text-gray-700 flex items-center">
+                                        <p className="font-semibold text-lg text-gray-700 flex items-center">
                                             {order.customer.fullName ||
                                                 "Tidak ada nama"}{" "}
                                         </p>
@@ -228,7 +228,7 @@ export default function TechnicianOrderDetail() {
                     </div>
 
                     {/* Service Address */}
-                    <div className="p-4 bg-white rounded-xl">
+                    <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
                         <div className="flex items-center text-center">
                             <div className="flex gap-4 w-full">
                                 <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
@@ -281,7 +281,7 @@ export default function TechnicianOrderDetail() {
                     </div>
 
                     {/* AC Problems */}
-                    <div className="p-4 bg-white rounded-xl">
+                    <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
                         <div className="flex items-center text-start">
                             <div className="flex gap-4">
                                 <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
@@ -304,7 +304,7 @@ export default function TechnicianOrderDetail() {
                     </div>
 
                     {/* Detail Unit AC */}
-                    <div className="p-4 bg-white rounded-xl">
+                    <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
                         <div className="flex items-start text-start gap-4">
                             <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
                                 <AirVent className="text-white w-18" />
@@ -355,37 +355,37 @@ export default function TechnicianOrderDetail() {
                     </div>
 
                     {/* Order Id & Dates */}
-                    <div className="bg-white p-4 mb-6 rounded-xl">
+                    <div className="bg-white p-4 mb-6 rounded-xl shadow-xs border border-gray-200">
                         <div className="flex justify-between items-center mb-4">
                             <div className="font-medium">Order ID</div>
                             <div className="font-medium">{order.id}</div>
                         </div>
                         <div className="flex justify-between items-center mb-1">
-                            <div className="text-sm text-gray-700">
+                            <div className="text-xs text-gray-700">
                                 Tanggal service
                             </div>
-                            <div className="text-sm text-gray-700">
+                            <div className="text-xs text-gray-700">
                                 {formattedDate(order.serviceDate, {
                                     time: false,
                                 })}
                             </div>
                         </div>
                         <div className="flex justify-between items-center mb-1">
-                            <div className="text-sm text-gray-700">
+                            <div className="text-xs text-gray-700">
                                 Waktu pemesanan
                             </div>
                             {/* Created time */}
-                            <div className="text-sm text-gray-700">
+                            <div className="text-xs text-gray-700">
                                 {formattedDate(order.createdAt, { time: true })}
                             </div>
                         </div>
 
                         {order.updatedAt !== order.createdAt && (
                             <div className="flex justify-between items-center mb-1">
-                                <div className="text-sm text-gray-700">
+                                <div className="text-xs text-gray-700">
                                     Waktu diperbarui
                                 </div>
-                                <div className="text-sm text-gray-700">
+                                <div className="text-xs text-gray-700">
                                     {formattedDate(order.updatedAt, {
                                         time: true,
                                     })}

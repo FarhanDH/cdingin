@@ -62,7 +62,7 @@ export default function SwipeButton({
 
     const progressWidth = useTransform(
         x,
-        (value) => `${value + SLIDER_WIDTH}px`,
+        (value) => `${value + SLIDER_WIDTH}px`
     );
 
     const iconScale = useTransform(x, [0, maxDrag], [1, 1.2]);

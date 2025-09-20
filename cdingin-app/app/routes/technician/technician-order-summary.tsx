@@ -1,4 +1,5 @@
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
+import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
@@ -8,8 +9,7 @@ import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import mapPin from "~/assets/map-pin.png";
-import { ChevronRight, HomeIcon, MoveLeft } from "lucide-react";
+import { ChevronRight, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Circle,
@@ -20,11 +20,18 @@ import {
 } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
+import mapPin from "~/assets/map-pin.png";
 import noteFilled from "~/assets/note-filled.png";
 import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import { calculateDistanceInMeters } from "~/common/utils";
 import EnableLocationSheet from "~/components/enable-location-sheet";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+} from "~/components/ui/drawer";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
     Sheet,
@@ -455,9 +462,9 @@ export default function TechnicianOrderSummary() {
     }
 
     return (
-        <div className="relative">
+        <div className="">
             {isLoading && (
-                <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
+                <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-40">
                     <Spinner size={30} className="text-primary" />
                 </div>
             )}
@@ -470,7 +477,7 @@ export default function TechnicianOrderSummary() {
                         order.serviceLocation.longitude,
                     ]}
                     zoom={13}
-                    style={{ height: "550px", width: "100%" }}
+                    style={{ height: "600px", width: "100%" }}
                     preferCanvas={true}
                     className="z-0"
                     zoomAnimation={true}
@@ -518,212 +525,225 @@ export default function TechnicianOrderSummary() {
                 </MapContainer>
             </div>
 
-            {/* Bottom Panel */}
-            <div
-                className={`w-full p-4 gap-4 flex flex-col fixed bottom-0 max-w-lg mx-auto rounded-t-3xl border bg-white`}
-            >
-                {/* Top left back button */}
-                <div className="absolute -top-15 left-4 flex items-center gap-2">
-                    <Fab
-                        size="medium"
-                        className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
-                        onClick={() => {
-                            setIsLoading(true);
-                            navigate("/technician/orders");
-                        }}
-                    >
-                        <MoveLeft className="text-gray-600" />
-                    </Fab>
-                </div>
-
-                {/* Google Map Navigation Button  */}
-                <div className="absolute -top-14 left-0 right-0 mx-auto max-w-lg justify-center flex items-center gap-4">
-                    <Button
-                        className="z-10 bg-secondary text-white capitalize px-3 py-2 rounded-full shadow-md cursor-pointer text-md"
-                        onClick={() => {
-                            window.open(
-                                `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order.serviceLocation.latitude},${order.serviceLocation.longitude}`,
-                                "_blank"
-                            );
-                        }}
-                    >
-                        <NavigationIcon className="text-white -rotate-45 mr-3" />
-                        <p>Petunjuk arah</p>
-                    </Button>
-                </div>
-
-                {/* Top right current location button */}
-                <div className="absolute -top-15 right-4 flex items-center gap-2">
-                    <Fab
-                        size="medium"
-                        className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
-                        onClick={requestLocation}
-                    >
-                        <GpsFixedIcon className="text-primary" />
-                    </Fab>
-                </div>
-
-                <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-1 bg-gray-300 rounded-full"></div>
-                    <div className="flex justify-center items-center gap-2 text-lg">
-                        <h1>Order ID </h1>{" "}
-                        <h1 className="font-medium">{order.id}</h1>
-                    </div>
-                </div>
-
-                <ScrollArea
-                    className="h-50 w-full scroll-smooth"
-                    showScrollBar={false}
+            {/* Drawer */}
+            <Drawer open={true} snapPoints={[0.6, 1]} activeSnapPoint={0.6}>
+                <DrawerContent
+                    className="max-w-lg mx-auto rounded-t-3xl p-4 border-none z-10"
+                    isOverlay={false}
                 >
-                    {/* Customer Card */}
-                    <div className="py-4 bg-white">
-                        <div className="flex gap-4">
-                            {/* Person Icon */}
-                            <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                <PersonIcon className="text-white w-20" />
-                            </div>
-                            <div className="w-full">
-                                <div className="flex justify-between w-full">
-                                    <div>
-                                        <p className="text-gray-700 text-sm text-start">
-                                            Dipesan oleh
-                                        </p>
-                                        <p className="font-semibold text-lg text-gray-700 flex items-center">
-                                            {order.customer.fullName ||
-                                                "Tidak ada nama"}{" "}
-                                        </p>
-                                    </div>
+                    {/* Back button */}
+                    <div className="absolute -top-15 left-4 flex items-center gap-2">
+                        <Fab
+                            size="medium"
+                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer active:scale-95"
+                            onClick={() => {
+                                setIsLoading(true);
+                                navigate("/technician/orders");
+                            }}
+                        >
+                            <MoveLeft className="text-gray-600" />
+                        </Fab>
+                    </div>
 
-                                    {/* Right Section */}
-                                    <div className="flex-col flex justify-end items-end text-end gap-1">
-                                        {/* Order status badge */}
-                                        <span
-                                            className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
-                                        >
-                                            {statusText}
-                                        </span>
-                                        {/* Phone Call to WhatsApp */}
-                                        <Fab
-                                            size="small"
-                                            onClick={() => {
-                                                // Handle phone call to WhatsApp
-                                                window.open(
-                                                    `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                                    "_blank"
-                                                );
-                                            }}
-                                            disabled={!order.customer.phone}
-                                            className="bg-green-700 p-2 text-center flex items-center justify-center text-white rounded-full cursor-pointer shadow-none"
-                                        >
-                                            <PhoneIcon className="w-5 h-5" />
-                                        </Fab>
-                                    </div>
+                    {/* Google Map Navigation Button  */}
+                    <div className="absolute -top-14 left-0 right-0 mx-auto max-w-lg justify-center flex items-center gap-4">
+                        <Button
+                            className="z-10 bg-secondary text-white capitalize px-3 py-2 rounded-full shadow-md cursor-pointer text-md active:scale-95"
+                            onClick={() => {
+                                window.open(
+                                    `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order.serviceLocation.latitude},${order.serviceLocation.longitude}`,
+                                    "_blank"
+                                );
+                            }}
+                        >
+                            <NavigationIcon className="text-white -rotate-45 mr-3" />
+                            <p>Petunjuk arah</p>
+                        </Button>
+                    </div>
+
+                    {/* Top right current location button */}
+                    <div className="absolute -top-15 right-4 flex items-center gap-2">
+                        <Fab
+                            size="medium"
+                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
+                            onClick={requestLocation}
+                        >
+                            <GpsFixedIcon className="text-primary" />
+                        </Fab>
+                    </div>
+                    <DrawerHeader className="bg-white">
+                        <div className="flex justify-center items-center gap-2 text-lg">
+                            <DrawerTitle className="font-normal text-gray-800">
+                                Order ID{" "}
+                            </DrawerTitle>{" "}
+                            <DrawerTitle className="font-medium">
+                                {order.id}
+                            </DrawerTitle>
+                        </div>
+                    </DrawerHeader>
+
+                    <ScrollArea
+                        className={`flex-grow overflow-y-auto bg-gray-100 z-10 scroll-smooth ${
+                            nextAction && "mb-20"
+                        } `}
+                        showScrollBar={false}
+                    >
+                        {/* Customer Card */}
+                        <div className="py-4 bg-white">
+                            <div className="flex gap-4">
+                                {/* Person Icon */}
+                                <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                    <PersonIcon className="text-white w-20" />
                                 </div>
-                                {/* Note for technician */}
-                                {order.note && (
-                                    <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                        <img
-                                            src={noteFilled}
-                                            alt="noteSuccess"
-                                            className="w-4"
-                                        />
-                                        <p className="text-gray-800 text-xs">
-                                            {order.note}
-                                        </p>
+                                <div className="w-full">
+                                    <div className="flex justify-between w-full">
+                                        <div>
+                                            <p className="text-gray-700 text-sm text-start">
+                                                Dipesan oleh
+                                            </p>
+                                            <p className="font-semibold text-lg text-gray-700 flex items-center">
+                                                {order.customer.fullName ||
+                                                    "Tidak ada nama"}{" "}
+                                            </p>
+                                        </div>
+
+                                        {/* Right Section */}
+                                        <div className="flex-col flex justify-end items-end text-end gap-1">
+                                            {/* Order status badge */}
+                                            <span
+                                                className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
+                                            >
+                                                {statusText}
+                                            </span>
+                                            {/* Phone Call to WhatsApp */}
+                                            <Fab
+                                                size="small"
+                                                onClick={() => {
+                                                    // Handle phone call to WhatsApp
+                                                    window.open(
+                                                        `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
+                                                        "_blank"
+                                                    );
+                                                }}
+                                                disabled={!order.customer.phone}
+                                                className="bg-green-700 p-2 text-center flex items-center justify-center text-white rounded-full cursor-pointer shadow-none active:scale-95"
+                                            >
+                                                <PhoneIcon className="w-5 h-5" />
+                                            </Fab>
+                                        </div>
                                     </div>
-                                )}
+                                    {/* Note for technician */}
+                                    {order.note && (
+                                        <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                            <img
+                                                src={noteFilled}
+                                                alt="noteSuccess"
+                                                className="w-4"
+                                            />
+                                            <p className="text-gray-800 text-xs">
+                                                {order.note}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Service Address */}
-                    <div className="py-4 bg-white border-t-[1.5px] border-gray-200 pt-6">
-                        <div>
-                            <div className="flex items-center text-center">
-                                <div className="flex gap-4 w-full">
-                                    <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                        <LocationPinIcon className="w-20 text-white" />
-                                    </div>
-                                    <div className="flex flex-col text-start gap-1 w-full">
-                                        <div>
-                                            <p className="font-semibold text-lg text-gray-700 ">
-                                                {" "}
-                                                {(detailAddress as any).address
-                                                    .amenity ??
-                                                    (detailAddress as any)
-                                                        .address.road ??
-                                                    (detailAddress as any)
-                                                        .address.village ??
-                                                    "Lokasi belum diisi"}{" "}
-                                                {isLoadingRoute
-                                                    ? " - Menghitung..."
-                                                    : ` - ${distance}`}
-                                            </p>
-                                            <p className="mt-2 text-sm text-gray-700 ">
-                                                {(detailAddress as any)
-                                                    .display_name ??
-                                                    "Lokasi belum diisi"}
-                                            </p>
-                                            {/* Address Note for technician */}
-                                            {order.serviceLocation.note && (
-                                                <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                    <HomeIcon className="text-green-600" />
-                                                    <p className="text-gray-800 text-xs w-full">
-                                                        {
-                                                            order
-                                                                .serviceLocation
-                                                                .note
-                                                        }
+                        {/* Service Address */}
+                        <div className="py-4 bg-white border-t-[1.5px] border-gray-200 pt-6">
+                            <div>
+                                <div className="flex items-center text-center">
+                                    <div className="flex gap-4 w-full">
+                                        <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <LocationPinIcon className="w-20 text-white" />
+                                        </div>
+                                        <div className="flex flex-col text-start gap-1 w-full">
+                                            <div>
+                                                <p className="font-semibold text-lg text-gray-700 ">
+                                                    {" "}
+                                                    {(detailAddress as any)
+                                                        .address.amenity ??
+                                                        (detailAddress as any)
+                                                            .address.road ??
+                                                        (detailAddress as any)
+                                                            .address.village ??
+                                                        "Lokasi belum diisi"}{" "}
+                                                    {isLoadingRoute
+                                                        ? " - Menghitung..."
+                                                        : ` - ${distance}`}
+                                                </p>
+                                                <p className="mt-2 text-sm text-gray-700 ">
+                                                    {(detailAddress as any)
+                                                        .display_name ??
+                                                        "Lokasi belum diisi"}
+                                                </p>
+                                                {/* Address Note for technician */}
+                                                {order.serviceLocation.note && (
+                                                    <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                        <HomeFilledIcon className="text-green-600" />
+                                                        <p className="text-gray-800 text-xs w-full">
+                                                            {
+                                                                order
+                                                                    .serviceLocation
+                                                                    .note
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                {/* <RouteIcon className="text-green-600" /> */}
+
+                                                {/* Property Type */}
+                                                <div className="flex items-center mt-1 gap-4 text-md">
+                                                    <p className="font-medium text-gray-800">
+                                                        {order.propertyType ||
+                                                            "Tipe properti belum dipilih"}
+                                                    </p>
+                                                    <p className="text-gray-600">
+                                                        Lantai{" "}
+                                                        {order.propertyFloor ||
+                                                            "-"}
                                                     </p>
                                                 </div>
-                                            )}
-
-                                            {/* <RouteIcon className="text-green-600" /> */}
-
-                                            {/* Property Type */}
-                                            <div className="flex items-center mt-1 gap-4 text-md">
-                                                <p className="font-medium text-gray-800">
-                                                    {order.propertyType ||
-                                                        "Tipe properti belum dipilih"}
-                                                </p>
-                                                <p className="text-gray-600">
-                                                    Lantai{" "}
-                                                    {order.propertyFloor || "-"}
-                                                </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* To Detail Button */}
-                    <Button
-                        onClick={() =>
-                            navigate(`/technician/order/${order.id}/detail`)
-                        }
-                        className="py-4 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 pt-6 flex justify-center items-center text-base font-normal cursor-pointer w-full text-gray-900 normal-case rounded-none !font-[Rubik]"
-                    >
-                        Lihat pesanan
-                        <ChevronRight />
-                    </Button>
-                    {order.status !== "cancelled" &&
-                        order.status !== "completed" && (
-                            <Button
-                                className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 border-gray-200 cursor-pointer text-red-600 normal-case !font-[Rubik]"
-                                onClick={() => setIsCancelSheetOpen(true)}
-                            >
-                                Batalkan pesanan
-                            </Button>
-                        )}
-                </ScrollArea>
+                        {/* To Detail Button */}
+                        <Button
+                            onClick={() =>
+                                navigate(`/technician/order/${order.id}/detail`)
+                            }
+                            className="py-6 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 flex justify-center items-center text-base font-normal cursor-pointer w-full text-gray-900 normal-case rounded-none !font-[Rubik]"
+                        >
+                            Lihat pesanan
+                            <ChevronRight />
+                        </Button>
+                        {order.status !== "cancelled" &&
+                            order.status !== "completed" && (
+                                <Button
+                                    className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 border-gray-200 cursor-pointer text-red-600 normal-case !font-[Rubik]"
+                                    onClick={() => setIsCancelSheetOpen(true)}
+                                >
+                                    Batalkan pesanan
+                                </Button>
+                            )}
+                    </ScrollArea>
+                </DrawerContent>
+            </Drawer>
 
+            {/* Swipe button */}
+            <div
+                className={`w-full px-3 pb-4 gap-4 fixed bottom-0 max-w-lg mx-auto rounded-t-full bg-white z-50`}
+            >
                 {nextAction && (
                     <SwipeButton
                         onSubmit={nextAction.action}
                         text={nextAction.text}
-                        className="w-full"
+                        className="w-full absolute max-w-lg bottom-0 left-0 right-0 mx-auto bg-white z-50"
                     />
                 )}
             </div>

@@ -34,12 +34,11 @@ export class InvoiceResponseDto {
         | [];
 }
 
+export const formatPaymentString = (str: string | null | undefined) => {
+    if (!str) return null;
+    return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
 export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
-    const formatPaymentString = (str: string | null | undefined) => {
-        if (!str) return null;
-        return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-    };
-
     return {
         id: invoice.id,
         order: toOrderResponse(invoice.order),

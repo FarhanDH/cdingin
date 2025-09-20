@@ -3,7 +3,6 @@ import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import { Button, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import axios from "axios";
 import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -26,6 +25,8 @@ import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/customer-order-detail";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import Header from "~/components/header";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -119,13 +120,13 @@ export default function CustomerOrderDetail() {
 
     return (
         <div className="">
-            {/* <Header
-                title="Detail pesananmu"
+            <Header
+                title="Detail pesanan"
                 showBack
                 isSticky
                 showBorder={false}
                 navigateTo="/orders"
-            /> */}
+            />
 
             {/* Map */}
             <div className="w-full">
@@ -162,29 +163,31 @@ export default function CustomerOrderDetail() {
             {/* Drawer */}
             <Drawer open={true} snapPoints={[0.4, 1]} activeSnapPoint={0.4}>
                 <DrawerContent
-                    className="max-w-lg mx-auto rounded-t-3xl"
+                    className={`max-w-lg mx-auto rounded-t-3xl z-10 ${
+                        order.invoiceId &&
+                        order.status !== "completed" &&
+                        "mb-30"
+                    } ${
+                        order.invoiceId &&
+                        order.status === "completed" &&
+                        "mb-10"
+                    }`}
                     isOverlay={false}
                 >
-                    {/* Back button */}
-                    <div className="absolute -top-15 left-4 flex items-center gap-2">
-                        <Fab
-                            size="medium"
-                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer active:scale-95"
-                            onClick={() => {
-                                setIsLoading(true);
-                                navigate("/orders");
-                            }}
+                    <DrawerHeader className="bg-white flex items-center">
+                        {/* <DrawerTitle className="text-base font-bold text-gray-800"> */}
+                        <span
+                            className={`px-3 rounded-sm w-fit text-xs text-white text-center ${statusColor} flex justify-center items-center h-7`}
                         >
-                            <MoveLeft className="text-gray-600" />
-                        </Fab>
-                    </div>
-                    <DrawerHeader className="bg-white">
-                        <DrawerTitle className="text-base font-bold text-gray-800">
-                            Detail pesanan
-                        </DrawerTitle>
+                            <p>{statusText}</p>
+                        </span>
+                        {/* </DrawerTitle> */}
                     </DrawerHeader>
 
-                    <ScrollArea className="flex-grow overflow-y-auto bg-gray-100">
+                    <ScrollArea
+                        className={`flex-grow overflow-y-auto bg-gray-100`}
+                        showScrollBar={false}
+                    >
                         <div className="p-4 flex flex-col gap-2">
                             {/* Service Address */}
                             <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
@@ -197,17 +200,12 @@ export default function CustomerOrderDetail() {
                                             Alamat service
                                         </p>
                                     </div>
-                                    <span
-                                        className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
-                                    >
-                                        {statusText}
-                                    </span>
                                 </div>
 
                                 <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
                                     <div>
                                         <div>
-                                            <p className="font-semibold text-start text-lg text-gray-700 ">
+                                            <p className="font-semibold text-start text-lg text-gray-800 ">
                                                 {order.serviceLocation
                                                     .address ||
                                                     "Lokasi belum diisi"}{" "}
@@ -398,35 +396,48 @@ export default function CustomerOrderDetail() {
                 </DrawerContent>
             </Drawer>
 
+            {/* Invoice Button */}
             {order.invoiceId && (
-                <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
-                    {order.status !== "completed" && (
-                        <>
-                            <h1 className="text-lg font-semibold">
-                                Tagihan Udah Siap!
-                            </h1>
-                            <div className="flex items-center gap-2">
-                                <img
-                                    src={cashImage}
-                                    alt="cash"
-                                    className="w-6 h-6"
-                                />
-                                <p className="text-sm text-gray-600">
-                                    Pembayaran bisa dengan tunai, atau digital
-                                    lohh
-                                </p>
-                            </div>
-                        </>
-                    )}
-                    <Button
-                        onClick={() => navigate(`/order/${orderId}/invoice`)}
-                        className="w-full h-12 rounded-full text-base font-medium flex items-center justify-center bg-primary text-white capitalize !font-[Rubik] active:scale-95"
+                <div
+                    className={`w-full px-4 ${
+                        order.status !== "completed" && "bg-white"
+                    } gap-4 fixed bottom-0 max-w-lg mx-auto z-50`}
+                >
+                    <div
+                        className={`bg-white pb-4 ${
+                            order.status === "completed" && "rounded-t-3xl"
+                        }`}
                     >
-                        <Wallet size={20} className="mr-2" />
-                        {order.status === "completed"
-                            ? "Lihat tagihan"
-                            : "Lihat & bayar tagihan"}
-                    </Button>
+                        {order.status !== "completed" && (
+                            <>
+                                <h1 className="text-lg font-semibold mt-1">
+                                    Tagihan Udah Siap!
+                                </h1>
+                                <div className="my-1 mb-2 flex items-center gap-2">
+                                    <img
+                                        src={cashImage}
+                                        alt="cash"
+                                        className="w-6 h-6"
+                                    />
+                                    <p className="text-sm text-gray-600">
+                                        Pembayaran bisa dengan tunai, atau
+                                        digital lohh
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                        <Button
+                            onClick={() =>
+                                navigate(`/order/${orderId}/invoice`)
+                            }
+                            className="w-full h-12 rounded-full text-base font-medium flex items-center justify-center bg-primary text-white normal-case !font-[Rubik] active:scale-95"
+                        >
+                            <Wallet size={20} className="mr-2" />
+                            {order.status === "completed"
+                                ? "Lihat tagihan"
+                                : "Lihat & bayar tagihan"}
+                        </Button>
+                    </div>
                 </div>
             )}
 

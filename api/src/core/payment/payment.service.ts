@@ -7,7 +7,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CoreApi, Snap } from 'midtrans-client';
+import { Snap } from 'midtrans-client';
 import { DataSource, Repository } from 'typeorm';
 import { configuration } from '~/common/configuration';
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
@@ -15,6 +15,7 @@ import { NotificationType } from '~/common/enums/notification-type.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { PaymentMethod } from '~/common/enums/payment.enum';
+import { formatPaymentString } from '../invoice/dto/invoice.response';
 import { Invoice } from '../invoice/entities/invoice.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { NotificationService } from '../notification/notification.service';
@@ -39,13 +40,7 @@ export class PaymentService {
     private readonly logger = new Logger(PaymentService.name);
 
     private readonly midtransSnap: Snap = new Snap({
-        isProduction: false,
-        serverKey: configuration().midtrans.serverKey,
-        clientKey: configuration().midtrans.clientKey,
-    });
-
-    private readonly midtransCoreApi = new CoreApi({
-        isProduction: false,
+        isProduction: configuration().env === 'production',
         serverKey: configuration().midtrans.serverKey,
         clientKey: configuration().midtrans.clientKey,
     });
@@ -357,7 +352,13 @@ export class PaymentService {
                         orderId: order.id,
                         type: NotificationType.PAYMENT_SUCCESS,
                         title: 'Pelanggan Udah Bayar',
-                        message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat Midtrans.`,
+                        message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat ${formatPaymentString(
+                            (
+                                transaction.gateway_response as {
+                                    payment_type: string;
+                                }
+                            )?.payment_type,
+                        )}.`,
                     });
 
                 // Send notifications to technician
