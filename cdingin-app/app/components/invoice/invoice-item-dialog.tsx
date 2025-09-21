@@ -130,7 +130,7 @@ export default function InvoiceItemDialog({
                             <Input
                                 type="text"
                                 inputMode="numeric"
-                                placeholder="0"
+                                placeholder="Rp0"
                                 value={formatToIDR(item.unitPrice)}
                                 onChange={handleUnitPriceChange}
                             />

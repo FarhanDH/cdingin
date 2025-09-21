@@ -33,12 +33,6 @@ export default function CustomerOrderList() {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const { permission, requestPermission } = useNotificationPermission();
 
-    // useEffect(() => {
-    //     if (permission === "granted") {
-    //         subscribe();
-    //     }
-    // }, [permission, subscribe]);
-
     // Fetch orders data for each activeTab changing
     useEffect(() => {
         const fetchOrders = async () => {
@@ -111,7 +105,12 @@ export default function CustomerOrderList() {
             )}
             <div>
                 {/* Header */}
-                <Header isSticky={true} title="Daftar Pesanan">
+                <Header
+                    isSticky={true}
+                    title="Daftar Pesanan"
+                    showProfile
+                    className="bg-white"
+                >
                     <CustomerOrderTab
                         tabs={tabs}
                         activeTab={activeTab}

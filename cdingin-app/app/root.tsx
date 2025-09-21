@@ -43,7 +43,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 .then(() => console.log("SW registered"))
                 .catch((err) => console.error("SW failed", err));
 
-            const handleMessage = (event) => {
+            /**
+             * Handle message event from service worker.
+             * If the event data has a type of "NOTIFICATION_CLICK", it will call the markNotificationAsRead function to mark the notification as read.
+             * @param {Event} event - The event object from the service worker.
+             */
+            const handleMessage = (
+                event: MessageEvent<{ type: string; notificationId: string }>
+            ) => {
                 // Cek apakah pesan berasal dari service worker dan memiliki tipe yang benar
                 if (event.data && event.data.type === "NOTIFICATION_CLICK") {
                     const { notificationId } = event.data;
@@ -86,7 +93,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <meta charSet="utf-8" />
                 <meta
                     name="viewport"
-                    content="width=device-width, initial-scale=1"
+                    content="width=device-width, initial-scale=1.0"
+                />
+                <meta
+                    name="viewport"
+                    content="width=device-width, user-scalable=no"
                 />
                 <meta
                     name="cdingin"
@@ -96,7 +107,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Links />
             </head>
             <body>
-                <div className="min-h-screen max-w-lg mx-auto border-2 border-gray-100">
+                <div className="min-h-screen max-w-lg mx-auto border border-gray-100">
                     {children}
                 </div>
                 <Toaster

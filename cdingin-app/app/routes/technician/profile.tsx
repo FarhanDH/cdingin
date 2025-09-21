@@ -94,7 +94,7 @@ export default function Profile() {
             <Header
                 title="Profilku"
                 showBack
-                navigateTo="/orders"
+                navigateTo="/technician/orders"
                 isSticky
                 showBorder={false}
                 className="bg-none"
@@ -188,12 +188,13 @@ export default function Profile() {
                     side="bottom"
                     className="rounded-t-2xl max-w-lg mx-auto p-4 text-center"
                 >
-                    <SheetHeader className="text-left">
+                    <SheetHeader className="text-start">
                         <SheetTitle className="text-xl font-bold">
-                            Yakin mau keluar?
+                            Mau keluar dari akun?
                         </SheetTitle>
                         <SheetDescription className="text-base text-gray-600">
-                            Nanti ketemu lagi di lain waktu, ya!
+                            Kalau keluar, nanti pas balik harus login lagi dulu,
+                            ya. Pastikan semua pesanan sudah beres.
                         </SheetDescription>
                     </SheetHeader>
                     <div className="flex gap-4">

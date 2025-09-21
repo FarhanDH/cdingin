@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import { customToastStyle } from "~/common/custom-toast-style";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 
 // List of cancellation reasons
 const customerCancelReasons = [
@@ -154,7 +154,10 @@ export default function CancelOrderSheet({
                             className="w-full h-[48px] rounded-full font-semibold text-md active:scale-95 cursor-pointer bg-primary text-white normal-case !font-[Rubik] text-base disabled:bg-primary/50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
-                                <Spinner size={20} />
+                                <CircularProgress
+                                    size={20}
+                                    className="text-white"
+                                />
                             ) : (
                                 "Ya, Batalin"
                             )}

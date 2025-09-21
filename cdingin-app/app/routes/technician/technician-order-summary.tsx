@@ -1,16 +1,17 @@
+import ErrorIcon from "@mui/icons-material/Error";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
+import InfoIcon from "@mui/icons-material/Info";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
-import TextSnippetIcon from "@mui/icons-material/TextSnippet";
-import { Button, Fab } from "@mui/material";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import { Button, CircularProgress, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import ErrorIcon from "@mui/icons-material/Error";
 import { AirVent, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -21,7 +22,6 @@ import {
     TileLayer,
 } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
-import InfoIcon from "@mui/icons-material/Info";
 import { toast } from "sonner";
 import mapPin from "~/assets/map-pin.png";
 import noteFilled from "~/assets/note-filled.png";
@@ -33,7 +33,6 @@ import {
     prettyDate,
 } from "~/common/utils";
 import EnableLocationSheet from "~/components/enable-location-sheet";
-import ReceiptIcon from "@mui/icons-material/Receipt";
 import {
     Drawer,
     DrawerContent,
@@ -51,6 +50,7 @@ import {
 import Spinner from "~/components/ui/spinner";
 import SwipeButton from "~/components/ui/swipe-button";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
+import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
@@ -60,9 +60,6 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import type { Route } from "./+types/technician-order-summary";
-import { formatDistance, subDays } from "date-fns";
-import { id } from "date-fns/locale";
-import { acTypes } from "~/customer/order/new/ac-unit-card";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -451,12 +448,12 @@ export default function TechnicianOrderSummary() {
     const zoomValue = () => {
         const distance = calculateDistanceInMeters(
             {
-                lat: technicianPosition?.lat,
-                lng: technicianPosition?.lng,
+                lat: technicianPosition?.lat ?? 0,
+                lng: technicianPosition?.lng ?? 0,
             },
             {
-                lat: order?.serviceLocation.latitude,
-                lng: order?.serviceLocation.longitude,
+                lat: order?.serviceLocation.latitude ?? 0,
+                lng: order?.serviceLocation.longitude ?? 0,
             }
         );
         if (distance > 1000) {
@@ -474,7 +471,7 @@ export default function TechnicianOrderSummary() {
             >
                 <Dialog open={isLoading || isUpdating} modal>
                     <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                        <Spinner size={30} className="text-primary" />
+                        <CircularProgress size={30} className="text-primary" />
                     </DialogContent>
                 </Dialog>
             </div>

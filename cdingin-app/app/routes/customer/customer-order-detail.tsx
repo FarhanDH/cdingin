@@ -1,12 +1,12 @@
 import ErrorIcon from "@mui/icons-material/Error";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
-import { Button, Fab } from "@mui/material";
+import { Button } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios from "axios";
 import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { AirVent, MoveLeft, Wallet } from "lucide-react";
+import { AirVent, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
@@ -14,19 +14,14 @@ import cashImage from "~/assets/cash.png";
 import mapPin from "~/assets/map-pin.png";
 import noteFilled from "~/assets/note-filled.png";
 import { formattedDate } from "~/common/utils";
-import {
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-} from "~/components/ui/drawer";
+import Header from "~/components/header";
+import { Drawer, DrawerContent, DrawerHeader } from "~/components/ui/drawer";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import Spinner from "~/components/ui/spinner";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/customer-order-detail";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import Header from "~/components/header";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -44,6 +39,7 @@ export default function CustomerOrderDetail() {
     const { text: statusText, color: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
+    const [serviceAddress, setServiceAddress] = useState<string>("");
     const navigate = useNavigate();
 
     const mapPinIcon = L.icon({
@@ -93,6 +89,33 @@ export default function CustomerOrderDetail() {
         };
         fetchOrder();
     }, [orderId]);
+
+    // Get address
+    const getDetailAddress = async () => {
+        try {
+            const response = await axios.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                {
+                    params: {
+                        lat: order?.serviceLocation.latitude,
+                        lon: order?.serviceLocation.longitude,
+                        format: "json",
+                    },
+                }
+            );
+            setServiceAddress(
+                response.data.display_name || "Alamat tidak ditemukan"
+            );
+        } catch {
+            setServiceAddress("Gagal mendapatkan alamat");
+        }
+    };
+
+    useEffect(() => {
+        if (order) {
+            getDetailAddress();
+        }
+    }, [order]);
 
     if (isLoading) {
         return (
@@ -214,6 +237,10 @@ export default function CustomerOrderDetail() {
                                                 {order.serviceLocation
                                                     .address ||
                                                     "Lokasi belum diisi"}{" "}
+                                            </p>
+                                            <p className="mt-1 text-sm text-gray-700 ">
+                                                {(serviceAddress as any) ??
+                                                    "Lokasi belum diisi"}
                                             </p>
 
                                             {/* Address Note for technician */}

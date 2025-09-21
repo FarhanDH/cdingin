@@ -83,7 +83,7 @@ export default function PropertyTypeStep({
 
     return (
         <div className="flex flex-col h-full bg-white">
-            <Header title="Tipe Properti" isSticky />
+            <Header title="Tipe Properti" isSticky className="w-full" />
             <div className="p-4 pb-28">
                 <h1 className="text-xl font-semibold mb-4">
                     Bangunannya gimana?

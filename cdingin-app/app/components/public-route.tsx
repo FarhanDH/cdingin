@@ -1,6 +1,6 @@
-import { useAuth } from "~/contexts/auth.context";
-import Spinner from "./ui/spinner";
+import { CircularProgress } from "@mui/material";
 import { Navigate, Outlet } from "react-router";
+import { useAuth } from "~/contexts/auth.context";
 
 export default function PublicRoute() {
     const { isAuthenticated, isLoading, user } = useAuth();
@@ -8,7 +8,7 @@ export default function PublicRoute() {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <Spinner size={40} className="text-primary" />
+                <CircularProgress size={40} className="text-primary" />
             </div>
         );
     }

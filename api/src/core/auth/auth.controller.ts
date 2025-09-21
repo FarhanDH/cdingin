@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Logger,
+    Post,
+    Req,
+    Res,
+    UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { VerifyOtpRequest } from './dto/auth.request';
 import { CreateCustomerProfileRequest } from '../user/dto/user.request';
@@ -6,10 +15,13 @@ import { CookieOptions, Response } from 'express';
 import { configuration } from '~/common/configuration';
 import { ApiResponse } from '~/common/api-response.dto';
 import { VerifyOtpResponse } from './dto/auth.response';
+import { JwtGuard } from './guards/jwt.guard';
+import { RequestWithUser } from '~/common/utils';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
+    private readonly logger: Logger = new Logger(AuthController.name);
 
     private setTokenCookies(
         response: Response,
@@ -70,6 +82,23 @@ export class AuthController {
         return {
             message: 'Customer profile created successfully',
             data,
+        };
+    }
+
+    @UseGuards(JwtGuard)
+    @Delete('logout')
+    async logout(
+        @Req() request: RequestWithUser,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        this.logger.debug(
+            `AuthController.logout(${JSON.stringify({ userId: request.user.sub })})`,
+        );
+        response.clearCookie('accessToken');
+        response.clearCookie('refreshToken');
+
+        return {
+            message: 'Logout successful',
         };
     }
 }

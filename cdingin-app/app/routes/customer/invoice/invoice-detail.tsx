@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -23,7 +23,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-import Spinner from "~/components/ui/spinner";
 import {
     Table,
     TableBody,
@@ -88,7 +87,7 @@ export default function InvoiceDetailPage() {
             link.click();
 
             // Bersihkan
-            link.parentNode.removeChild(link);
+            link.parentNode?.removeChild(link);
             window.URL.revokeObjectURL(url);
 
             // Tampilkan notifikasi sukses
@@ -235,7 +234,7 @@ export default function InvoiceDetailPage() {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <Spinner size={40} className="text-primary" />
+                <CircularProgress size={40} className="text-primary" />
             </div>
         );
     }
@@ -364,7 +363,7 @@ export default function InvoiceDetailPage() {
                     onClick={handleDownload}
                 >
                     {isDownloading ? (
-                        <Spinner size={20} className="text-primary" />
+                        <CircularProgress size={20} className="text-primary" />
                     ) : (
                         "Download tagihan"
                     )}
@@ -393,7 +392,14 @@ export default function InvoiceDetailPage() {
                                 isPaymentGatewaySheetOpen
                             }
                         >
-                            {isPaying ? <Spinner size={20} /> : "Bayar digital"}
+                            {isPaying ? (
+                                <CircularProgress
+                                    size={20}
+                                    className="text-white"
+                                />
+                            ) : (
+                                "Bayar digital"
+                            )}
                         </Button>
                     </div>
                 </footer>

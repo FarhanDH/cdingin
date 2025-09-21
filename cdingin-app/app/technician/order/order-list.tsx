@@ -167,7 +167,12 @@ export default function TechnicianOrderList() {
             )}
             <div>
                 {/* Header */}
-                <Header isSticky={true} title="Daftar Pesanan">
+                <Header
+                    isSticky={true}
+                    title="Daftar Pesanan"
+                    showProfile
+                    className="bg-white"
+                >
                     <TechnicianOrderTab
                         tabs={tabs}
                         activeTab={activeTab}

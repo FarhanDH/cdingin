@@ -13,6 +13,7 @@ import { useAuth } from "~/contexts/auth.context";
 import type { UserResponse } from "~/types/auth.type";
 import type { Route } from "./+types/authentication";
 import { customToastStyle } from "~/common/custom-toast-style";
+import { CircularProgress } from "@mui/material";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -207,7 +208,10 @@ export default function Authentication() {
                 >
                     <Dialog open={loading} modal>
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                            <Spinner size={30} className="text-primary" />
+                            <CircularProgress
+                                size={30}
+                                className="text-primary"
+                            />
                         </DialogContent>
                     </Dialog>
                 </div>

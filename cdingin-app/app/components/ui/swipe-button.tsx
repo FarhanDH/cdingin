@@ -1,14 +1,14 @@
+import { CircularProgress } from "@mui/material";
 import {
+    animate,
     motion,
     useMotionValue,
-    useTransform,
-    animate,
     useMotionValueEvent,
+    useTransform,
 } from "framer-motion";
 import { ChevronsRight } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import "~/app.css";
-import Spinner from "./spinner";
 
 interface SwipeButtonProps {
     onSubmit: () => void;
@@ -73,7 +73,7 @@ export default function SwipeButton({
             className={`relative w-full h-14 rounded-full p-1 flex items-center select-none border border-primary bg-primary overflow-hidden ${className}`}
         >
             {isLoading ? (
-                <Spinner size={20} className="text-primary" />
+                <CircularProgress size={20} className="text-primary" />
             ) : (
                 <>
                     <motion.div

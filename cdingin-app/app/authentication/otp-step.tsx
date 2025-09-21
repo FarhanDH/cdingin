@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -10,7 +10,6 @@ import {
     FormLabel,
     FormMessage,
 } from "~/components/ui/form";
-import Spinner from "~/components/ui/spinner";
 
 export default function OtpStep({
     onSubmit,
@@ -115,8 +114,8 @@ export default function OtpStep({
                                                         .toString()
                                                         .padStart(2, "0")}`}
                                                 </span>
-                                                <Spinner
-                                                    size={22}
+                                                <CircularProgress
+                                                    size={20}
                                                     className="text-secondary"
                                                 />
                                             </div>

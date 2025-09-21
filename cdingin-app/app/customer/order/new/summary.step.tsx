@@ -199,7 +199,12 @@ export default function SummaryStep({
 
     return (
         <>
-            <Header title="Konfirmasi pesanan" isSticky showBorder={false} />
+            <Header
+                title="Konfirmasi pesanan"
+                isSticky
+                showBorder={false}
+                className="bg-white"
+            />
             <main>
                 <div className="">
                     <div className="flex flex-col bg-gray-50 min-h-screen">

@@ -1,4 +1,4 @@
-import { Button, IconButton } from "@mui/material";
+import { Button, CircularProgress, IconButton } from "@mui/material";
 import axios, { AxiosError } from "axios";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -138,6 +138,7 @@ export default function CreateInvoice() {
                 isSticky
                 showBack
                 navigateTo={`/technician/order/${orderId}`}
+                className="w-full bg-white"
             />
 
             {/* Main content area with padding for the sticky footer */}
@@ -254,7 +255,11 @@ export default function CreateInvoice() {
                     disabled={isSubmitting || items.length <= 0}
                     className="w-full h-12 rounded-full text-base !font-[Rubik] font-semibold normal-case bg-primary text-white hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isSubmitting ? <Spinner size={20} /> : "Kirim tagihan"}
+                    {isSubmitting ? (
+                        <CircularProgress size={20} className="text-white" />
+                    ) : (
+                        "Kirim tagihan"
+                    )}
                 </Button>
             </footer>
 
@@ -305,7 +310,10 @@ export default function CreateInvoice() {
                             className="w-full h-12 rounded-full font-semibold text-md active:scale-95 cursor-pointer normal-case !font-[Rubik] bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed text-base"
                         >
                             {isSubmitting ? (
-                                <Spinner size={20} />
+                                <CircularProgress
+                                    size={20}
+                                    className="text-white"
+                                />
                             ) : (
                                 "Oke, kirim"
                             )}

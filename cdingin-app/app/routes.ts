@@ -17,8 +17,8 @@ export default [
         layout("routes/customer/layout.tsx", [
             route("/orders", "routes/customer/customer-orders.tsx"),
             route("/notifications", "routes/customer/notification.tsx"),
-            route("/profile", "routes/customer/profile.tsx"),
         ]),
+        route("/profile", "routes/customer/profile.tsx"),
 
         route("/order/new", "routes/customer/new-order.tsx"),
         route("/order/:orderId", "routes/customer/customer-order-detail.tsx"),
@@ -41,6 +41,8 @@ export default [
                 "routes/technician/notification.tsx"
             ),
         ]),
+
+        route("/technician/profile", "routes/technician/profile.tsx"),
 
         // Grouping child routes under a parent route
         route(

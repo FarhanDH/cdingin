@@ -32,7 +32,7 @@ export interface OrderTabsProps {
     onTabChange: (tabId: "progress" | "completed" | "cancelled") => void;
 }
 
-export type CustomerOrderTabType = "progress" | "selesai" | "dibatalkan";
+export type CustomerOrderTabType = "progress" | "completed" | "cancelled";
 
 export type AcUnitDetail = {
     id: string;

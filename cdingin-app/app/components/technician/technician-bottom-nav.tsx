@@ -55,7 +55,7 @@ export default function TechnicianBottomNav() {
         <Paper
             sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50 }}
             elevation={3}
-            className="max-w-lg mx-auto !font-[Rubik] border-none"
+            className="max-w-lg mx-auto !font-[Rubik] border-none h-15"
         >
             <BottomNavigation
                 showLabels
@@ -64,22 +64,33 @@ export default function TechnicianBottomNav() {
                 className="!border-none shadow-none"
             >
                 <BottomNavigationAction
-                    className={
-                        activeTab === "/technician/orders"
-                            ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
-                            : "text-gray-500 font-light"
-                    }
-                    label="Pesanan"
+                    className={`
+                       ${
+                           activeTab === "/technician/orders"
+                               ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik]`
+                               : "text-gray-500"
+                       }`}
+                    // label="Pesanan"
                     value="/technician/orders"
                     icon={
-                        <>
+                        <div className="text-center flex flex-col items-center">
                             <ListOrdered
-                                className={
-                                    activeTab === "/technician/orders"
-                                        ? `!text-primary `
-                                        : "text-gray-500"
-                                }
+                                className={`mb-1 mt-2
+                                    ${
+                                        activeTab === "/technician/orders"
+                                            ? `!text-primary`
+                                            : "text-gray-600"
+                                    }`}
                             />
+                            <p
+                                className={`text-xs ${
+                                    activeTab === "/technician/orders"
+                                        ? "text-gray-700 font-medium text-sm"
+                                        : "text-gray-600 font-light"
+                                } `}
+                            >
+                                Pesanan
+                            </p>
                             <div
                                 className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
                                     activeTab === "/technician/orders"
@@ -87,11 +98,10 @@ export default function TechnicianBottomNav() {
                                         : "bg-transparent"
                                 }`}
                             ></div>
-                        </>
+                        </div>
                     }
                 />
                 <BottomNavigationAction
-                    label="Pemberitahuan"
                     value="/technician/notifications"
                     icon={
                         <>
@@ -100,7 +110,7 @@ export default function TechnicianBottomNav() {
                                 badgeContent={unreadCount}
                                 max={9}
                                 invisible={unreadCount === 0}
-                                className="!font-[Rubik]"
+                                className="!font-[Rubik] mb-1 mt-2"
                             >
                                 <NotificationsIcon
                                     className={
@@ -111,6 +121,15 @@ export default function TechnicianBottomNav() {
                                     }
                                 />
                             </Badge>
+                            <p
+                                className={`text-xs ${
+                                    activeTab === "/technician/notifications"
+                                        ? "text-gray-700 font-medium text-sm"
+                                        : "text-gray-600 font-light"
+                                } `}
+                            >
+                                Pemberitahuan
+                            </p>
                             <div
                                 className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
                                     activeTab === "/technician/notifications"
@@ -127,7 +146,6 @@ export default function TechnicianBottomNav() {
                     }
                 />
                 <BottomNavigationAction
-                    label="Riwayat"
                     value="/technician/histories"
                     className={
                         activeTab === "/technician/histories"
@@ -137,12 +155,22 @@ export default function TechnicianBottomNav() {
                     icon={
                         <>
                             <HistoryIcon
-                                className={
-                                    activeTab === "/technician/histories"
-                                        ? `!text-primary `
-                                        : "text-gray-500"
-                                }
+                                className={`mb-1 mt-2
+                                    ${
+                                        activeTab === "/technician/histories"
+                                            ? `!text-primary `
+                                            : "text-gray-500"
+                                    }`}
                             />
+                            <p
+                                className={`text-xs ${
+                                    activeTab === "/technician/notifications"
+                                        ? "text-gray-700 font-medium text-sm"
+                                        : "text-gray-600 font-light"
+                                } `}
+                            >
+                                Riwayat
+                            </p>
                             <div
                                 className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
                                     activeTab === "/technician/histories"

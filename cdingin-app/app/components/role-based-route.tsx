@@ -1,7 +1,7 @@
+import { CircularProgress } from "@mui/material";
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "~/contexts/auth.context";
 import NotFoundPage from "~/pages/not-found";
-import Spinner from "./ui/spinner";
 
 type UserRole = "customer" | "technician";
 
@@ -18,7 +18,7 @@ export default function RoleBasedRoute({
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen">
-                <Spinner size={40} className="text-primary" />
+                <CircularProgress size={40} className="text-primary" />
             </div>
         );
     }
@@ -29,7 +29,7 @@ export default function RoleBasedRoute({
     }
 
     //   Is the role in the list of allowed role
-    const isAuthorized = user && allowedRoles.includes(user.role);
+    const isAuthorized = user && allowedRoles.includes(user.role as UserRole);
 
     // If the role does not match, display a "Not Found" page.
     if (!isAuthorized) {

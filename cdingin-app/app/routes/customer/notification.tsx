@@ -61,7 +61,13 @@ export default function NotificationPage() {
                 </div>
             )}
 
-            <Header title="Pemberitahuan" isSticky showBorder />
+            <Header
+                title="Pemberitahuan"
+                isSticky
+                showBorder
+                showProfile
+                className="bg-white"
+            />
 
             {notifications.length === 0 ? (
                 <div className="mt-10 items-center w-full mb-auto flex flex-col text-center p-4">
