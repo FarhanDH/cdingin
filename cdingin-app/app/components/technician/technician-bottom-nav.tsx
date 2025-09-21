@@ -9,6 +9,7 @@ import axios from "axios";
 import { ListOrdered } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import HistoryIcon from "@mui/icons-material/History";
 
 /**
  * A reusable bottom navigation component for the technician section.
@@ -123,6 +124,33 @@ export default function TechnicianBottomNav() {
                         activeTab === "/technician/notifications"
                             ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
                             : "text-gray-500 font-light"
+                    }
+                />
+                <BottomNavigationAction
+                    label="Riwayat"
+                    value="/technician/histories"
+                    className={
+                        activeTab === "/technician/histories"
+                            ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
+                            : "text-gray-500 font-light"
+                    }
+                    icon={
+                        <>
+                            <HistoryIcon
+                                className={
+                                    activeTab === "/technician/histories"
+                                        ? `!text-primary `
+                                        : "text-gray-500"
+                                }
+                            />
+                            <div
+                                className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
+                                    activeTab === "/technician/histories"
+                                        ? "bg-primary"
+                                        : "bg-transparent"
+                                }`}
+                            ></div>
+                        </>
                     }
                 />
             </BottomNavigation>

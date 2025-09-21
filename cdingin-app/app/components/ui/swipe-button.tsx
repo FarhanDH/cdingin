@@ -70,19 +70,19 @@ export default function SwipeButton({
     return (
         <div
             ref={containerRef}
-            className={`relative w-full h-14 rounded-full p-1 flex items-center select-none border border-primary bg-white overflow-hidden ${className}`}
+            className={`relative w-full h-14 rounded-full p-1 flex items-center select-none border border-primary bg-primary overflow-hidden ${className}`}
         >
             {isLoading ? (
                 <Spinner size={20} className="text-primary" />
             ) : (
                 <>
                     <motion.div
-                        className="absolute left-1 h-12 bg-primary rounded-full"
+                        className="absolute left-1 h-12 bg-white rounded-full"
                         style={{ width: progressWidth }}
                     />
 
                     <motion.div
-                        className="relative w-17 h-12 bg-primary rounded-full flex justify-center items-center shadow-md cursor-grab active:cursor-grabbing z-10"
+                        className="relative w-17 h-12 bg-white rounded-full flex justify-center items-center shadow-md cursor-grab active:cursor-grabbing z-10"
                         drag="x"
                         dragConstraints={{ left: 0, right: maxDrag }}
                         style={{ x }}
@@ -91,7 +91,7 @@ export default function SwipeButton({
                     >
                         <motion.div style={{ scale: iconScale }}>
                             <ChevronsRight
-                                className={`text-white h-7 w-7 ${
+                                className={`text-primary h-7 w-7 ${
                                     !isDragging
                                         ? "animate-slide-right-loop"
                                         : ""
@@ -100,10 +100,7 @@ export default function SwipeButton({
                         </motion.div>
                     </motion.div>
 
-                    <motion.p
-                        className="absolute w-full text-center text-primary font-semibold pointer-events-none z-20 left-4"
-                        // style={{ opacity: textOpacity }}
-                    >
+                    <motion.p className="absolute w-full text-center text-white font-medium pointer-events-none z-20 left-4">
                         {text}
                     </motion.p>
                 </>

@@ -10,7 +10,7 @@ import L from "leaflet";
  */
 export function useRouteCalculator(
     origin: L.LatLng | null,
-    destination: L.LatLng | null,
+    destination: L.LatLng | null
 ) {
     const [route, setRoute] = useState<L.LatLngExpression[]>([]);
     const [distance, setDistance] = useState("");
@@ -26,7 +26,7 @@ export function useRouteCalculator(
             setIsLoading(true);
             try {
                 const response = await axios.get(
-                    `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`,
+                    `https://router.project-osrm.org/route/v1/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson&annotations=distance`
                 );
 
                 const routeData = response.data.routes[0];
@@ -34,7 +34,7 @@ export function useRouteCalculator(
                     setDistance(`${(routeData.distance / 1000).toFixed(1)} km`);
                     // OSRM returns [lng, lat], so we need to swap them for Leaflet's [lat, lng].
                     const latLngs = routeData.geometry.coordinates.map(
-                        (coord: number[]) => [coord[1], coord[0]],
+                        (coord: number[]) => [coord[1], coord[0]]
                     );
                     setRoute(latLngs);
                 }

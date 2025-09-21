@@ -118,7 +118,7 @@ export default function InvoiceDetailPage() {
                 title={`Tagihan #${invoice.invoiceNumber}`}
                 isSticky
                 showBack
-                navigateTo={`/technician/order/${orderId}/detail`}
+                navigateTo={`/technician/order/${orderId}`}
             />
             <main className="p-2 space-y-4">
                 <div className="bg-white p-2 flex-col space-y-2 items-center">

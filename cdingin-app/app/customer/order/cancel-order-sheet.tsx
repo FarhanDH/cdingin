@@ -70,7 +70,14 @@ export default function CancelOrderSheet({
                 { reason: selectedReason },
                 { withCredentials: true }
             );
-            toast("Pesanan berhasil dibatalkan.", customToastStyle);
+            if (actor === "technician") {
+                toast(
+                    "Pesanan ini batal, ya. Gak papa 👍. Masih ada yang lain menunggumu 😊.",
+                    customToastStyle
+                );
+            } else {
+                toast("Oke, Pesanan ini batal, ya.", customToastStyle);
+            }
             onSuccess();
         } catch (error) {
             console.error("Gagal membatalkan pesanan");

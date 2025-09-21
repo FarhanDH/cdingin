@@ -161,7 +161,12 @@ export default function CustomerOrderDetail() {
             </div>
 
             {/* Drawer */}
-            <Drawer open={true} snapPoints={[0.4, 1]} activeSnapPoint={0.4}>
+            <Drawer
+                open={true}
+                snapPoints={[0.4, 1]}
+                activeSnapPoint={0.4}
+                modal={false}
+            >
                 <DrawerContent
                     className={`max-w-lg mx-auto rounded-t-3xl z-10 ${
                         order.invoiceId &&

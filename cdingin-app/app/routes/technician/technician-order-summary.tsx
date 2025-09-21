@@ -4,12 +4,14 @@ import LocationPinIcon from "@mui/icons-material/LocationPin";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
+import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import { Button, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { ChevronRight, MoveLeft } from "lucide-react";
+import ErrorIcon from "@mui/icons-material/Error";
+import { AirVent, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Circle,
@@ -19,13 +21,19 @@ import {
     TileLayer,
 } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
+import InfoIcon from "@mui/icons-material/Info";
 import { toast } from "sonner";
 import mapPin from "~/assets/map-pin.png";
 import noteFilled from "~/assets/note-filled.png";
 import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
 import { customToastStyle } from "~/common/custom-toast-style";
-import { calculateDistanceInMeters } from "~/common/utils";
+import {
+    calculateDistanceInMeters,
+    formattedDate,
+    prettyDate,
+} from "~/common/utils";
 import EnableLocationSheet from "~/components/enable-location-sheet";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import {
     Drawer,
     DrawerContent,
@@ -52,6 +60,9 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import type { Route } from "./+types/technician-order-summary";
+import { formatDistance, subDays } from "date-fns";
+import { id } from "date-fns/locale";
+import { acTypes } from "~/customer/order/new/ac-unit-card";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -257,8 +268,8 @@ export default function TechnicianOrderSummary() {
                 break;
 
             case "completed":
-                // dipicu oleh sistem setelah customer bayar
-                toast(`Lunas! Orderan selesai! 🙌`, customToastStyle);
+                //    Triggered by cash payment
+                toast(`Mantap! Kerjaan beres! 🎉`, customToastStyle);
                 break;
 
             case "cancelled":
@@ -437,6 +448,23 @@ export default function TechnicianOrderSummary() {
 
     const nextAction = getNextAction();
 
+    const zoomValue = () => {
+        const distance = calculateDistanceInMeters(
+            {
+                lat: technicianPosition?.lat,
+                lng: technicianPosition?.lng,
+            },
+            {
+                lat: order?.serviceLocation.latitude,
+                lng: order?.serviceLocation.longitude,
+            }
+        );
+        if (distance > 1000) {
+            return 12;
+        }
+        return 17;
+    };
+
     if (isLoading || isUpdating) {
         return (
             <div
@@ -476,8 +504,11 @@ export default function TechnicianOrderSummary() {
                         order.serviceLocation.latitude,
                         order.serviceLocation.longitude,
                     ]}
-                    zoom={13}
-                    style={{ height: "600px", width: "100%" }}
+                    zoom={zoomValue()}
+                    style={{
+                        height: "550px",
+                        width: "100%",
+                    }}
                     preferCanvas={true}
                     className="z-0"
                     zoomAnimation={true}
@@ -525,17 +556,25 @@ export default function TechnicianOrderSummary() {
                 </MapContainer>
             </div>
 
-            {/* Drawer */}
-            <Drawer open={true} snapPoints={[0.6, 1]} activeSnapPoint={0.6}>
+            {/* Order Details Drawer */}
+            <Drawer
+                open={true}
+                noBodyStyles={true}
+                snapPoints={[0.4, 1]}
+                activeSnapPoint={0.4}
+                modal={false}
+                repositionInputs={false}
+                defaultOpen={true}
+            >
                 <DrawerContent
-                    className="max-w-lg mx-auto rounded-t-3xl p-4 border-none z-10"
+                    className="max-w-lg mx-auto bg-gray-100 rounded-t-3xl border-none z-10 h-[97%] scroll-smooth"
                     isOverlay={false}
                 >
                     {/* Back button */}
                     <div className="absolute -top-15 left-4 flex items-center gap-2">
                         <Fab
                             size="medium"
-                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer active:scale-95"
+                            className="z-10 bg-white p-2 rounded-full shadow-none cursor-pointer active:scale-95"
                             onClick={() => {
                                 setIsLoading(true);
                                 navigate("/technician/orders");
@@ -545,10 +584,21 @@ export default function TechnicianOrderSummary() {
                         </Fab>
                     </div>
 
-                    {/* Google Map Navigation Button  */}
-                    <div className="absolute -top-14 left-0 right-0 mx-auto max-w-lg justify-center flex items-center gap-4">
-                        <Button
-                            className="z-10 bg-secondary text-white capitalize px-3 py-2 rounded-full shadow-md cursor-pointer text-md active:scale-95"
+                    {/* Top right buttons */}
+                    <div className="absolute -top-33 right-4 flex flex-col items-center gap-6">
+                        {/* Request current location */}
+                        <Fab
+                            size="medium"
+                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
+                            onClick={requestLocation}
+                        >
+                            <GpsFixedIcon className="text-gray-700" />
+                        </Fab>
+
+                        {/* Navigation button */}
+                        <Fab
+                            size="medium"
+                            className="z-10 bg-secondary p-2 text-center rounded-full shadow-md cursor-pointer"
                             onClick={() => {
                                 window.open(
                                     `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order.serviceLocation.latitude},${order.serviceLocation.longitude}`,
@@ -556,194 +606,364 @@ export default function TechnicianOrderSummary() {
                                 );
                             }}
                         >
-                            <NavigationIcon className="text-white -rotate-45 mr-3" />
-                            <p>Petunjuk arah</p>
-                        </Button>
-                    </div>
-
-                    {/* Top right current location button */}
-                    <div className="absolute -top-15 right-4 flex items-center gap-2">
-                        <Fab
-                            size="medium"
-                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
-                            onClick={requestLocation}
-                        >
-                            <GpsFixedIcon className="text-primary" />
+                            <NavigationIcon
+                                className="text-white rotate-45"
+                                fontSize="medium"
+                            />
                         </Fab>
                     </div>
-                    <DrawerHeader className="bg-white">
-                        <div className="flex justify-center items-center gap-2 text-lg">
-                            <DrawerTitle className="font-normal text-gray-800">
-                                Order ID{" "}
-                            </DrawerTitle>{" "}
-                            <DrawerTitle className="font-medium">
-                                {order.id}
-                            </DrawerTitle>
-                        </div>
-                    </DrawerHeader>
 
+                    <DrawerHeader className="border-b-2 border-gray-200 flex flex-col justify-center items-center">
+                        {/* Order status badge */}
+                        <span
+                            className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7 w-fit`}
+                        >
+                            {statusText}
+                        </span>
+                        <DrawerTitle className="font-medium text-gray-800 text-[15px] mt-1">
+                            {prettyDate(new Date(order.serviceDate), "id")
+                                .charAt(0)
+                                .toUpperCase() +
+                                prettyDate(
+                                    new Date(order.serviceDate),
+                                    "id"
+                                ).slice(1)}{" "}
+                            -{" "}
+                            {formattedDate(order.serviceDate, {
+                                time: false,
+                            })}
+                        </DrawerTitle>
+                    </DrawerHeader>
                     <ScrollArea
-                        className={`flex-grow overflow-y-auto bg-gray-100 z-10 scroll-smooth ${
-                            nextAction && "mb-20"
-                        } `}
+                        className="px-4 flex-grow bg-gray-100 overflow-y-auto z-10 scroll-smooth"
                         showScrollBar={false}
                     >
-                        {/* Customer Card */}
-                        <div className="py-4 bg-white">
-                            <div className="flex gap-4">
-                                {/* Person Icon */}
-                                <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                    <PersonIcon className="text-white w-20" />
-                                </div>
-                                <div className="w-full">
-                                    <div className="flex justify-between w-full">
-                                        <div>
-                                            <p className="text-gray-700 text-sm text-start">
-                                                Dipesan oleh
-                                            </p>
-                                            <p className="font-semibold text-lg text-gray-700 flex items-center">
-                                                {order.customer.fullName ||
-                                                    "Tidak ada nama"}{" "}
-                                            </p>
+                        <div className="space-y-3 mt-4">
+                            {/* Customer Card */}
+                            <div className="bg-[#DBF8FF] rounded-3xl">
+                                <div className="p-4 bg-white rounded-3xl shadow-xs  border-gray-200">
+                                    <div className="flex gap-4">
+                                        {/* Person Icon */}
+                                        <div className="mb-2 bg-blue-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <PersonIcon className="text-white w-20" />
                                         </div>
-
-                                        {/* Right Section */}
-                                        <div className="flex-col flex justify-end items-end text-end gap-1">
-                                            {/* Order status badge */}
-                                            <span
-                                                className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7`}
-                                            >
-                                                {statusText}
-                                            </span>
-                                            {/* Phone Call to WhatsApp */}
-                                            <Fab
-                                                size="small"
-                                                onClick={() => {
-                                                    // Handle phone call to WhatsApp
-                                                    window.open(
-                                                        `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                                        "_blank"
-                                                    );
-                                                }}
-                                                disabled={!order.customer.phone}
-                                                className="bg-green-700 p-2 text-center flex items-center justify-center text-white rounded-full cursor-pointer shadow-none active:scale-95"
-                                            >
-                                                <PhoneIcon className="w-5 h-5" />
-                                            </Fab>
+                                        <div className="w-full">
+                                            <div className="flex justify-between w-full">
+                                                <div>
+                                                    <p className="text-gray-700 text-sm text-start">
+                                                        Dipesan oleh
+                                                    </p>
+                                                    <p className="font-semibold text-lg text-gray-700 flex items-center">
+                                                        {order.customer
+                                                            .fullName ||
+                                                            "Tidak ada nama"}{" "}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {/* Note for technician */}
+                                            {order.note && (
+                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                    <img
+                                                        src={noteFilled}
+                                                        alt="noteSuccess"
+                                                        className="w-4"
+                                                    />
+                                                    <p className="text-gray-800 text-xs">
+                                                        {order.note}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    {/* Note for technician */}
-                                    {order.note && (
-                                        <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                            <img
-                                                src={noteFilled}
-                                                alt="noteSuccess"
-                                                className="w-4"
+                                </div>
+
+                                {order.status !== "completed" &&
+                                    order.status !== "cancelled" && (
+                                        <div className="flex items-center p-4 gap-2">
+                                            <InfoIcon
+                                                className="text-primary"
+                                                // fontSize="small"
                                             />
-                                            <p className="text-gray-800 text-xs">
-                                                {order.note}
+                                            <p className="text-xs font-normal">
+                                                Kadang titik lokasi atau detail
+                                                AC bisa kurang pas. Coba tanyain
+                                                dulu ke pelanggan biar lebih
+                                                yakin 😉.
                                             </p>
                                         </div>
                                     )}
-                                </div>
                             </div>
-                        </div>
 
-                        {/* Service Address */}
-                        <div className="py-4 bg-white border-t-[1.5px] border-gray-200 pt-6">
-                            <div>
-                                <div className="flex items-center text-center">
-                                    <div className="flex gap-4 w-full">
-                                        <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                            <LocationPinIcon className="w-20 text-white" />
-                                        </div>
-                                        <div className="flex flex-col text-start gap-1 w-full">
-                                            <div>
-                                                <p className="font-semibold text-lg text-gray-700 ">
-                                                    {" "}
-                                                    {(detailAddress as any)
-                                                        .address.amenity ??
-                                                        (detailAddress as any)
-                                                            .address.road ??
-                                                        (detailAddress as any)
-                                                            .address.village ??
-                                                        "Lokasi belum diisi"}{" "}
-                                                    {isLoadingRoute
-                                                        ? " - Menghitung..."
-                                                        : ` - ${distance}`}
-                                                </p>
-                                                <p className="mt-2 text-sm text-gray-700 ">
-                                                    {(detailAddress as any)
-                                                        .display_name ??
-                                                        "Lokasi belum diisi"}
-                                                </p>
-                                                {/* Address Note for technician */}
-                                                {order.serviceLocation.note && (
-                                                    <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                        <HomeFilledIcon className="text-green-600" />
-                                                        <p className="text-gray-800 text-xs w-full">
-                                                            {
-                                                                order
-                                                                    .serviceLocation
-                                                                    .note
-                                                            }
+                            {/* Service Address */}
+                            <div className="p-4 bg-white pt-6 rounded-3xl shadow-xs  border-gray-200 border">
+                                <div>
+                                    <div className="flex items-center text-center">
+                                        <div className="flex gap-4 w-full">
+                                            <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                                <LocationPinIcon className="w-20 text-white" />
+                                            </div>
+                                            <div className="flex flex-col text-start w-full">
+                                                <div>
+                                                    <p className="text-gray-700 text-[13px] font-medium mb-2">
+                                                        {isLoadingRoute
+                                                            ? "Menghitung jarak..."
+                                                            : `${
+                                                                  distance
+                                                                      ? `${distance} dari lokasimu`
+                                                                      : "Lokasimu tidak ditemukan"
+                                                              }`}
+                                                    </p>
+                                                    <p className="font-medium text-lg text-gray-800">
+                                                        {" "}
+                                                        {(detailAddress as any)
+                                                            .address.amenity ??
+                                                            (
+                                                                detailAddress as any
+                                                            ).address.road ??
+                                                            (
+                                                                detailAddress as any
+                                                            ).address.village ??
+                                                            "Lokasi belum diisi"}{" "}
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-gray-700 ">
+                                                        {(detailAddress as any)
+                                                            .display_name ??
+                                                            "Lokasi belum diisi"}
+                                                    </p>
+                                                    {/* Address Note for technician */}
+                                                    {order.serviceLocation
+                                                        .note && (
+                                                        <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                                            <HomeFilledIcon className="text-green-600" />
+                                                            <p className="text-gray-800 text-xs w-full">
+                                                                {
+                                                                    order
+                                                                        .serviceLocation
+                                                                        .note
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Property Type */}
+                                                    <div className="flex items-center mt-1 gap-4 text-sm">
+                                                        <p className="font-medium text-gray-800">
+                                                            {order.propertyType ||
+                                                                "Tipe properti belum dipilih"}
+                                                        </p>
+                                                        <p className="text-gray-600">
+                                                            Lantai{" "}
+                                                            {order.propertyFloor ||
+                                                                "-"}
                                                         </p>
                                                     </div>
-                                                )}
-
-                                                {/* <RouteIcon className="text-green-600" /> */}
-
-                                                {/* Property Type */}
-                                                <div className="flex items-center mt-1 gap-4 text-md">
-                                                    <p className="font-medium text-gray-800">
-                                                        {order.propertyType ||
-                                                            "Tipe properti belum dipilih"}
-                                                    </p>
-                                                    <p className="text-gray-600">
-                                                        Lantai{" "}
-                                                        {order.propertyFloor ||
-                                                            "-"}
-                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* To Detail Button */}
-                        <Button
-                            onClick={() =>
-                                navigate(`/technician/order/${order.id}/detail`)
-                            }
-                            className="py-6 bg-white hover:bg-gray-50 active:bg-gray-100 border-t-[1.5px] border-gray-200 flex justify-center items-center text-base font-normal cursor-pointer w-full text-gray-900 normal-case rounded-none !font-[Rubik]"
-                        >
-                            Lihat pesanan
-                            <ChevronRight />
-                        </Button>
-                        {order.status !== "cancelled" &&
-                            order.status !== "completed" && (
-                                <Button
-                                    className="w-full rounded-none bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 border-gray-200 cursor-pointer text-red-600 normal-case !font-[Rubik]"
-                                    onClick={() => setIsCancelSheetOpen(true)}
-                                >
-                                    Batalkan pesanan
-                                </Button>
-                            )}
+                            {/* AC Problems */}
+                            <div className="p-4 bg-white rounded-3xl shadow-xs border border-gray-200">
+                                <div className="flex items-center text-start">
+                                    <div className="flex gap-4">
+                                        <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <ErrorIcon className="w-20 text-white" />
+                                        </div>
+                                        <div>
+                                            <h1 className="font-medium text-lg text-gray-800">
+                                                Layanan / Keluhan
+                                            </h1>
+                                            <ul className="list-disc ml-4 text-sm text-gray-800">
+                                                {order.problems?.map(
+                                                    (problem, index) => (
+                                                        <li key={index}>
+                                                            {problem}
+                                                        </li>
+                                                    )
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Detail Unit AC */}
+                            <div className="p-4 bg-white rounded-3xl shadow-xs border border-gray-200">
+                                <div className="flex items-start text-start gap-4">
+                                    <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                        <AirVent className="text-white w-18" />
+                                    </div>
+                                    <div className="flex flex-col w-full">
+                                        <h1 className="text-gray-700 text-sm mb-2">
+                                            Detail Unit AC
+                                        </h1>
+                                        {order.acUnits.map((acUnit, index) => (
+                                            <div key={acUnit.id}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div>
+                                                            <h1 className="font-medium text-sm">
+                                                                {
+                                                                    acTypes.find(
+                                                                        (
+                                                                            type
+                                                                        ) =>
+                                                                            type.id ===
+                                                                            acUnit.acTypeName
+                                                                    )?.name
+                                                                }{" "}
+                                                                {
+                                                                    acUnit.acCapacity
+                                                                }
+                                                            </h1>
+                                                            <p className="text-sm font-normal text-gray-700">
+                                                                {acUnit.brand ||
+                                                                    "Tidak ditentukan"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="font-normal text-sm w-4 text-center text-gray-700">
+                                                        {acUnit.quantity}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <h1 className="font-medium text-sm">
+                                                    Total Unit
+                                                </h1>
+                                                <span className="text-sm text-center font-medium w-4">
+                                                    {order.totalUnits}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Dates */}
+                            <div className="bg-white p-4 rounded-3xl shadow-xs border border-gray-200">
+                                <div className="flex justify-between items-center mb-1">
+                                    <div className="text-xs text-gray-700">
+                                        Tanggal service
+                                    </div>
+                                    <div className="text-xs text-gray-700">
+                                        {formattedDate(order.serviceDate, {
+                                            time: false,
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <div className="text-xs text-gray-700">
+                                        Waktu pemesanan
+                                    </div>
+                                    {/* Created time */}
+                                    <div className="text-xs text-gray-700">
+                                        {formattedDate(order.createdAt, {
+                                            time: true,
+                                        })}
+                                    </div>
+                                </div>
+
+                                {order.updatedAt !== order.createdAt && (
+                                    <div className="flex justify-between items-center mt-1">
+                                        <div className="text-xs text-gray-700">
+                                            Waktu diperbarui
+                                        </div>
+                                        <div className="text-xs text-gray-700">
+                                            {formattedDate(order.updatedAt, {
+                                                time: true,
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Cancel Button */}
+                            {order.status !== "cancelled" &&
+                                order.status !== "completed" && (
+                                    // Cancel button
+                                    <Button
+                                        className="w-full rounded-full bg-destructive/10 border-t-[1.5px] py-3.5 text-base hover:bg-destructive/20 border-gray-200 cursor-pointer text-red-600 normal-case !font-[Rubik] active:scale-95"
+                                        onClick={() =>
+                                            setIsCancelSheetOpen(true)
+                                        }
+                                    >
+                                        Batalkan pesanan
+                                    </Button>
+                                )}
+                            <div className="mb-40 bg-none" />
+                        </div>
                     </ScrollArea>
                 </DrawerContent>
             </Drawer>
 
-            {/* Swipe button */}
+            {/* Bottom panel */}
             <div
-                className={`w-full px-3 pb-4 gap-4 fixed bottom-0 max-w-lg mx-auto rounded-t-full bg-white z-50`}
+                className={`w-full px-3 gap-4 fixed bottom-0 max-w-lg mx-auto  bg-white z-50`}
             >
+                <div className="flex items-center mb-2 gap-2 justify-between">
+                    {/* Order ID */}
+                    <Button className="flex flex-col items-center justify-center text-center !font-[Rubik] normal-case text-xs font-normal active:bg-gray-100 hover:bg-gray-50 rounded-none w-full h-full">
+                        <p className="text-xs text-gray-600">Order ID</p>
+                        <p className="font-semibold text-xs text-gray-800">
+                            {order.id}
+                        </p>
+                    </Button>
+                    <div className="border-r-1 rounded-none border-gray-500 h-8" />
+
+                    {/* Phone Button */}
+                    <Button
+                        onClick={() => {
+                            // Handle phone call to WhatsApp
+                            window.open(
+                                `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
+                                "_blank"
+                            );
+                        }}
+                        disabled={!order.customer.phone}
+                        className="!font-[Rubik] normal-case text-gray-600 text-xs font-normal flex flex-col rounded-none border-gray-200 hover:bg-gray-50 active:bg-gray-100 w-full h-full"
+                    >
+                        <PhoneIcon
+                            className="text-gray-900"
+                            fontSize="medium"
+                        />
+                        Hubungi pelanggan
+                    </Button>
+
+                    {/* Invoice Button */}
+                    {order.invoiceId && (
+                        <>
+                            {/* Right Divider */}
+                            <div className="border-r-1 rounded-none border-gray-500 h-8" />
+                            <Button
+                                onClick={() => {
+                                    // Handle to invoice page
+                                    navigate(
+                                        `/technician/order/${order.id}/invoice`
+                                    );
+                                }}
+                                disabled={!order.customer.phone}
+                                className="!font-[Rubik] normal-case text-gray-600 text-xs font-normal flex flex-col rounded-none border-gray-200 hover:bg-gray-50 active:bg-gray-100 w-full h-full"
+                            >
+                                <ReceiptIcon
+                                    className="text-gray-900"
+                                    fontSize="medium"
+                                />
+                                Lihat tagihan
+                            </Button>
+                        </>
+                    )}
+                </div>
+
                 {nextAction && (
                     <SwipeButton
                         onSubmit={nextAction.action}
                         text={nextAction.text}
-                        className="w-full absolute max-w-lg bottom-0 left-0 right-0 mx-auto bg-white z-50"
+                        className="w-full absolute max-w-lg bottom-0 left-0 right-0 mx-auto bg-primary z-50 mb-4"
                     />
                 )}
             </div>

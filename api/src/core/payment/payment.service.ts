@@ -40,7 +40,7 @@ export class PaymentService {
     private readonly logger = new Logger(PaymentService.name);
 
     private readonly midtransSnap: Snap = new Snap({
-        isProduction: configuration().env === 'production',
+        isProduction: false,
         serverKey: configuration().midtrans.serverKey,
         clientKey: configuration().midtrans.clientKey,
     });

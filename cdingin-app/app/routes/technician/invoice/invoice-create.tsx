@@ -167,7 +167,7 @@ export default function CreateInvoice() {
                                 <TableRow>
                                     <TableCell
                                         colSpan={3}
-                                        className="text-center text-gray-500 h-24"
+                                        className="text-center text-[13px] text-gray-500 h-24"
                                     >
                                         Silakan tambahkan item untuk membuat
                                         tagihan.
