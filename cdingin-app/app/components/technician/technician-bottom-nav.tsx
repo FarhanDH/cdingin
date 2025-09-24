@@ -1,4 +1,6 @@
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
+import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
 import {
     Badge,
     BottomNavigation,
@@ -6,10 +8,8 @@ import {
     Paper,
 } from "@mui/material";
 import axios from "axios";
-import { ListOrdered } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import HistoryIcon from "@mui/icons-material/History";
 
 /**
  * A reusable bottom navigation component for the technician section.
@@ -63,6 +63,7 @@ export default function TechnicianBottomNav() {
                 onChange={handleChange}
                 className="!border-none shadow-none"
             >
+                {/* Order */}
                 <BottomNavigationAction
                     className={`
                        ${
@@ -70,22 +71,21 @@ export default function TechnicianBottomNav() {
                                ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik]`
                                : "text-gray-500"
                        }`}
-                    // label="Pesanan"
                     value="/technician/orders"
                     icon={
                         <div className="text-center flex flex-col items-center">
-                            <ListOrdered
-                                className={`mb-1 mt-2
+                            <StickyNote2RoundedIcon
+                                className={`mb-1 mt-2 transition-all duration-300
                                     ${
                                         activeTab === "/technician/orders"
-                                            ? `!text-primary`
-                                            : "text-gray-600"
+                                            ? `!text-primary transform scale-110 `
+                                            : "text-gray-500"
                                     }`}
                             />
                             <p
-                                className={`text-xs ${
+                                className={`text-xs transition-all duration-300 ${
                                     activeTab === "/technician/orders"
-                                        ? "text-gray-700 font-medium text-sm"
+                                        ? "text-primary font-medium text-sm"
                                         : "text-gray-600 font-light"
                                 } `}
                             >
@@ -101,6 +101,44 @@ export default function TechnicianBottomNav() {
                         </div>
                     }
                 />
+                {/* Income */}
+                <BottomNavigationAction
+                    value="/technician/earning"
+                    className={
+                        activeTab === "/technician/earning"
+                            ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
+                            : "text-gray-500 font-light"
+                    }
+                    icon={
+                        <>
+                            <WalletRoundedIcon
+                                className={`mb-1 mt-2 transition-all duration-300 
+                                    ${
+                                        activeTab === "/technician/earning"
+                                            ? `!text-primary transform scale-110`
+                                            : "text-gray-500"
+                                    }`}
+                            />
+                            <p
+                                className={`text-xs transition-all duration-300 ${
+                                    activeTab === "/technician/earning"
+                                        ? "text-primary font-medium text-sm"
+                                        : "text-gray-600 font-light"
+                                } `}
+                            >
+                                Pendapatan
+                            </p>
+                            <div
+                                className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
+                                    activeTab === "/technician/earning"
+                                        ? "bg-primary"
+                                        : "bg-transparent"
+                                }`}
+                            ></div>
+                        </>
+                    }
+                />
+                {/* Notification */}
                 <BottomNavigationAction
                     value="/technician/notifications"
                     icon={
@@ -110,21 +148,21 @@ export default function TechnicianBottomNav() {
                                 badgeContent={unreadCount}
                                 max={9}
                                 invisible={unreadCount === 0}
-                                className="!font-[Rubik] mb-1 mt-2"
+                                className="!font-[Rubik] mb-1 mt-2 "
                             >
                                 <NotificationsIcon
-                                    className={
+                                    className={`mb-1 mt-1 transition-all duration-300 ${
                                         activeTab ===
                                         "/technician/notifications"
-                                            ? `!text-primary `
+                                            ? `!text-primary transform scale-110`
                                             : "text-gray-500"
-                                    }
+                                    }`}
                                 />
                             </Badge>
                             <p
-                                className={`text-xs ${
+                                className={`text-xs transition-all duration-300 ${
                                     activeTab === "/technician/notifications"
-                                        ? "text-gray-700 font-medium text-sm"
+                                        ? "text-primary font-medium text-base"
                                         : "text-gray-600 font-light"
                                 } `}
                             >
@@ -143,42 +181,6 @@ export default function TechnicianBottomNav() {
                         activeTab === "/technician/notifications"
                             ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
                             : "text-gray-500 font-light"
-                    }
-                />
-                <BottomNavigationAction
-                    value="/technician/histories"
-                    className={
-                        activeTab === "/technician/histories"
-                            ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
-                            : "text-gray-500 font-light"
-                    }
-                    icon={
-                        <>
-                            <HistoryIcon
-                                className={`mb-1 mt-2
-                                    ${
-                                        activeTab === "/technician/histories"
-                                            ? `!text-primary `
-                                            : "text-gray-500"
-                                    }`}
-                            />
-                            <p
-                                className={`text-xs ${
-                                    activeTab === "/technician/notifications"
-                                        ? "text-gray-700 font-medium text-sm"
-                                        : "text-gray-600 font-light"
-                                } `}
-                            >
-                                Riwayat
-                            </p>
-                            <div
-                                className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
-                                    activeTab === "/technician/histories"
-                                        ? "bg-primary"
-                                        : "bg-transparent"
-                                }`}
-                            ></div>
-                        </>
                     }
                 />
             </BottomNavigation>

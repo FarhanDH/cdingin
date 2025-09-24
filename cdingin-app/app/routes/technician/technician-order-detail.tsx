@@ -33,7 +33,7 @@ export default function TechnicianOrderDetail() {
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
-    const { text: statusText, color: statusColor } = getStatusLabel(
+    const { text: statusText, bgColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
     const navigate = useNavigate();
@@ -366,7 +366,7 @@ export default function TechnicianOrderDetail() {
                             </div>
                             <div className="text-xs text-gray-700">
                                 {formattedDate(order.serviceDate, {
-                                    time: false,
+                                    withTime: false,
                                 })}
                             </div>
                         </div>
@@ -376,7 +376,9 @@ export default function TechnicianOrderDetail() {
                             </div>
                             {/* Created time */}
                             <div className="text-xs text-gray-700">
-                                {formattedDate(order.createdAt, { time: true })}
+                                {formattedDate(order.createdAt, {
+                                    withTime: true,
+                                })}
                             </div>
                         </div>
 
@@ -387,7 +389,7 @@ export default function TechnicianOrderDetail() {
                                 </div>
                                 <div className="text-xs text-gray-700">
                                     {formattedDate(order.updatedAt, {
-                                        time: true,
+                                        withTime: true,
                                     })}
                                 </div>
                             </div>

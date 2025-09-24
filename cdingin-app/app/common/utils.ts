@@ -1,25 +1,28 @@
-import {
-    formatDistance,
-    formatDistanceToNow,
-    isToday,
-    isTomorrow,
-    isYesterday,
-} from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 import haversine from "haversine-distance";
 
-export const formattedDate = (date: Date, { time = false }) => {
-    const formatDate = new Date(date).toLocaleDateString("id-ID", {
-        weekday: "long",
+export const formattedDate = (
+    date: Date,
+    options: {
+        withTime?: boolean;
+        withDay?: boolean;
+    } = { withTime: false, withDay: true }
+) => {
+    const dateOptions = {
+        weekday: options.withDay ? "long" : undefined,
         day: "numeric",
         month: "long",
         year: "numeric",
-    });
+    } as const;
+
+    const formatDate = new Date(date).toLocaleDateString("id-ID", dateOptions);
+
     const formatTime = `${new Date(date).getHours()}:${new Date(
         date
     ).getMinutes()}`;
 
-    return `${formatDate} ${time ? formatTime : ""}`;
+    return `${formatDate} ${options.withTime ? formatTime : ""}`;
 };
 
 /**

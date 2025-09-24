@@ -1,16 +1,14 @@
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
 import {
     Badge,
     BottomNavigation,
     BottomNavigationAction,
     Paper,
 } from "@mui/material";
-import { ListOrdered, NotebookIcon } from "lucide-react";
-import PersonIcon from "@mui/icons-material/Person";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import axios from "axios";
-import StickyNote2Icon from "@mui/icons-material/StickyNote2";
 
 /**
  * A reusable bottom navigation component for the customer section.
@@ -73,7 +71,7 @@ export default function CustomerBottomNav() {
                     value="/orders"
                     icon={
                         <>
-                            <StickyNote2Icon
+                            <StickyNote2RoundedIcon
                                 className={
                                     activeTab === "/orders"
                                         ? `!text-primary `

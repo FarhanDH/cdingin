@@ -184,8 +184,8 @@ export class OrderService {
                         this.notificationService.create({
                             orderId: savedOrder.id,
                             recipientId: technician.id,
-                            title: 'Order Baru!',
-                            message: 'Ada pesanan baru dari pelanggan',
+                            title: 'Pesanan baru!',
+                            message: 'Ada pesanan baru, buruan cek!',
                             type: NotificationType.NEW_ORDER,
                         }),
                     ),
@@ -203,8 +203,8 @@ export class OrderService {
                     await this.pushSubscriptionService.sendNotifications(
                         technicianSubscriptions,
                         {
-                            title: 'Order Baru!',
-                            body: 'Ada pesanan baru dari pelanggan',
+                            title: 'Pesanan baru!',
+                            body: 'Ada pesanan baru, buruan cek!',
                             tag: NotificationType.NEW_ORDER,
                             link: `/technician/notifications`,
                         },
@@ -482,6 +482,7 @@ export class OrderService {
 
             // Create a notification for the customer
             const notificationMessage = this.updateStatusNotificationMessage(
+                order.customer.full_name.split(' ')[0],
                 updateStatusDto.status,
             );
             const savedNotification = await this.notificationService.create({
@@ -671,6 +672,7 @@ export class OrderService {
 
             // Set notification message
             const notificationMassage = this.updateStatusNotificationMessage(
+                order.customer.full_name.split(' ')[0],
                 OrderStatusEnum.CANCELLED,
             );
 
@@ -733,6 +735,7 @@ export class OrderService {
      * @returns The notification message
      */
     private updateStatusNotificationMessage(
+        userName: string,
         status: OrderStatusEnum,
     ): PayloadMessage {
         const tag: NotificationType = NotificationType.ORDER_STATUS_UPDATE;
@@ -742,25 +745,25 @@ export class OrderService {
         switch (status) {
             case OrderStatusEnum.CONFIRMED:
                 return {
-                    title: 'Pesanan Udah Diterima ✅',
+                    title: `Pesanan Udah Diterima ✅`,
                     body: `Teknisi udah terima pesanan, tunggu sampai harinya yaa`,
                     tag,
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: 'Teknisi OTW! 🛵',
+                    title: 'Teknisi On The Way! 🛵',
                     body: `Teknisi sedang menuju ke lokasi service. Siap-siap, ya!`,
                     tag,
                 };
             case OrderStatusEnum.ON_WORKING:
                 return {
-                    title: 'Teknisi Sudah Tiba!',
-                    body: `Teknisi sudah sampai!, dan lagi nge-cek AC-nya. Sabar yaa`,
+                    title: `${userName}, Teknisi Sudah Tiba!`,
+                    body: `${userName} Teknisi sudah sampai!, dan lagi nge-cek AC-nya. Sabar yaa`,
                     tag,
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: 'Tagihan Siap 🗒️',
+                    title: `${userName} Tagihan Siap 🗒️`,
                     body: `Invoice udah dibuat. Yuk, segera selesaikan pembayarannya.`,
                     tag,
                 };
@@ -773,7 +776,7 @@ export class OrderService {
             case OrderStatusEnum.CANCELLED:
                 return {
                     title: 'Pesanan Dibatalkan 💔',
-                    body: `Maaf ya, teknisi belum bisa kerjain pesanan-nya. Coba atur pesanan baru, ya.`,
+                    body: `Maaf ya ${userName}, teknisi belum bisa kerjain pesanan-nya. Coba atur pesanan baru, ya.`,
                     tag: NotificationType.CANCELLED_ORDER,
                 };
             default:

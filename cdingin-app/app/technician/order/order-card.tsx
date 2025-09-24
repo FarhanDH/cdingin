@@ -10,11 +10,11 @@ interface CustomerOrderCardProps {
 export default function TechnicianOrderCard({
     order,
 }: Readonly<CustomerOrderCardProps>) {
-    const { text: statusText, color: statusColor } = getStatusLabel(
+    const { text: statusText, bgColor: statusColor } = getStatusLabel(
         order.status
     );
     const navigate = useNavigate();
-    const formatDate = formattedDate(order.serviceDate, { time: false });
+    const formatDate = formattedDate(order.serviceDate, { withTime: false });
 
     const handleCardClick = () => {
         navigate(`/technician/order/${order.id}`);

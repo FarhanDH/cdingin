@@ -80,7 +80,7 @@ export default function TechnicianOrderSummary() {
     const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
     const [isPhoneSheetOpen, setIsPhoneSheetOpen] = useState(false);
-    const { text: statusText, color: statusColor } = getStatusLabel(
+    const { text: statusText, bgColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
     const [locationPermission, setLocationPermission] = useState<
@@ -88,6 +88,8 @@ export default function TechnicianOrderSummary() {
     >("prompt");
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
         useState(false);
+    const [isCustomeCallSheetOpen, setIsCustomeCallSheetOpen] = useState(false);
+    const [isNavigateSheetOpen, setIsNavigateSheetOpen] = useState(false);
     const { position: technicianPosition, requestLocation } =
         useTechnicianLocation();
 
@@ -359,12 +361,12 @@ export default function TechnicianOrderSummary() {
                 };
             case "confirmed":
                 return {
-                    text: "Berangkat ke lokasi",
+                    text: "Saya berangkat ke lokasi",
                     action: () => updateOrderStatus("technician_on_the_way"),
                 };
             case "technician_on_the_way":
                 return {
-                    text: "Udah ketemu pelanggan",
+                    text: "Saya udah ketemu pelanggan",
                     /**
                      * Checks if the technician's position is close to the service location
                      * before setting the order status to "on_working".
@@ -416,7 +418,7 @@ export default function TechnicianOrderSummary() {
             case "on_working":
                 // navigasi ke halaman pembuatan tagihan
                 return {
-                    text: "Geser untuk Buat Tagihan",
+                    text: "Saya mau bikin tagihan",
                     action: () => {
                         navigate(
                             `/technician/order/${order.id}/invoice/create`
@@ -460,6 +462,13 @@ export default function TechnicianOrderSummary() {
             return 12;
         }
         return 17;
+    };
+
+    const navigateToServiceLocationVehicle = (travelMode: string) => {
+        window.open(
+            `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order?.serviceLocation.latitude},${order?.serviceLocation.longitude}&travelmode=${travelMode}`,
+            "_blank"
+        );
     };
 
     if (isLoading || isUpdating) {
@@ -597,10 +606,7 @@ export default function TechnicianOrderSummary() {
                             size="medium"
                             className="z-10 bg-secondary p-2 text-center rounded-full shadow-md cursor-pointer"
                             onClick={() => {
-                                window.open(
-                                    `https://www.google.com/maps/dir/?api=1&origin=${technicianPosition?.lat},${technicianPosition?.lng}&destination=${order.serviceLocation.latitude},${order.serviceLocation.longitude}`,
-                                    "_blank"
-                                );
+                                setIsNavigateSheetOpen(true);
                             }}
                         >
                             <NavigationIcon
@@ -627,7 +633,7 @@ export default function TechnicianOrderSummary() {
                                 ).slice(1)}{" "}
                             -{" "}
                             {formattedDate(order.serviceDate, {
-                                time: false,
+                                withTime: false,
                             })}
                         </DrawerTitle>
                     </DrawerHeader>
@@ -849,7 +855,7 @@ export default function TechnicianOrderSummary() {
                                     </div>
                                     <div className="text-xs text-gray-700">
                                         {formattedDate(order.serviceDate, {
-                                            time: false,
+                                            withTime: false,
                                         })}
                                     </div>
                                 </div>
@@ -860,7 +866,7 @@ export default function TechnicianOrderSummary() {
                                     {/* Created time */}
                                     <div className="text-xs text-gray-700">
                                         {formattedDate(order.createdAt, {
-                                            time: true,
+                                            withTime: true,
                                         })}
                                     </div>
                                 </div>
@@ -872,7 +878,7 @@ export default function TechnicianOrderSummary() {
                                         </div>
                                         <div className="text-xs text-gray-700">
                                             {formattedDate(order.updatedAt, {
-                                                time: true,
+                                                withTime: true,
                                             })}
                                         </div>
                                     </div>
@@ -915,11 +921,7 @@ export default function TechnicianOrderSummary() {
                     {/* Phone Button */}
                     <Button
                         onClick={() => {
-                            // Handle phone call to WhatsApp
-                            window.open(
-                                `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
-                                "_blank"
-                            );
+                            setIsCustomeCallSheetOpen(true);
                         }}
                         disabled={!order.customer.phone}
                         className="!font-[Rubik] normal-case text-gray-600 text-xs font-normal flex flex-col rounded-none border-gray-200 hover:bg-gray-50 active:bg-gray-100 w-full h-full"
@@ -956,11 +958,12 @@ export default function TechnicianOrderSummary() {
                     )}
                 </div>
 
+                {/* next action swipe button */}
                 {nextAction && (
                     <SwipeButton
                         onSubmit={nextAction.action}
                         text={nextAction.text}
-                        className="w-full absolute max-w-lg bottom-0 left-0 right-0 mx-auto bg-primary z-50 mb-4"
+                        className="w-full absolute max-w-lg bottom-0 left-0 right-0 mx-auto bg-primary z-50 mb-4 text-[15px]"
                     />
                 )}
             </div>
@@ -984,6 +987,7 @@ export default function TechnicianOrderSummary() {
                 onActivate={handleActivateLocation}
             />
 
+            {/* Show when order status is pending */}
             <Sheet open={isPhoneSheetOpen} onOpenChange={setIsPhoneSheetOpen}>
                 <SheetContent
                     side="bottom"
@@ -1012,6 +1016,119 @@ export default function TechnicianOrderSummary() {
                             className="bg-primary text-base text-white normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-6 active:scale-95"
                         >
                             Oke, siap
+                        </Button>
+                    </SheetHeader>
+                </SheetContent>
+            </Sheet>
+
+            {/* Show when "Hubungi Pelanggan" is clicked */}
+            <Sheet
+                open={isCustomeCallSheetOpen}
+                onOpenChange={setIsCustomeCallSheetOpen}
+            >
+                <SheetContent
+                    side="bottom"
+                    className="rounded-t-2xl max-w-lg mx-auto text-start"
+                    // Prevent close sheet beyond interaction
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="">
+                        <div className="rounded-4xl">
+                            {/* <img
+                                src={phoneWhatsapp}
+                                alt="Ilustrasi Peta"
+                                className="w-full mx-auto"
+                            /> */}
+                        </div>
+                        <SheetTitle className="text-xl font-bold">
+                            Hubungi pelanggan bisa lewat pulsa atau WhatsApp!
+                        </SheetTitle>
+                        <SheetDescription className="text-[16px] text-gray-600">
+                            Kadang nomor pelanggan gak nyambung ke WhatsApp,
+                            jadi kamu bisa pilih mau hubungi lewat apa.
+                        </SheetDescription>
+                        {/* Button for phone call */}
+                        <Button
+                            onClick={() => {
+                                setIsCustomeCallSheetOpen(false);
+                                // Handle phone call
+                                window.open(
+                                    `tel:+62${order.customer.phone}`,
+                                    "_blank"
+                                );
+                            }}
+                            className="bg-white border-green-600 border text-base text-green-600 normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-6 active:scale-95"
+                        >
+                            Hubungi pakai pulsa
+                        </Button>
+
+                        {/* Button for whatsapp call */}
+                        <Button
+                            onClick={() => {
+                                setIsCustomeCallSheetOpen(false);
+                                // Handle phone call to WhatsApp
+                                window.open(
+                                    `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,
+                                    "_blank"
+                                );
+                            }}
+                            className="bg-green-600 text-base text-white normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-3 active:scale-95"
+                        >
+                            Hubungi pakai WhatsApp
+                        </Button>
+                    </SheetHeader>
+                </SheetContent>
+            </Sheet>
+
+            {/* Show when "Navigate" is clicked */}
+            <Sheet
+                open={isNavigateSheetOpen}
+                onOpenChange={setIsNavigateSheetOpen}
+            >
+                <SheetContent
+                    side="bottom"
+                    className="rounded-t-2xl max-w-lg mx-auto text-start"
+                    // Prevent close sheet beyond interaction
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <SheetHeader className="">
+                        <div className="rounded-4xl">
+                            {/* <img
+                                src={phoneWhatsapp}
+                                alt="Ilustrasi Peta"
+                                className="w-full mx-auto"
+                            /> */}
+                        </div>
+                        <SheetTitle className="text-xl font-bold">
+                            Naik kendaraan apa?
+                        </SheetTitle>
+                        <SheetDescription className="text-[16px] text-gray-600">
+                            Ke lokasi pelanggan naik kendaraan apa? biar rutenya
+                            disesuaikan dengan kendaraan yang dipakai.
+                        </SheetDescription>
+                        {/* Button two-wheeler vehicel */}
+                        <Button
+                            onClick={() => {
+                                setIsNavigateSheetOpen(false);
+                                navigateToServiceLocationVehicle("two-wheeler");
+                            }}
+                            className="bg-white border-primary border text-base text-primary normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-6 active:scale-95"
+                        >
+                            Saya naik motor
+                        </Button>
+
+                        {/* Button for whatsapp call */}
+                        <Button
+                            onClick={() => {
+                                setIsNavigateSheetOpen(false);
+                                // Handle phone call to WhatsApp
+                                navigateToServiceLocationVehicle("driving");
+                            }}
+                            className="bg-primary text-base text-white normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-3 active:scale-95"
+                        >
+                            Saya naik mobil
                         </Button>
                     </SheetHeader>
                 </SheetContent>

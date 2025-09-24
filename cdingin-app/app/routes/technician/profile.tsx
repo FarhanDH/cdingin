@@ -27,6 +27,14 @@ import {
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import { useAuth } from "~/contexts/auth.context";
+import type { Route } from "./+types/profile";
+
+export function meta(args: Route.MetaArgs) {
+    return [
+        { title: "Profil | Cdingin" },
+        { name: "description", content: "Welcome to cdingin!" },
+    ];
+}
 
 export default function Profile() {
     const [isLogoutSheetOpen, setIsLogoutSheetOpen] = useState<boolean>(false);

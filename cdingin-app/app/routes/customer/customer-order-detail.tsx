@@ -36,7 +36,7 @@ export default function CustomerOrderDetail() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
-    const { text: statusText, color: statusColor } = getStatusLabel(
+    const { text: statusText, bgColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
     const [serviceAddress, setServiceAddress] = useState<string>("");
@@ -380,7 +380,7 @@ export default function CustomerOrderDetail() {
                                     </div>
                                     <div className="text-xs text-gray-700">
                                         {formattedDate(order.serviceDate, {
-                                            time: false,
+                                            withTime: false,
                                         })}
                                     </div>
                                 </div>
@@ -391,7 +391,7 @@ export default function CustomerOrderDetail() {
                                     {/* Created time */}
                                     <div className="text-xs text-gray-700">
                                         {formattedDate(order.createdAt, {
-                                            time: true,
+                                            withTime: true,
                                         })}
                                     </div>
                                 </div>
@@ -403,7 +403,7 @@ export default function CustomerOrderDetail() {
                                         </div>
                                         <div className="text-xs text-gray-700">
                                             {formattedDate(order.updatedAt, {
-                                                time: true,
+                                                withTime: true,
                                             })}
                                         </div>
                                     </div>

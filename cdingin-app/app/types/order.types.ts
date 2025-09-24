@@ -126,22 +126,51 @@ export type OrderItem = {
 };
 
 export const getStatusLabel = (status: OrderStatus) => {
-    const statusMap: Record<OrderStatus, { text: string; color: string }> = {
+    const statusMap: Record<
+        OrderStatus,
+        { text: string; bgColor: string; textColor: string }
+    > = {
         pending: {
             text: "Menunggu Konfirmasi",
-            color: "bg-[#9CA3AF]",
+            bgColor: "bg-[#9CA3AF]",
+            textColor: "text-[#9CA3AF]",
         },
-        confirmed: { text: "Dalam Antrean", color: "bg-[#3B82F6]" },
-        technician_on_the_way: { text: "Teknisi OTW", color: "bg-[#0EA5E9]" },
-        on_working: { text: "Lagi Dikerjain", color: "bg-[#F59E0B]" },
-        waiting_payment: { text: "Tunggu Bayar", color: "bg-[#FB923C]" },
-        completed: { text: "Selesai", color: "bg-[#10B981]" },
-        cancelled: { text: "Dibatalkan", color: "bg-[#EF4444]" },
+        confirmed: {
+            text: "Dalam Antrean",
+            bgColor: "bg-[#3B82F6]",
+            textColor: "text-[#3B82F6]",
+        },
+        technician_on_the_way: {
+            text: "Teknisi OTW",
+            bgColor: "bg-[#0EA5E9]",
+            textColor: "text-[#0EA5E9]",
+        },
+        on_working: {
+            text: "Lagi Dikerjain",
+            bgColor: "bg-[#F59E0B]",
+            textColor: "text-[#F59E0B]",
+        },
+        waiting_payment: {
+            text: "Tunggu Bayar",
+            bgColor: "bg-[#FB923C]",
+            textColor: "text-[#FB923C]",
+        },
+        completed: {
+            text: "Selesai",
+            bgColor: "bg-[#10B937]",
+            textColor: "text-[#10B937]",
+        },
+        cancelled: {
+            text: "Dibatalkan",
+            bgColor: "bg-[#EF4444]",
+            textColor: "text-[#EF4444]",
+        },
     };
     return (
         statusMap[status] || {
             text: "Status Tidak Dikenal",
-            color: "bg-gray-700",
+            bgColor: "bg-gray-700",
+            textColor: "text-gray-700",
         }
     );
 };

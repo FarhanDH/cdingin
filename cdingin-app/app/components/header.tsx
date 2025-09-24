@@ -37,12 +37,14 @@ export default function Header({
             className={
                 `${
                     isSticky ? "sticky" : ""
-                }  top-0 left-0 right-0 max-w-lg mx-auto px-4 pt-4 pb-2 border-b-gray-300 z-40 ${
+                }  top-0 left-0 right-0 max-w-lg mx-auto border-b-gray-300 z-40 text-lg ${
                     showBorder && "border-b shadow-sm"
                 } ` + className
             }
         >
-            <div className={`flex items-center justify-between mb-2`}>
+            <div
+                className={`flex items-center justify-between mb-2 px-4 pt-4 pb-2 `}
+            >
                 <div className={`flex items-center gap-3`}>
                     {showBack && (
                         <Link to={navigateTo}>
@@ -54,7 +56,7 @@ export default function Header({
                             </IconButton>
                         </Link>
                     )}
-                    <h1 className={`text-lg font-semibold `}>{title}</h1>
+                    <h1 className={`font-semibold `}>{title}</h1>
                 </div>
                 {showProfile && (
                     <Link to={navigateToProfile}>

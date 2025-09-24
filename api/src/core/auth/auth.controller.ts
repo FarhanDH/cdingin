@@ -33,6 +33,7 @@ export class AuthController {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
         };
 
         // if (!isProduction) {

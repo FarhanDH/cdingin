@@ -40,6 +40,7 @@ export default [
                 "/technician/notifications",
                 "routes/technician/notification.tsx"
             ),
+            route("/technician/earning", "routes/technician/earning.tsx"),
         ]),
 
         route("/technician/profile", "routes/technician/profile.tsx"),
