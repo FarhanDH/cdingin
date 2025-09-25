@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
     BadRequestException,
     ConflictException,
@@ -24,6 +25,10 @@ import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { calculateDistanceInMeters } from '~/common/utils';
 import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { JwtPayload } from '../auth/dto/auth.response';
+import {
+    InvoiceResponseDto,
+    toInvoiceResponseDto,
+} from '../invoice/dto/invoice.response';
 import { NotificationService } from '../notification/notification.service';
 import {
     PayloadMessage,
@@ -37,10 +42,6 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
-import {
-    InvoiceResponseDto,
-    toInvoiceResponseDto,
-} from '../invoice/dto/invoice.response';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -55,6 +56,7 @@ export class OrderService {
         private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly notificationService: NotificationService,
         private readonly dataSource: DataSource,
+        private readonly httpService: HttpService,
     ) {}
 
     private readonly logger = new Logger(OrderService.name);
@@ -297,35 +299,49 @@ export class OrderService {
 
     async getAllForTechnician(
         user: JwtPayload,
-        serviceDate?: OrderDateFilter,
+        serviceDate?: OrderDateFilter | Date,
     ): Promise<OrderResponse[]> {
         this.logger.debug(
             `OrderService.getAllByTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)})`,
         );
 
         const whereClause: FindOptionsWhere<Order> = {};
-        whereClause.status = Not(
-            In([OrderStatusEnum.CANCELLED, OrderStatusEnum.COMPLETED]),
-        );
 
-        switch (serviceDate) {
-            case OrderDateFilter.TODAY: {
-                const todayStart = startOfDay(new Date());
-                const todayEnd = endOfDay(new Date());
-                whereClause.service_date = Between(todayStart, todayEnd);
-                break;
-            }
-            case OrderDateFilter.TOMORROW: {
-                const tomorrow = addDays(new Date(), 1);
-                const tomorrowStart = startOfDay(tomorrow);
-                const tomorrowEnd = endOfDay(tomorrow);
-                whereClause.service_date = Between(tomorrowStart, tomorrowEnd);
-                break;
-            }
-            case OrderDateFilter.UPCOMING: {
-                const upcomingDate = startOfDay(addDays(new Date(), 2));
-                whereClause.service_date = MoreThanOrEqual(upcomingDate);
-                break;
+        if (
+            serviceDate !== OrderDateFilter.TODAY &&
+            serviceDate !== OrderDateFilter.TOMORROW &&
+            serviceDate !== OrderDateFilter.UPCOMING
+        ) {
+            const todayStart = startOfDay(serviceDate);
+            console.log('todayStart', todayStart);
+            const todayEnd = endOfDay(serviceDate);
+            whereClause.service_date = Between(todayStart, todayEnd);
+        } else {
+            whereClause.status = Not(
+                In([OrderStatusEnum.CANCELLED, OrderStatusEnum.COMPLETED]),
+            );
+            switch (serviceDate) {
+                case OrderDateFilter.TODAY: {
+                    const todayStart = startOfDay(new Date());
+                    const todayEnd = endOfDay(new Date());
+                    whereClause.service_date = Between(todayStart, todayEnd);
+                    break;
+                }
+                case OrderDateFilter.TOMORROW: {
+                    const tomorrow = addDays(new Date(), 1);
+                    const tomorrowStart = startOfDay(tomorrow);
+                    const tomorrowEnd = endOfDay(tomorrow);
+                    whereClause.service_date = Between(
+                        tomorrowStart,
+                        tomorrowEnd,
+                    );
+                    break;
+                }
+                case OrderDateFilter.UPCOMING: {
+                    const upcomingDate = startOfDay(addDays(new Date(), 2));
+                    whereClause.service_date = MoreThanOrEqual(upcomingDate);
+                    break;
+                }
             }
         }
 
@@ -338,13 +354,45 @@ export class OrderService {
             relations: {
                 ac_units: true,
                 customer: true,
+                invoice: {
+                    items: true,
+                    payments: true,
+                },
             },
             order: {
                 service_date: 'ASC',
             },
         });
 
-        return orders.map((order) => toOrderResponse(order));
+        // Fetch detailed address from OpenStreetMap for orders that don't have one.
+        const ordersWithAddress = await Promise.all(
+            orders.map(async (order) => {
+                try {
+                    const { data } = await this.httpService.axiosRef.get(
+                        'https://nominatim.openstreetmap.org/reverse',
+                        {
+                            params: {
+                                lat: order.latitude_service_location,
+                                lon: order.longitude_service_location,
+                                format: 'json',
+                                'accept-language': 'id', // Get address in Indonesian
+                            },
+                        },
+                    );
+                    if (data?.display_name) {
+                        order.service_location_address = data.display_name;
+                    }
+                } catch (err) {
+                    this.logger.error(
+                        `Failed to reverse geocode for order ${order.id}: ${err.message}`,
+                    );
+                }
+
+                return order;
+            }),
+        );
+
+        return ordersWithAddress.map((order) => toOrderResponse(order));
     }
 
     async getOneByIdForTechnician(
@@ -510,6 +558,27 @@ export class OrderService {
             this.logger.error(`Error updating order status: ${error.message}`);
             throw new InternalServerErrorException(error.message);
         }
+    }
+
+    async getAllByDate(date: Date): Promise<OrderResponse[]> {
+        this.logger.debug(`OrderService.getAllByDate(date: ${date})`);
+        const orders = await this.orderRepository.find({
+            where: {
+                service_date: date,
+            },
+            relations: {
+                ac_units: true,
+                customer: true,
+                invoice: {
+                    items: true,
+                    payments: true,
+                },
+            },
+            order: {
+                service_date: 'ASC',
+            },
+        });
+        return orders.map((order) => toOrderResponse(order));
     }
 
     /**

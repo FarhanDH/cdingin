@@ -16,6 +16,7 @@ import { NotificationReadModule } from './core/notification-read/notification-re
 import { ScheduledTaskModule } from './core/scheduled-task/scheduled-task.module';
 import { InvoiceModule } from './core/invoice/invoice.module';
 import { PaymentModule } from './core/payment/payment.module';
+import { EarningModule } from './core/earning/earning.module';
 
 @Module({
     imports: [
@@ -37,6 +38,7 @@ import { PaymentModule } from './core/payment/payment.module';
         ScheduledTaskModule,
         InvoiceModule,
         PaymentModule,
+        EarningModule,
     ],
     controllers: [AppController],
 })

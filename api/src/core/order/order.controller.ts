@@ -66,12 +66,36 @@ export class OrderController {
         };
     }
 
+    // @UseGuards(JwtGuard, RolesGuard)
+    // @Roles(RoleEnum.TECHNICIAN)
+    // @Get('/technician/:date')
+    // async getAllByDate(
+    //     @Request() request: RequestWithUser,
+    //     @Query('date')
+    //     date?: Date,
+    // ) {
+    //     const data = await this.orderService.getAllByDate(date);
+    //     return {
+    //         message: `Orders by date ${date} fetched successfully`,
+    //         data,
+    //     };
+    // }
+
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(RoleEnum.TECHNICIAN)
     @Get('technician')
+    /**
+     * Fetches all orders for a technician.
+     * @param request - The request object with the authenticated user.
+     * @param serviceDate - The service date filter.
+     * @returns A promise that resolves to an API response containing an array of order responses.
+     * @throws {@link NotFoundException} if the order with the given ID is not found.
+     * @throws {@link BadRequestException} if the request is invalid.
+     * @throws {@link InternalServerErrorException} if an error occurs while fetching the orders.
+     */
     async getAllForTechnician(
         @Request() request: RequestWithUser,
-        @Query('service-date') serviceDate?: OrderDateFilter,
+        @Query('service-date') serviceDate?: OrderDateFilter | Date,
     ): Promise<ApiResponse<OrderResponse[]>> {
         const data = await this.orderService.getAllForTechnician(
             request.user,

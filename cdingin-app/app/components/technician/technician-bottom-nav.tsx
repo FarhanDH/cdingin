@@ -103,9 +103,9 @@ export default function TechnicianBottomNav() {
                 />
                 {/* Income */}
                 <BottomNavigationAction
-                    value="/technician/earning"
+                    value="/technician/earnings"
                     className={
-                        activeTab === "/technician/earning"
+                        activeTab === "/technician/earnings"
                             ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
                             : "text-gray-500 font-light"
                     }
@@ -114,14 +114,14 @@ export default function TechnicianBottomNav() {
                             <WalletRoundedIcon
                                 className={`mb-1 mt-2 transition-all duration-300 
                                     ${
-                                        activeTab === "/technician/earning"
+                                        activeTab === "/technician/earnings"
                                             ? `!text-primary transform scale-110`
                                             : "text-gray-500"
                                     }`}
                             />
                             <p
                                 className={`text-xs transition-all duration-300 ${
-                                    activeTab === "/technician/earning"
+                                    activeTab === "/technician/earnings"
                                         ? "text-primary font-medium text-sm"
                                         : "text-gray-600 font-light"
                                 } `}
@@ -130,7 +130,7 @@ export default function TechnicianBottomNav() {
                             </p>
                             <div
                                 className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
-                                    activeTab === "/technician/earning"
+                                    activeTab === "/technician/earnings"
                                         ? "bg-primary"
                                         : "bg-transparent"
                                 }`}

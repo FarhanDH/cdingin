@@ -149,6 +149,7 @@ export default function CustomerOrderDetail() {
                 isSticky
                 showBorder={false}
                 navigateTo="/orders"
+                className="bg-white"
             />
 
             {/* Map */}
@@ -191,7 +192,7 @@ export default function CustomerOrderDetail() {
                 modal={false}
             >
                 <DrawerContent
-                    className={`max-w-lg mx-auto rounded-t-3xl z-10 ${
+                    className={`max-w-lg mx-auto rounded-t-3xl z-10 h-[90%] ${
                         order.invoiceId &&
                         order.status !== "completed" &&
                         "mb-30"

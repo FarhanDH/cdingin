@@ -8,13 +8,14 @@ import { AcUnit } from '../ac-unit/entities/ac-unit.entity';
 import { PushSubscriptionModule } from '../push-subscription/push-subscription.module';
 import { NotificationModule } from '../notification/notification.module';
 import { InvoiceModule } from '../invoice/invoice.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Order, AcUnit]),
         UserModule,
         PushSubscriptionModule,
-        // InvoiceModule,
+        HttpModule,
         NotificationModule,
     ],
     controllers: [OrderController],

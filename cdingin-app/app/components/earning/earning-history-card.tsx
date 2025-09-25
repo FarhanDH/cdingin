@@ -1,6 +1,7 @@
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
+import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
 import { Button } from "@mui/material";
-import { ChevronRight } from "lucide-react";
+import { AirVent, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 
@@ -17,57 +18,84 @@ export default function EarningHistoryCard({
     const navigate = useNavigate();
 
     const handleCardClick = () => {
-        navigate(`/order/${order.id}`);
+        navigate(`/technician/order/${order.id}`);
     };
 
     return (
         <Button
             onClick={handleCardClick}
-            className="bg-white overflow-hidden pl-4 pr-0 py-3 cursor-pointer transition duration-50 ease-in transform hover:bg-gray-50 active:bg-gray-100 w-full rounded-2xl border-2 border-gray-200 mb-4 normal-case !font-[Rubik] font-normal"
+            className="bg-white overflow-hidden p-4 cursor-pointer transition duration-50 ease-in transform hover:bg-gray-50 active:bg-gray-100 w-full border-b-2 border-gray-200 shadow-xs mb-2 normal-case !font-[Rubik] font-normal rounded-none"
         >
-            {/* Top section */}
-            <div className="w-full text-start cursor-pointer">
-                <div className="flex justify-between border-b-[1.3px] border-gray-200 mb-2 pb-2">
-                    {/* Left section */}
-                    <div className="space-y-2">
-                        {/* Total amount */}
-                        <h1 className="font-medium text-[17px] text-gray-800">{`Rp100.000`}</h1>{" "}
-                        {/* Customer Name */}
-                        <h2 className="text-gray-600 text-sm">
-                            {order.customer.fullName}
-                        </h2>{" "}
-                        {/* <p className="text-gray-600 text-sm">
-                            {order.propertyType}
-                        </p>{" "} */}
+            <div className="flex flex-col justify-between items-start gap-2 w-full">
+                <div className="flex w-full gap-4 justify-between items-start">
+                    {/* Icon */}
+                    <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
+                        <AirVent className="text-white w-18" />
                     </div>
-                    {/* Right section: align to end */}
-                    <div className="flex flex-col items-end space-y-2 mr-4">
-                        {/* Payment method */}
-                        <div className="flex items-center">
-                            <PaymentsRoundedIcon
-                                className="mr-1 text-green-600"
-                                fontSize="inherit"
-                            />
-                            <span className="text-gray-800">{`Tunai`}</span>
+                    {/* Top section */}
+                    <div className="w-full text-start cursor-pointer">
+                        <div className="flex justify-between border-b-[1.3px] border-gray-200 mb-2 pb-2">
+                            {/* Left section */}
+                            <div className="space-y-2">
+                                {/* Total amount */}
+                                <h1 className="font-medium text-[17px] text-gray-800">{`Rp${Number(
+                                    order.amount
+                                )?.toLocaleString("id-ID")}`}</h1>
+                                {/* Customer Name */}
+                                <h2 className="text-gray-600 text-sm">
+                                    {order.customer.fullName}
+                                </h2>
+                            </div>
+                            {/* Right section: align to end */}
+                            <div className="flex flex-col items-end space-y-2">
+                                {/* Payment methods */}
+                                <div className="flex items-center">
+                                    {order.paymentMethod === "cash" ? (
+                                        <>
+                                            <PaymentsRoundedIcon
+                                                className="mr-2 text-green-600"
+                                                fontSize="small"
+                                            />
+                                            <span className="text-gray-800 font-medium text-base">{`Tunai`}</span>
+                                        </>
+                                    ) : order.paymentMethod === "midtrans" ? (
+                                        <>
+                                            <WalletRoundedIcon
+                                                className="mr-2 text-green-600"
+                                                fontSize="small"
+                                            />
+                                            <span className="text-gray-800 font-medium text-base">{`Transfer`}</span>
+                                        </>
+                                    ) : (
+                                        <></>
+                                    )}
+                                </div>
+                                <span
+                                    className={`${statusColor} items-center h-7 font-medium text-base`}
+                                >
+                                    {statusText}
+                                </span>
+                            </div>
                         </div>
-                        <span
-                            className={`${statusColor} items-center h-7 font-medium`}
-                        >
-                            {statusText}
-                        </span>
                     </div>
                 </div>
                 {/* Bottom section */}
-                <div className="flex items-center text-sm text-gray-500 mr-4 justify-between">
-                    <span className="w-56 md:w-80 line-clamp-1">
-                        {order.problems.join(", ")}
-                    </span>
-                    <ChevronRight size={25} className="mt-1 text-gray-600" />
+                <div className="text-sm text-gray-500 w-full">
+                    <div className="flex items-center justify-between w-full">
+                        <div className="space-y-4 text-start w-full">
+                            <span className="w-56 md:w-80 line-clamp-1 ml-13">
+                                {order.problems.join(", ")}
+                            </span>
+                            <div className="flex items-center justify-start w-full">
+                                <div className="bg-red-400 w-3 h-3 rounded-full ml-3"></div>
+                                <span className="w-56 md:w-80 line-clamp-1 ml-7">
+                                    {order.serviceLocation.address}
+                                </span>
+                            </div>
+                        </div>
 
-                    {/* <div className="flex items-center ml-auto">
-                        <AirVent className="mr-2" size={20} />
-                        <span>{order.totalUnits} Unit</span>
-                    </div> */}
+                        <ChevronRight size={30} className="text-gray-700" />
+                    </div>
                 </div>
             </div>
         </Button>

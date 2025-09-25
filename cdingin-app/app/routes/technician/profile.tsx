@@ -144,7 +144,8 @@ export default function Profile() {
                                 </p>
                             </div>
 
-                            <IconButton
+                            {/* // !TODO : Uncomment when update profile feature is ready */}
+                            {/* <IconButton
                                 onClick={() =>
                                     setIsUpdateProfileDrawerOpen(true)
                                 }
@@ -154,7 +155,7 @@ export default function Profile() {
                                     className="text-gray-700"
                                     fontSize="medium"
                                 />
-                            </IconButton>
+                            </IconButton> */}
                         </div>
                     </div>
                 </div>

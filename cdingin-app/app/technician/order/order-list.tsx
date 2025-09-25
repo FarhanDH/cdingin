@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import {
     Dialog,
     DialogContent,
@@ -5,18 +6,16 @@ import {
     DialogTitle,
 } from "@radix-ui/react-dialog";
 import axios from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import threeTechniciansImage from "~/assets/three-technicians.png";
+import EnableLocationSheet from "~/components/enable-location-sheet";
 import Header from "~/components/header";
-import Spinner from "~/components/ui/spinner";
+import NotificationPermissionSheet from "~/components/notification-permission-sheet";
+import { useNotificationPermission } from "~/hooks/use-notification-permission";
 import type { OrderItem, TechnicianabItem } from "~/types/order.types";
 import TechnicianOrderCard from "./order-card";
 import type { TechnicianTabId } from "./technician-order-tab";
 import TechnicianOrderTab from "./technician-order-tab";
-import EnableLocationSheet from "~/components/enable-location-sheet";
-import { useNotificationPermission } from "~/hooks/use-notification-permission";
-import { set } from "lodash";
-import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 
 export default function TechnicianOrderList() {
     const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -160,7 +159,10 @@ export default function TechnicianOrderList() {
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
                             <DialogTitle></DialogTitle>
                             <DialogDescription></DialogDescription>
-                            <Spinner size={30} className="text-primary" />
+                            <CircularProgress
+                                size={30}
+                                className="text-primary"
+                            />
                         </DialogContent>
                     </Dialog>
                 </div>

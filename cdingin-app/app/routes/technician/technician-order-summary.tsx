@@ -590,8 +590,21 @@ export default function TechnicianOrderSummary() {
                         </Fab>
                     </div>
 
+                    {/* Google Map Navigation Button  */}
+                    <div className="absolute -top-14 left-0 right-0 mx-auto max-w-lg justify-center flex items-center gap-4">
+                        <Button
+                            className="z-10 bg-secondary text-white normal-case !font-[Rubik] px-3 py-2 rounded-full shadow-md cursor-pointer active:scale-95"
+                            onClick={() => {
+                                setIsNavigateSheetOpen(true);
+                            }}
+                        >
+                            <NavigationIcon className="text-white -rotate-45 mr-3" />
+                            <p>Petunjuk arah</p>
+                        </Button>
+                    </div>
+
                     {/* Top right buttons */}
-                    <div className="absolute -top-33 right-4 flex flex-col items-center gap-6">
+                    <div className="absolute -top-15 right-4 flex flex-col items-center gap-6">
                         {/* Request current location */}
                         <Fab
                             size="medium"
@@ -599,20 +612,6 @@ export default function TechnicianOrderSummary() {
                             onClick={requestLocation}
                         >
                             <GpsFixedIcon className="text-gray-700" />
-                        </Fab>
-
-                        {/* Navigation button */}
-                        <Fab
-                            size="medium"
-                            className="z-10 bg-secondary p-2 text-center rounded-full shadow-md cursor-pointer"
-                            onClick={() => {
-                                setIsNavigateSheetOpen(true);
-                            }}
-                        >
-                            <NavigationIcon
-                                className="text-white rotate-45"
-                                fontSize="medium"
-                            />
                         </Fab>
                     </div>
 
@@ -1034,19 +1033,13 @@ export default function TechnicianOrderSummary() {
                     onEscapeKeyDown={(e) => e.preventDefault()}
                 >
                     <SheetHeader className="">
-                        <div className="rounded-4xl">
-                            {/* <img
-                                src={phoneWhatsapp}
-                                alt="Ilustrasi Peta"
-                                className="w-full mx-auto"
-                            /> */}
-                        </div>
+                        <div className="rounded-4xl"></div>
                         <SheetTitle className="text-xl font-bold">
-                            Hubungi pelanggan bisa lewat pulsa atau WhatsApp!
+                            Hubungi pelanggan pakai pulsa atau WhatsApp?
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Kadang nomor pelanggan gak nyambung ke WhatsApp,
-                            jadi kamu bisa pilih mau hubungi lewat apa.
+                            Kalau nomor pelanggan gak nyambung ke WhatsApp, coba
+                            hubungi pakai pulsa!
                         </SheetDescription>
                         {/* Button for phone call */}
                         <Button

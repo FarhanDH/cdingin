@@ -75,6 +75,7 @@ export default function LocationNoteSheet({
                     {/* Input Field */}
                     <div>
                         <Input
+                            autoComplete="off"
                             id="locationNote"
                             type="text"
                             name="locationNote"

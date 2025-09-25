@@ -51,6 +51,7 @@ export default function EmailStep({
                                 </FormLabel>
                                 <FormControl>
                                     <input
+                                        autoComplete="off"
                                         type="email"
                                         {...field}
                                         placeholder="Cth: namamu@domain.com"

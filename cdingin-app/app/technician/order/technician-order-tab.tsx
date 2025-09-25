@@ -1,44 +1,40 @@
-export type TechnicianTabId = 'today' | 'tomorrow' | 'upcoming';
+import { Button } from "@mui/material";
+
+export type TechnicianTabId = "today" | "tomorrow" | "upcoming";
 
 export interface TabItem {
-  id: TechnicianTabId;
-  label: string;
+    id: TechnicianTabId;
+    label: string;
 }
 
 interface TechnicianOrderTabsProps {
-  tabs: TabItem[];
-  activeTab: TechnicianTabId;
-  onTabChange: (tabId: TechnicianTabId) => void;
+    tabs: TabItem[];
+    activeTab: TechnicianTabId;
+    onTabChange: (tabId: TechnicianTabId) => void;
 }
 
 export default function TechnicianOrderTab({
-  tabs,
-  activeTab,
-  onTabChange,
+    tabs,
+    activeTab,
+    onTabChange,
 }: Readonly<TechnicianOrderTabsProps>) {
-  return (
-    <div className="flex justify-center space-x-4 sm:space-x-16 mb-2">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`hover:cursor-pointer px-6 py-2 text-sm text-gray-500 font-medium transition-colors ${
-            activeTab === tab.id
-              ? 'border-b-2 border-secondary text-secondary'
-              : // 'bg-secondary text-white'
-                'hover:border-b-2 hover:border-gray-200'
-          }`}
-          // className={`hover:cursor-pointer px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-          //   activeTab === tab.id
-          //     ? 'bg-secondary text-white w-200'
-          //     : ' text-gray-500 hover:bg-gray-200'
-          // }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
+    return (
+        <div className="flex justify-between items-center">
+            {tabs.map((tab) => (
+                <Button
+                    key={tab.id}
+                    onClick={() => onTabChange(tab.id)}
+                    className={`!hover:cursor-pointer w-full p-3 text-sm font-medium transition-colors !font-[Rubik] normal-case rounded-none ${
+                        activeTab === tab.id
+                            ? "border-b-3 border-primary text-black "
+                            : "!hover:border-b-2 !hover:border-gray-200 text-gray-500"
+                    }`}
+                >
+                    {tab.label}
+                </Button>
+            ))}
+        </div>
+    );
 }
 
 // export default function TechnicianOrderTab({

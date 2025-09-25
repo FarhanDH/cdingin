@@ -1,5 +1,8 @@
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { Order, Subject } from '../entities/order.entity';
+import { formatPaymentString } from '~/core/invoice/dto/invoice.response';
+import { PaymentMethod } from '~/common/enums/payment.enum';
+import { PaymentStatus } from '~/common/enums/payment-status.enum';
 
 export class OrderResponse {
     id: string;
@@ -32,6 +35,8 @@ export class OrderResponse {
     cancelledBy?: Subject;
     totalUnits: number;
     invoiceId?: string;
+    amount?: number;
+    paymentMethod?: PaymentMethod;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -67,6 +72,13 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
         0,
     ),
     invoiceId: order.invoice?.id || null,
+    amount: order.invoice?.total_amount || 0,
+    paymentMethod:
+        order.invoice?.payments?.find((payment) =>
+            [PaymentStatus.SETTLEMENT, PaymentStatus.SUCCESS].includes(
+                payment.status,
+            ),
+        )?.method || null,
     cancellationReason: order.cancellation_reason,
     cancellationNote: order.cancellation_note,
     cancelledBy: order.cancelled_by,

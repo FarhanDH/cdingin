@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { addDays, format, isToday, isSameDay } from "date-fns";
 import { id } from "date-fns/locale";
 import "~/app.css";
+import { IconButton } from "@mui/material";
 
 interface DateScrollerProps {
     selectedDate: Date;
@@ -60,7 +61,7 @@ export default function HorizontalDateScroller({
                         key={date.toISOString()}
                         className="flex flex-col items-center"
                     >
-                        <button
+                        <IconButton
                             key={date.toISOString()}
                             id={`date-${format(date, "yyyy-MM-dd")}`}
                             onClick={() => onDateSelect(date)}
@@ -79,9 +80,9 @@ export default function HorizontalDateScroller({
                             >
                                 {format(date, "d")}
                             </p>
-                        </button>
+                        </IconButton>
                         <p
-                            className={`text-sm w-full text-center ${
+                            className={`text-sm w-12 text-center ${
                                 isSelected
                                     ? "text-primary font-medium "
                                     : "text-gray-700"

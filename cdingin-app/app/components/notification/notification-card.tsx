@@ -59,7 +59,7 @@ export default function NotificationCard({
         >
             <div
                 className={`text-start w-full p-4 border-b border-gray-200 ${
-                    notification.isRead ? "bg-white" : "bg-blue-50" // Use a light blue for unread items
+                    notification.isRead ? "bg-white" : "bg-[#DBF8FF]/60"
                 }`}
             >
                 <div className="flex items-start gap-2">

@@ -120,6 +120,8 @@ export type OrderItem = {
         fullName: string;
     };
     invoiceId?: string;
+    amount?: number;
+    paymentMethod?: string;
     totalUnits: number;
     createdAt: Date;
     updatedAt: Date;
@@ -157,8 +159,8 @@ export const getStatusLabel = (status: OrderStatus) => {
         },
         completed: {
             text: "Selesai",
-            bgColor: "bg-[#10B937]",
-            textColor: "text-[#10B937]",
+            bgColor: "bg-[#0cad31]",
+            textColor: "text-[#0cad31]",
         },
         cancelled: {
             text: "Dibatalkan",
