@@ -1,6 +1,5 @@
-import EditIcon from "@mui/icons-material/Edit";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { Button, IconButton } from "@mui/material";
+import { Button } from "@mui/material";
 import {
     DialogContent,
     DialogDescription,
@@ -136,7 +135,8 @@ export default function Profile() {
                                 </p>
                             </div>
 
-                            <IconButton
+                            {/* //!TODO: Uncomment update profile when the APIs are ready */}
+                            {/* <IconButton
                                 onClick={() =>
                                     setIsUpdateProfileDrawerOpen(true)
                                 }
@@ -146,7 +146,7 @@ export default function Profile() {
                                     className="text-gray-700"
                                     fontSize="medium"
                                 />
-                            </IconButton>
+                            </IconButton> */}
                         </div>
                     </div>
                 </div>

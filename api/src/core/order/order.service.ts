@@ -13,6 +13,7 @@ import {
     Between,
     DataSource,
     FindOptionsWhere,
+    IsNull,
     In,
     LessThanOrEqual,
     MoreThanOrEqual,
@@ -186,8 +187,9 @@ export class OrderService {
                         this.notificationService.create({
                             orderId: savedOrder.id,
                             recipientId: technician.id,
-                            title: 'Pesanan baru!',
-                            message: 'Ada pesanan baru, buruan cek!',
+                            title: 'Orderan Masuk, Nih! 🚀',
+                            message:
+                                'Ada pelanggan baru yang butuh bantuanmu. Langsung cek detailnya, yuk!',
                             type: NotificationType.NEW_ORDER,
                         }),
                     ),
@@ -205,8 +207,8 @@ export class OrderService {
                     await this.pushSubscriptionService.sendNotifications(
                         technicianSubscriptions,
                         {
-                            title: 'Pesanan baru!',
-                            body: 'Ada pesanan baru, buruan cek!',
+                            title: 'Orderan Masuk, Nih! 🚀',
+                            body: 'Ada pelanggan baru yang butuh bantuanmu. Langsung cek detailnya, yuk!',
                             tag: NotificationType.NEW_ORDER,
                             link: `/technician/notifications`,
                         },
@@ -300,12 +302,14 @@ export class OrderService {
     async getAllForTechnician(
         user: JwtPayload,
         serviceDate?: OrderDateFilter | Date,
+        status?: 'completed' | 'cancelled' | 'missed',
     ): Promise<OrderResponse[]> {
         this.logger.debug(
-            `OrderService.getAllByTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)})`,
+            `OrderService.getAllForTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)}, status: ${status})`,
         );
 
-        const whereClause: FindOptionsWhere<Order> = {};
+        let whereClause: FindOptionsWhere<Order> | FindOptionsWhere<Order>[] =
+            {};
 
         if (
             serviceDate !== OrderDateFilter.TODAY &&
@@ -313,13 +317,10 @@ export class OrderService {
             serviceDate !== OrderDateFilter.UPCOMING
         ) {
             const todayStart = startOfDay(serviceDate);
-            console.log('todayStart', todayStart);
             const todayEnd = endOfDay(serviceDate);
             whereClause.service_date = Between(todayStart, todayEnd);
         } else {
-            whereClause.status = Not(
-                In([OrderStatusEnum.CANCELLED, OrderStatusEnum.COMPLETED]),
-            );
+            // For today, tomorrow, upcoming, we only show not completed/cancelled orders
             switch (serviceDate) {
                 case OrderDateFilter.TODAY: {
                     const todayStart = startOfDay(new Date());
@@ -343,6 +344,48 @@ export class OrderService {
                     break;
                 }
             }
+            whereClause.status = Not(
+                In([OrderStatusEnum.CANCELLED, OrderStatusEnum.COMPLETED]),
+            );
+        }
+
+        if (status) {
+            if (status === 'completed') {
+                whereClause = {
+                    ...whereClause,
+                    status: OrderStatusEnum.COMPLETED,
+                    technician: { id: user.sub },
+                };
+            } else if (status === 'cancelled') {
+                whereClause = {
+                    ...whereClause,
+                    status: OrderStatusEnum.CANCELLED,
+                    technician: { id: user.sub },
+                };
+            } else if (status === 'missed') {
+                const baseDateFilter = whereClause.service_date;
+                whereClause = [
+                    // Orders assigned to the technician but not completed/cancelled
+                    {
+                        service_date: baseDateFilter,
+                        technician: { id: user.sub },
+                        status: Not(
+                            In([
+                                OrderStatusEnum.COMPLETED,
+                                OrderStatusEnum.CANCELLED,
+                            ]),
+                        ),
+                    },
+                    // Pending orders for the date without a technician
+                    {
+                        service_date: baseDateFilter,
+                        technician: IsNull(),
+                        status: OrderStatusEnum.PENDING,
+                    },
+                ];
+            }
+        } else if (serviceDate) {
+            // Default behavior for technician dashboard if no status is provided
         }
 
         this.logger.debug(
@@ -647,8 +690,13 @@ export class OrderService {
 
             // Update order data
             order.status = OrderStatusEnum.CANCELLED;
-            order.cancellation_reason = request.reason;
-            order.cancellation_note = request.note;
+            if (request.reason === 'Alasan lainnya') {
+                order.cancellation_reason = request.note; // Store custom reason in the main reason field
+                order.cancellation_note = null; // Clear the note field as it's now the main reason
+            } else {
+                order.cancellation_reason = request.reason;
+                order.cancellation_note = request.note;
+            }
             order.cancelled_by = {
                 id: user.sub,
                 role: user.role,
@@ -660,8 +708,9 @@ export class OrderService {
             // Notification received by all technicians
             const technicians = await this.userService.getAllTechnicians();
             const notificationMassage = {
-                title: '💔 Pesananmu Dibatalkan',
-                message: 'Pesanan dibatalkan sama pelanggan',
+                title: 'Yah, Orderan Dibatalkan Pelanggan 😥',
+                message:
+                    'Sabar ya, ada orderan yang dibatalkan pelanggan. Tetap semangat, masih banyak yang butuh bantuanmu!',
                 type: NotificationType.CANCELLED_ORDER,
             };
             const savedNotification = technicians.map(async (technician) => {
@@ -729,8 +778,13 @@ export class OrderService {
 
             // Update order data
             order.status = OrderStatusEnum.CANCELLED;
-            order.cancellation_reason = request.reason;
-            order.cancellation_note = request.note;
+            if (request.reason === 'Alasan lainnya') {
+                order.cancellation_reason = request.note; // Store custom reason in the main reason field
+                order.cancellation_note = null; // Clear the note field as it's now the main reason
+            } else {
+                order.cancellation_reason = request.reason;
+                order.cancellation_note = request.note;
+            }
             order.cancelled_by = {
                 id: user.sub,
                 role: user.role,
@@ -814,38 +868,38 @@ export class OrderService {
         switch (status) {
             case OrderStatusEnum.CONFIRMED:
                 return {
-                    title: `Pesanan Udah Diterima ✅`,
-                    body: `Teknisi udah terima pesanan, tunggu sampai harinya yaa`,
+                    title: `Pesanan Diterima! ✅`,
+                    body: `Sip, teknisi udah terima. Tinggal tunggu hari-H aja, ya. Nanti dikabarin lagi.`,
                     tag,
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: 'Teknisi On The Way! 🛵',
-                    body: `Teknisi sedang menuju ke lokasi service. Siap-siap, ya!`,
+                    title: 'Teknisi OTW! 🛵',
+                    body: `Berangkaaat! Teknisi lagi di jalan menuju lokasi. Siap-siap, ya!`,
                     tag,
                 };
             case OrderStatusEnum.ON_WORKING:
                 return {
-                    title: `${userName}, Teknisi Sudah Tiba!`,
-                    body: `${userName} Teknisi sudah sampai!, dan lagi nge-cek AC-nya. Sabar yaa`,
+                    title: 'Teknisi Sudah Sampai! 👋',
+                    body: `Halo ${userName}, teknisi udah di lokasi dan lagi siap-siap buat ngerjain AC-nya. Sabar sebentar, ya.`,
                     tag,
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: `${userName} Tagihan Siap 🗒️`,
-                    body: `Invoice udah dibuat. Yuk, segera selesaikan pembayarannya.`,
+                    title: 'Kerjaan Beres, Tagihan Siap! 💸',
+                    body: `Mantap! Servis AC-nya udah kelar. Tagihannya udah ada, yuk langsung dibayar.`,
                     tag,
                 };
             case OrderStatusEnum.COMPLETED:
                 return {
-                    title: 'Yeay! Service Udah Selesai 🙌',
-                    body: `AC udah balik adem lagi. Makasih banyak udah percaya Cdingin `,
+                    title: 'Hore, Servis Selesai! 🎉',
+                    body: `AC-nya udah adem lagi, nih. Makasih banyak udah pakai jasa Cdingin, ya! Sampai ketemu lagi.`,
                     tag,
                 };
             case OrderStatusEnum.CANCELLED:
                 return {
-                    title: 'Pesanan Dibatalkan 💔',
-                    body: `Maaf ya ${userName}, teknisi belum bisa kerjain pesanan-nya. Coba atur pesanan baru, ya.`,
+                    title: 'Yah, Pesanan Dibatalkan 😥',
+                    body: `Maaf banget, ${userName}. Karena satu dan lain hal, teknisi harus batalin pesanannya. Yuk, coba buat pesanan baru.`,
                     tag: NotificationType.CANCELLED_ORDER,
                 };
             default:

@@ -10,7 +10,6 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import * as fs from 'fs';
 import * as hbs from 'handlebars';
-import path from 'path';
 import { DataSource, Repository } from 'typeorm';
 import { configuration } from '~/common/configuration';
 import { InvoiceStatus } from '~/common/enums/invoice.enum';
@@ -157,8 +156,8 @@ export class InvoiceService {
                 recipientId: createdInvoice.order.customer.id,
                 orderId: createdInvoice.order.id,
                 type: NotificationType.INVOICE_CREATED,
-                title: 'Tagihanmu udah siap!',
-                message: `Tagihan untuk pesanan ${order.id} sudah tersedia. Yuk, bayar sekarang!`,
+                title: 'Kerjaan Beres, Tagihan Siap! 💸',
+                message: `Mantap! AC-nya udah kelar diservis. Tagihannya udah ada, yuk langsung dibayar.`,
             });
 
             await this.pushSubscriptionService.sendNotificationToUser(

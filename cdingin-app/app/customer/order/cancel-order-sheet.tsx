@@ -10,9 +10,9 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-import Spinner from "~/components/ui/spinner";
 import { customToastStyle } from "~/common/custom-toast-style";
 import { Button, CircularProgress } from "@mui/material";
+import { Textarea } from "~/components/ui/textarea";
 
 // List of cancellation reasons
 const customerCancelReasons = [
@@ -46,6 +46,7 @@ export default function CancelOrderSheet({
     actor,
 }: Readonly<CancelOrderSheetProps>) {
     const [selectedReason, setSelectedReason] = useState<string | null>(null);
+    const [customReason, setCustomReason] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Dynamic logic based on 'actor'
@@ -63,13 +64,20 @@ export default function CancelOrderSheet({
             toast("Pilih alasan pembatalan dulu, ya.", customToastStyle);
             return;
         }
+        if (selectedReason === "Alasan lainnya" && !customReason.trim()) {
+            toast("Isi dulu alasan lainnya, ya.", customToastStyle);
+            return;
+        }
+
         setIsSubmitting(true);
+
+        const payload = {
+            reason: selectedReason,
+            note: selectedReason === "Alasan lainnya" ? customReason : null,
+        };
+
         try {
-            await axios.patch(
-                apiUrl,
-                { reason: selectedReason },
-                { withCredentials: true }
-            );
+            await axios.patch(apiUrl, payload, { withCredentials: true });
             if (actor === "technician") {
                 toast(
                     "Pesanan ini batal, ya. Gak papa 👍. Masih ada yang lain menunggumu 😊.",
@@ -137,6 +145,18 @@ export default function CancelOrderSheet({
                                     </Label>
                                 ))}
                             </RadioGroup>
+                            {selectedReason === "Alasan lainnya" && (
+                                <div className="mt-4 pr-4">
+                                    <Textarea
+                                        placeholder="Tulis alasan pembatalan di sini..."
+                                        value={customReason}
+                                        onChange={(e) =>
+                                            setCustomReason(e.target.value)
+                                        }
+                                        className="h-fit text-base"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -150,7 +170,12 @@ export default function CancelOrderSheet({
                         </Button>
                         <Button
                             onClick={handleCancelSubmit}
-                            disabled={!selectedReason || isSubmitting}
+                            disabled={
+                                !selectedReason ||
+                                isSubmitting ||
+                                (selectedReason === "Alasan lainnya" &&
+                                    !customReason.trim())
+                            }
                             className="w-full h-[48px] rounded-full font-semibold text-md active:scale-95 cursor-pointer bg-primary text-white normal-case !font-[Rubik] text-base disabled:bg-primary/50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (

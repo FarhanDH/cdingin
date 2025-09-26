@@ -1,7 +1,7 @@
 import ErrorIcon from "@mui/icons-material/Error";
 import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios from "axios";
 import L, { latLng } from "leaflet";
@@ -126,7 +126,7 @@ export default function CustomerOrderDetail() {
             >
                 <Dialog open={isLoading} modal>
                     <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                        <Spinner size={30} className="text-primary" />
+                        <CircularProgress size={30} className="text-primary" />
                     </DialogContent>
                 </Dialog>
             </div>
@@ -188,8 +188,10 @@ export default function CustomerOrderDetail() {
             <Drawer
                 open={true}
                 snapPoints={[0.4, 1]}
-                activeSnapPoint={0.4}
+                snapToSequentialPoint={true}
                 modal={false}
+                repositionInputs={false}
+                defaultOpen={true}
             >
                 <DrawerContent
                     className={`max-w-lg mx-auto rounded-t-3xl z-10 h-[90%] ${

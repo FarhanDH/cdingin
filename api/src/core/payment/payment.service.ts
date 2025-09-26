@@ -204,8 +204,8 @@ export class PaymentService {
                 recipientId: order.customer.id,
                 orderId: order.id,
                 type: NotificationType.COMPLETED_ORDER,
-                title: 'Yeay! Pembayaran Lunas!',
-                message: `Pembayaran tunai telah diterima. Terima kasih!`,
+                title: 'Mantap, Pembayaran Lunas! 🎉',
+                message: `Pembayaran tunaimu udah diterima teknisi. Makasih banyak, ya!`,
             });
 
             await this.pushSubscriptionService.sendNotificationToUser(
@@ -342,7 +342,7 @@ export class PaymentService {
                         orderId: order.id,
                         type: NotificationType.PAYMENT_SUCCESS,
                         title: 'Yeay! Pembayaran berhasil!',
-                        message: `Cihuuy, pembayaran berhasil. Makasih dan semoga AC-nya tetap adem.`,
+                        message: `Cihuuy, pembayaran berhasil. Makasih, ya! Semoga AC-nya tetap adem.`,
                     });
 
                 // Notify the technician
@@ -352,7 +352,7 @@ export class PaymentService {
                         orderId: order.id,
                         type: NotificationType.PAYMENT_SUCCESS,
                         title: 'Pelanggan Udah Bayar',
-                        message: `Pembayaran untuk pesanan #${order.id} dilakukan lewat ${formatPaymentString(
+                        message: `Mantap! Pelanggan udah bayar orderan #${order.id} dilakukan lewat ${formatPaymentString(
                             (
                                 transaction.gateway_response as {
                                     payment_type: string;

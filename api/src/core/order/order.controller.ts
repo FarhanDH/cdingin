@@ -95,11 +95,13 @@ export class OrderController {
      */
     async getAllForTechnician(
         @Request() request: RequestWithUser,
-        @Query('service-date') serviceDate?: OrderDateFilter | Date,
+        @Query('service-date') serviceDate: OrderDateFilter | Date,
+        @Query('status') status?: 'completed' | 'cancelled' | 'missed',
     ): Promise<ApiResponse<OrderResponse[]>> {
         const data = await this.orderService.getAllForTechnician(
             request.user,
             serviceDate,
+            status,
         );
         return {
             message: 'Orders fetched successfully',

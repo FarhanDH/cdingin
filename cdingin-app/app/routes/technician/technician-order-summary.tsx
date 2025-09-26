@@ -565,9 +565,8 @@ export default function TechnicianOrderSummary() {
             {/* Order Details Drawer */}
             <Drawer
                 open={true}
-                noBodyStyles={true}
                 snapPoints={[0.4, 1]}
-                activeSnapPoint={0.4}
+                snapToSequentialPoint={true}
                 modal={false}
                 repositionInputs={false}
                 defaultOpen={true}

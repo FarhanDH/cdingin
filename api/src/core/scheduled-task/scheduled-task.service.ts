@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { differenceInMonths } from 'date-fns';
 import { NotificationType } from '~/common/enums/notification-type.enum';
 import { NotificationService } from '../notification/notification.service';
 import { OrderService } from '../order/order.service';
@@ -40,9 +41,12 @@ export class ScheduledTaskService {
 
         // If some orders haven't been notified, send a notification
         for (const order of isCompletedOrdersNotified ? [] : completedOrders) {
+            const monthsAgo = differenceInMonths(new Date(), order.updated_at);
+            if (monthsAgo < 3) continue; // Only send if it's been 3 or more months
+
             const notification = await this.notificationService.create({
-                title: 'Waktunya Service AC!',
-                message: `AC di ${order.property_type.toLocaleLowerCase()} kamu diservice ${new Date().getMonth() + 1 - (order.updated_at.getMonth() + 1)} bulan yang lalu, yuk jadwalkan service sekarang biar tetap adem!`,
+                title: 'AC-mu Saatnya Diservis, Nih! 🛠️',
+                message: `Udah sekitar ${monthsAgo} bulan sejak servis terakhir di ${order.property_type.toLocaleLowerCase()}-mu. Biar tetep adem, yuk, servis lagi!`,
                 type: NotificationType.SERVICE_REMINDER,
                 recipientId: order.customer.id,
                 orderId: order.id,
