@@ -7,7 +7,6 @@ import {
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import { useState } from "react";
-import Header from "~/components/header";
 import type { AcUnitDetail } from "~/types/order.types";
 import AcUnitCard from "./ac-unit-card";
 
@@ -99,9 +98,7 @@ export default function AcTypeStep({
 
     return (
         <div className="bg-white min-h-screen">
-            <Header title="Detail Unit AC" isSticky />
-
-            <main>
+            <main className="pt-4">
                 <div className="p-4 pb-40 bg-white">
                     {acUnits.length === 0 && (
                         <div className="text-center py-10 px-4 bg-white border shadow-md rounded-lg">

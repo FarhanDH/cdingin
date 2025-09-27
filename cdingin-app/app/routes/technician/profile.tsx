@@ -197,13 +197,14 @@ export default function Profile() {
                     side="bottom"
                     className="rounded-t-2xl max-w-lg mx-auto p-4 text-center"
                 >
-                    <SheetHeader className="text-start">
+                    <SheetHeader className="text-left">
                         <SheetTitle className="text-xl font-bold">
-                            Mau keluar dari akun?
+                            Yakin Mau Keluar?
                         </SheetTitle>
                         <SheetDescription className="text-base text-gray-600">
-                            Kalau keluar, nanti pas balik harus login lagi dulu,
-                            ya. Pastikan semua pesanan sudah beres.
+                            Sebelum keluar, pastikan semua pesanan sudah beres.
+                            Tenang, semua data dan riwayat orderanmu tetap aman.
+                            Sampai ketemu lagi!
                         </SheetDescription>
                     </SheetHeader>
                     <div className="flex gap-4">
@@ -222,7 +223,7 @@ export default function Profile() {
                             className="bg-destructive text-white w-full h-12 rounded-full text-base font-semibold text-gray-600m normal-case !font-[Rubik] active:scale-95 disabled:bg-gray-300 disabled:text-gray-400"
                             disabled={isLoading}
                         >
-                            Log out
+                            Ya, keluar
                         </Button>
                     </div>
                 </SheetContent>

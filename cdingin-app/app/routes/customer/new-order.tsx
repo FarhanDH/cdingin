@@ -1,21 +1,14 @@
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { Button } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
+import { AirVent, ClipboardList, Home, MapPin, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import technicianImg from "~/assets/technician-smile-phone-nobg.png";
+import successLottie from "~/assets/lottie/success.json";
 import { customToastStyle } from "~/common/custom-toast-style";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "~/components/ui/sheet";
-import Spinner from "~/components/ui/spinner";
+import Header from "~/components/header";
 import AcTypeStep from "~/customer/order/new/ac-type-step";
 import LocationStep from "~/customer/order/new/location-step";
 import ProblemsStep from "~/customer/order/new/problem-step";
@@ -28,7 +21,6 @@ import type {
     OrderStep,
 } from "~/types/order.types";
 import type { Route } from "./+types/new-order";
-import successLottie from "~/assets/lottie/success.json";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -40,10 +32,21 @@ export function meta(args: Route.MetaArgs) {
 // Order Steps
 const steps: OrderStep[] = [
     "ac-problems",
-    "ac-type",
     "location",
+    "ac-type",
     "property-type",
     "summary",
+];
+const stepDetails = [
+    { id: "ac-problems", label: "Keluhan", icon: <Wrench size={20} /> },
+    { id: "location", label: "Lokasi", icon: <MapPin size={20} /> },
+    { id: "ac-type", label: "Unit AC", icon: <AirVent size={20} /> },
+    { id: "property-type", label: "Properti", icon: <Home size={20} /> },
+    {
+        id: "summary",
+        label: "Ringkasan pesanan",
+        icon: <ClipboardList size={20} />,
+    },
 ];
 
 type Step = (typeof steps)[number];
@@ -106,16 +109,13 @@ export default function NewOrder() {
     }, [formData.acUnits, currentStep, navigate]);
 
     useEffect(() => {
-        // If the state is 'animating', wait for a few seconds and then change to 'showingSheet'
-        if (successState === "animating") {
+        if (successState === "animating" && order?.id) {
             const timer = setTimeout(() => {
-                setSuccessState("showingSheet");
-            }, 4000);
-
-            // Clean up function to clear the timer when the component is unmounted
+                navigate(`/order/${order.id}`);
+            }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [successState]);
+    }, [successState, order, navigate]);
 
     // Fungsi untuk pindah ke step berikutnya
     const handleNext = () => {
@@ -289,8 +289,10 @@ export default function NewOrder() {
 
     return (
         <div
-            className={`relative max-w-lg mx-auto bg-gray-50 ${
-                successState !== "idle" ? "overflow-hidden" : ""
+            className={`relative max-w-lg mx-auto ${
+                successState !== "idle"
+                    ? "bg-primary overflow-hidden"
+                    : "bg-gray-50"
             }`}
         >
             {loading && (
@@ -301,57 +303,56 @@ export default function NewOrder() {
                 >
                     <Dialog open={loading} modal>
                         <DialogContent className="flex flex-col items-center justify-center w-25 h-25 bg-white rounded-lg">
-                            <Spinner size={30} className="text-primary" />
+                            <CircularProgress
+                                size={30}
+                                className="text-primary"
+                            />
                         </DialogContent>
                     </Dialog>
                 </div>
             )}
-            <main>{successState === "idle" && renderStep()}</main>
-
-            {successState === "animating" && (
-                <div className="h-screen flex items-center justify-center">
-                    <DotLottieReact
-                        // src="https://lottie.host/c68a2567-7d30-4c79-9b82-ba4f7edca4fc/JnzotXvT5y.lottie"
-                        data={successLottie}
-                        loop
-                        autoplay
-                        style={{ width: "300px", height: "300px" }}
-                    />
-                </div>
+            {successState === "idle" && (
+                /**
+                 * Renders the main content of the new order page.
+                 * This includes the header and the main step content.
+                 * The header is only shown if the current step is not the location step.
+                 * The main step content is rendered based on the current step index.
+                 */
+                <>
+                    {!["location"].includes(steps[currentStepIndex]) && (
+                        <Header
+                            /**
+                             * The title of the header is based on the label of the current step.
+                             * If the current step is not found, the title defaults to "Buat Pesanan".
+                             */
+                            title={
+                                stepDetails.find(
+                                    (s) => s.id === steps[currentStepIndex]
+                                )?.label || "Buat Pesanan"
+                            }
+                            isSticky
+                            showBack={true}
+                            onBack={
+                                currentStepIndex > 0
+                                    ? handlePrev
+                                    : () => navigate("/orders")
+                            }
+                            className={`bg-white`}
+                        />
+                    )}
+                    <main>{renderStep()}</main>
+                </>
             )}
 
-            {/* Success Sheet if order created */}
-            <Sheet open={successState === "showingSheet"}>
-                <SheetContent
-                    isXIconVisible={false}
-                    side="bottom"
-                    className="border-t-white rounded-t-2xl max-w-lg mx-auto"
-                    // Mencegah sheet ditutup oleh interaksi luar
-                    onInteractOutside={(e) => e.preventDefault()}
-                    onEscapeKeyDown={(e) => e.preventDefault()}
-                >
-                    <SheetHeader className="text-center"></SheetHeader>
-                    <SheetFooter className="text-center">
-                        <img
-                            src={technicianImg}
-                            alt="Teknisi Cdingin"
-                            className="w-48 mx-auto" // Ukuran disesuaikan
-                        />
-                        <SheetTitle className="text-2xl font-bold pt-4">
-                            Sip, pesanan udah masuk!
-                        </SheetTitle>
-                        <SheetDescription className="text-md text-gray-600 mb-2">
-                            Tunggu konfirmasi dari teknisi, ya.
-                        </SheetDescription>
-                        <Button
-                            onClick={() => navigate(`/order/${order?.id}`)}
-                            className="w-full h-12 rounded-full text-[16px] font-semibold active:scale-95 cursor-pointer bg-primary text-white normal-case !font-[Rubik] text-base"
-                        >
-                            Oke, siap
-                        </Button>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
+            {successState === "animating" && (
+                <DotLottieReact
+                    data={successLottie}
+                    loop={false} // Play animation only once
+                    autoplay
+                    style={{ width: "300px", height: "300px" }}
+                    className="h-screen flex items-center justify-center"
+                />
+            )}
         </div>
     );
 }

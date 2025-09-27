@@ -1,7 +1,6 @@
 import { Button } from "@mui/material";
 import { Label } from "@radix-ui/react-label";
 import { useState, type JSX } from "react";
-import Header from "~/components/header";
 import {
     Select,
     SelectContent,
@@ -83,8 +82,7 @@ export default function PropertyTypeStep({
 
     return (
         <div className="flex flex-col h-full bg-white">
-            <Header title="Tipe Properti" isSticky className="w-full" />
-            <div className="p-4 pb-28">
+            <div className="p-4 pb-28 pt-4">
                 <h1 className="text-xl font-semibold mb-4">
                     Bangunannya gimana?
                 </h1>

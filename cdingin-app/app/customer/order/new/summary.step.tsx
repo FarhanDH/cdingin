@@ -10,6 +10,7 @@ import {
 import axios from "axios";
 import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
 import { id } from "date-fns/locale";
+import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import {
     AlertCircle,
     ArrowRightIcon,
@@ -24,7 +25,6 @@ import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteFilled from "~/assets/note-filled.png";
 import { customToastStyle } from "~/common/custom-toast-style";
-import Header from "~/components/header";
 import { Calendar } from "~/components/ui/calendar";
 import CustomDay from "~/components/ui/custom-day";
 import {
@@ -199,13 +199,7 @@ export default function SummaryStep({
 
     return (
         <>
-            <Header
-                title="Konfirmasi pesanan"
-                isSticky
-                showBorder={false}
-                className="bg-white"
-            />
-            <main>
+            <main className="pt-4">
                 <div className="">
                     <div className="flex flex-col bg-gray-50 min-h-screen">
                         {/* Service Address */}
@@ -315,7 +309,7 @@ export default function SummaryStep({
                                     onClick={() =>
                                         navigateToStep("ac-problems")
                                     }
-                                    className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 normal-case text-base !font-[Rubik]"
+                                    className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 normal-case text-base !font-[Rubik] flex-shrink-0"
                                 >
                                     Ganti
                                 </Button>
@@ -413,15 +407,11 @@ export default function SummaryStep({
 
                     {/* Navigation Buttons */}
                     <div className="w-full p-4 gap-4 flex flex-col sticky bottom-0 max-w-lg mx-auto bg-white border">
-                        <div className="flex items-center gap-2">
-                            <img
-                                src={cashImage}
-                                alt="cash"
-                                className="w-6 h-6"
-                            />
+                        <div className="flex items-start gap-2">
+                            <PaymentsRoundedIcon className="text-primary" />
                             <p className="text-sm text-gray-600">
-                                Tagihan akan dibuat setelah teknisi selesai
-                                servis.
+                                Bayarnya nanti aja, kok. Tagihan bakal dibuat
+                                teknisi setelah servisnya kelar.
                             </p>
                         </div>
                         <div className="flex gap-2">
@@ -500,8 +490,9 @@ export default function SummaryStep({
                             Pastiin pesanan udah sesuai, ya
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Abis dikonfirmasi, udah gak bisa diubah lagi.
-                            Pesanan bakal langsung dikirim ke teknisi.
+                            Setelah ini, pesananmu langsung meluncur ke teknisi
+                            dan nggak bisa diubah lagi. Pastiin semuanya udah
+                            oke, ya!
                         </SheetDescription>
                     </SheetHeader>
 
@@ -511,7 +502,7 @@ export default function SummaryStep({
                             disabled={isSubmitting}
                             className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
                         >
-                            Cek kembali
+                            Bentar, Cek Lagi
                         </Button>
                         <Button
                             onClick={() => {
@@ -534,7 +525,7 @@ export default function SummaryStep({
                             {isSubmitting ? (
                                 <Spinner size={20} />
                             ) : (
-                                "Lanjut aja"
+                                "Ya, Lanjutin"
                             )}
                         </Button>
                     </SheetFooter>

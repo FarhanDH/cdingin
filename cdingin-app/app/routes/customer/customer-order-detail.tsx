@@ -1,25 +1,22 @@
-import ErrorIcon from "@mui/icons-material/Error";
-import HomeFilledIcon from "@mui/icons-material/HomeFilled";
-import LocationPinIcon from "@mui/icons-material/LocationPin";
 import { Button, CircularProgress } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios from "axios";
 import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { AirVent, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
 import cashImage from "~/assets/cash.png";
 import mapPin from "~/assets/map-pin.png";
-import noteFilled from "~/assets/note-filled.png";
-import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
+import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
+import AcUnitsCard from "~/components/orders/detail/ac-units-card";
+import OrderInfoCard from "~/components/orders/detail/order-info-card";
+import ServiceAddressCard from "~/components/orders/detail/service-address-card";
 import { Drawer, DrawerContent, DrawerHeader } from "~/components/ui/drawer";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import Spinner from "~/components/ui/spinner";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
-import { acTypes } from "~/customer/order/new/ac-unit-card";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/customer-order-detail";
 
@@ -220,198 +217,16 @@ export default function CustomerOrderDetail() {
                         showScrollBar={false}
                     >
                         <div className="p-4 flex flex-col gap-2">
-                            {/* Service Address */}
-                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
-                                <div className="flex items-start text-center justify-between">
-                                    <div className="flex items-start text-center gap-4">
-                                        <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                            <LocationPinIcon className="w-20 text-white" />
-                                        </div>
-                                        <p className="text-gray-700 text-sm">
-                                            Alamat service
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
-                                    <div>
-                                        <div>
-                                            <p className="font-semibold text-start text-lg text-gray-800 ">
-                                                {order.serviceLocation
-                                                    .address ||
-                                                    "Lokasi belum diisi"}{" "}
-                                            </p>
-                                            <p className="mt-1 text-sm text-gray-700 ">
-                                                {(serviceAddress as any) ??
-                                                    "Lokasi belum diisi"}
-                                            </p>
-
-                                            {/* Address Note for technician */}
-                                            {order.serviceLocation.note && (
-                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                    <HomeFilledIcon className="text-green-600" />
-                                                    <p className="text-gray-800 text-xs w-full">
-                                                        {
-                                                            order
-                                                                .serviceLocation
-                                                                .note
-                                                        }
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            {/* Property Type */}
-                                            <div className="flex items-center mt-1 gap-4 text-sm">
-                                                <p className="font-medium text-gray-800">
-                                                    {order.propertyType ||
-                                                        "Tipe properti belum dipilih"}
-                                                </p>
-                                                <p className="text-gray-600">
-                                                    Lantai{" "}
-                                                    {order.propertyFloor || "-"}
-                                                </p>
-                                            </div>
-                                            {/* Note for technician */}
-                                            {order.note && (
-                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                    <img
-                                                        src={noteFilled}
-                                                        alt="noteSuccess"
-                                                        className="w-4 ml-0.5"
-                                                    />
-                                                    <p className="text-gray-800 text-xs">
-                                                        {order.note}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* AC Problems */}
-                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
-                                <div className="flex items-center text-start">
-                                    <div className="flex gap-4">
-                                        <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                            <ErrorIcon className="w-20 text-white" />
-                                        </div>
-                                        <div>
-                                            <h1 className="font-semibold text-lg">
-                                                Layanan / Keluhan
-                                            </h1>
-                                            <ul className="list-disc ml-4 text-sm text-gray-800">
-                                                {order.problems?.map(
-                                                    (problem, index) => (
-                                                        <li key={index}>
-                                                            {problem}
-                                                        </li>
-                                                    )
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Detail Unit AC */}
-                            <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
-                                <div className="flex items-start text-start gap-4">
-                                    <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                        <AirVent className="text-white w-18" />
-                                    </div>
-                                    <div className="flex flex-col w-full">
-                                        <h1 className="text-gray-700 text-sm mb-2">
-                                            Detail Unit AC
-                                        </h1>
-                                        {order.acUnits.map((acUnit, index) => (
-                                            <div key={acUnit.id}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div>
-                                                            <h1 className="font-medium text-md">
-                                                                {
-                                                                    acTypes.find(
-                                                                        (
-                                                                            type
-                                                                        ) =>
-                                                                            type.id ===
-                                                                            acUnit.acTypeName
-                                                                    )?.name
-                                                                }{" "}
-                                                                {
-                                                                    acUnit.acCapacity
-                                                                }
-                                                            </h1>
-                                                            <p className="text-sm font-normal text-gray-700">
-                                                                {acUnit.brand ||
-                                                                    "Tidak ditentukan"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="font-normal text-sm w-4 text-center text-gray-700">
-                                                        {acUnit.quantity}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
-                                            <div className="mt-2 flex items-center justify-between">
-                                                <h1 className="font-semibold text-md">
-                                                    Total Unit
-                                                </h1>
-                                                <span className="text-sm text-center font-semibold w-4">
-                                                    {order.totalUnits}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Order Id & Dates */}
-                            <div className="bg-white p-4 mb-6 rounded-xl shadow-xs border border-gray-200">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="font-medium">Order ID</div>
-                                    <div className="font-medium">
-                                        {order.id}
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <div className="text-xs text-gray-700">
-                                        Tanggal service
-                                    </div>
-                                    <div className="text-xs text-gray-700">
-                                        {formattedDate(order.serviceDate, {
-                                            withTime: false,
-                                        })}
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <div className="text-xs text-gray-700">
-                                        Waktu pemesanan
-                                    </div>
-                                    {/* Created time */}
-                                    <div className="text-xs text-gray-700">
-                                        {formattedDate(order.createdAt, {
-                                            withTime: true,
-                                        })}
-                                    </div>
-                                </div>
-
-                                {order.updatedAt !== order.createdAt && (
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="text-xs text-gray-700">
-                                            Waktu diperbarui
-                                        </div>
-                                        <div className="text-xs text-gray-700">
-                                            {formattedDate(order.updatedAt, {
-                                                withTime: true,
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <ServiceAddressCard
+                                order={order}
+                                serviceAddress={serviceAddress}
+                            />
+                            <AcProblemsCard problems={order.problems} />
+                            <AcUnitsCard
+                                acUnits={order.acUnits}
+                                totalUnits={order.totalUnits}
+                            />
+                            <OrderInfoCard order={order} />
 
                             {/* Button */}
                             <div>

@@ -81,7 +81,7 @@ function SheetContent({
                         <>
                             {/* Close Button */}
                             <Fab
-                                size="medium"
+                                size="small"
                                 // aria-label="add"
                                 className="absolute -top-15 right-4 z-10 bg-white p-2 rounded-full shadow-md cursor-pointer active:scale-95"
                             >

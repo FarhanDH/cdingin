@@ -83,12 +83,12 @@ export default function EarningHistoryCard({
                 <div className="text-sm text-gray-500 w-full">
                     <div className="flex items-center justify-between w-full">
                         <div className="space-y-4 text-start w-full">
-                            <span className="w-56 md:w-80 line-clamp-1 ml-13">
+                            <span className="w-full  line-clamp-1 ml-13">
                                 {order.problems.join(", ")}
                             </span>
                             <div className="flex items-center justify-start w-full">
                                 <div className="bg-red-400 w-3 h-3 rounded-full ml-3"></div>
-                                <span className="w-56 md:w-80 line-clamp-1 ml-7">
+                                <span className="line-clamp-1 ml-7 w-[85%]">
                                     {order.serviceLocation.address}
                                 </span>
                             </div>

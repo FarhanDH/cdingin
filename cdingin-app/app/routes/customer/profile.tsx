@@ -212,7 +212,7 @@ export default function Profile() {
                             className="bg-destructive text-white w-full h-12 rounded-full text-base font-semibold text-gray-600m normal-case !font-[Rubik] active:scale-95 disabled:bg-gray-300 disabled:text-gray-400"
                             disabled={isLoading}
                         >
-                            Log out
+                            Ya, Keluar
                         </Button>
                     </div>
                 </SheetContent>

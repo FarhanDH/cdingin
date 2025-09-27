@@ -1,8 +1,5 @@
-import ErrorIcon from "@mui/icons-material/Error";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
-import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import InfoIcon from "@mui/icons-material/Info";
-import LocationPinIcon from "@mui/icons-material/LocationPin";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -10,7 +7,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import { Button, CircularProgress, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
-import L from "leaflet";
+import L, { latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { AirVent, MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,6 +15,7 @@ import {
     Circle,
     MapContainer,
     Marker,
+    Popup,
     Polyline,
     TileLayer,
 } from "react-leaflet";
@@ -51,7 +49,6 @@ import Spinner from "~/components/ui/spinner";
 import SwipeButton from "~/components/ui/swipe-button";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { acTypes } from "~/customer/order/new/ac-unit-card";
-import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
 import {
@@ -60,6 +57,12 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import type { Route } from "./+types/technician-order-summary";
+import React from "react";
+import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
+import ServiceAddressCard from "~/components/orders/detail/service-address-card";
+import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
+import AcUnitsCard from "~/components/orders/detail/ac-units-card";
+import OrderInfoCard from "~/components/orders/detail/order-info-card";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -87,7 +90,7 @@ export default function TechnicianOrderSummary() {
         "prompt" | "granted" | "denied"
     >("prompt");
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
-        useState(false);
+        useState<boolean>(false);
     const [isCustomeCallSheetOpen, setIsCustomeCallSheetOpen] = useState(false);
     const [isNavigateSheetOpen, setIsNavigateSheetOpen] = useState(false);
     const { position: technicianPosition, requestLocation } =
@@ -106,6 +109,26 @@ export default function TechnicianOrderSummary() {
         technicianPosition,
         serviceLocationPosition
     );
+
+    const handleCenterMap = () => {
+        // 1. Request the latest location first
+        requestLocation();
+
+        // 2. Check if we have both positions to create bounds
+        if (technicianPosition && serviceLocationPosition) {
+            // Create a bounds object that includes both points
+            const bounds = L.latLngBounds(
+                technicianPosition,
+                serviceLocationPosition
+            );
+
+            // Access the map instance via the ref and fit the bounds
+            mapRef.current?.fitBounds(bounds, {
+                padding: [50, 50], // Add some padding
+                maxZoom: 16, // Prevent zooming in too close
+            });
+        }
+    };
 
     const mapPinIcon = L.icon({
         iconUrl: mapPin, // path to your image
@@ -447,22 +470,24 @@ export default function TechnicianOrderSummary() {
 
     const nextAction = getNextAction();
 
-    const zoomValue = () => {
+    const zoomValue = useMemo(() => {
+        if (!technicianPosition || !order) return 12; // Default zoom
+
         const distance = calculateDistanceInMeters(
+            { lat: technicianPosition.lat, lng: technicianPosition.lng },
             {
-                lat: technicianPosition?.lat ?? 0,
-                lng: technicianPosition?.lng ?? 0,
-            },
-            {
-                lat: order?.serviceLocation.latitude ?? 0,
-                lng: order?.serviceLocation.longitude ?? 0,
+                lat: order.serviceLocation.latitude,
+                lng: order.serviceLocation.longitude,
             }
         );
-        if (distance > 1000) {
-            return 12;
-        }
-        return 17;
-    };
+
+        if (distance < 500) return 18; // Sangat dekat
+        if (distance < 1000) return 17; // < 1km
+        if (distance < 2000) return 16; // < 2km
+        if (distance < 5000) return 15; // < 5km
+        if (distance < 10000) return 14; // < 10km
+        return 13; // Far distance
+    }, [technicianPosition, order]);
 
     const navigateToServiceLocationVehicle = (travelMode: string) => {
         window.open(
@@ -470,6 +495,7 @@ export default function TechnicianOrderSummary() {
             "_blank"
         );
     };
+    const mapRef = React.useRef<L.Map>(null);
 
     if (isLoading || isUpdating) {
         return (
@@ -506,11 +532,12 @@ export default function TechnicianOrderSummary() {
             {/* Map */}
             <div className="w-full">
                 <MapContainer
+                    ref={mapRef}
                     center={[
                         order.serviceLocation.latitude,
                         order.serviceLocation.longitude,
                     ]}
-                    zoom={zoomValue()}
+                    zoom={zoomValue}
                     style={{
                         height: "550px",
                         width: "100%",
@@ -541,7 +568,9 @@ export default function TechnicianOrderSummary() {
                             <Marker
                                 position={technicianPosition}
                                 icon={blueDotIcon}
-                            />
+                            >
+                                <Popup>Lokasi Kamu</Popup>
+                            </Marker>
                         </>
                     )}
                     {/* Service location marker */}
@@ -549,7 +578,9 @@ export default function TechnicianOrderSummary() {
                         <Marker
                             position={serviceLocationPosition}
                             icon={mapPinIcon}
-                        />
+                        >
+                            <Popup>Lokasi Pelanggan</Popup>
+                        </Marker>
                     )}
                     {/* Route Polyline (now dynamic) */}
                     {route.length > 0 && (
@@ -608,7 +639,7 @@ export default function TechnicianOrderSummary() {
                         <Fab
                             size="medium"
                             className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
-                            onClick={requestLocation}
+                            onClick={handleCenterMap}
                         >
                             <GpsFixedIcon className="text-gray-700" />
                         </Fab>
@@ -695,193 +726,19 @@ export default function TechnicianOrderSummary() {
                                     )}
                             </div>
 
-                            {/* Service Address */}
-                            <div className="p-4 bg-white pt-6 rounded-3xl shadow-xs  border-gray-200 border">
-                                <div>
-                                    <div className="flex items-center text-center">
-                                        <div className="flex gap-4 w-full">
-                                            <div className="bg-red-400 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                                <LocationPinIcon className="w-20 text-white" />
-                                            </div>
-                                            <div className="flex flex-col text-start w-full">
-                                                <div>
-                                                    <p className="text-gray-700 text-[13px] font-medium mb-2">
-                                                        {isLoadingRoute
-                                                            ? "Menghitung jarak..."
-                                                            : `${
-                                                                  distance
-                                                                      ? `${distance} dari lokasimu`
-                                                                      : "Lokasimu tidak ditemukan"
-                                                              }`}
-                                                    </p>
-                                                    <p className="font-medium text-lg text-gray-800">
-                                                        {" "}
-                                                        {(detailAddress as any)
-                                                            .address.amenity ??
-                                                            (
-                                                                detailAddress as any
-                                                            ).address.road ??
-                                                            (
-                                                                detailAddress as any
-                                                            ).address.village ??
-                                                            "Lokasi belum diisi"}{" "}
-                                                    </p>
-                                                    <p className="mt-1 text-sm text-gray-700 ">
-                                                        {(detailAddress as any)
-                                                            .display_name ??
-                                                            "Lokasi belum diisi"}
-                                                    </p>
-                                                    {/* Address Note for technician */}
-                                                    {order.serviceLocation
-                                                        .note && (
-                                                        <div className="flex items-center my-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                            <HomeFilledIcon className="text-green-600" />
-                                                            <p className="text-gray-800 text-xs w-full">
-                                                                {
-                                                                    order
-                                                                        .serviceLocation
-                                                                        .note
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Property Type */}
-                                                    <div className="flex items-center mt-1 gap-4 text-sm">
-                                                        <p className="font-medium text-gray-800">
-                                                            {order.propertyType ||
-                                                                "Tipe properti belum dipilih"}
-                                                        </p>
-                                                        <p className="text-gray-600">
-                                                            Lantai{" "}
-                                                            {order.propertyFloor ||
-                                                                "-"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* AC Problems */}
-                            <div className="p-4 bg-white rounded-3xl shadow-xs border border-gray-200">
-                                <div className="flex items-center text-start">
-                                    <div className="flex gap-4">
-                                        <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                            <ErrorIcon className="w-20 text-white" />
-                                        </div>
-                                        <div>
-                                            <h1 className="font-medium text-lg text-gray-800">
-                                                Layanan / Keluhan
-                                            </h1>
-                                            <ul className="list-disc ml-4 text-sm text-gray-800">
-                                                {order.problems?.map(
-                                                    (problem, index) => (
-                                                        <li key={index}>
-                                                            {problem}
-                                                        </li>
-                                                    )
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Detail Unit AC */}
-                            <div className="p-4 bg-white rounded-3xl shadow-xs border border-gray-200">
-                                <div className="flex items-start text-start gap-4">
-                                    <div className="bg-primary w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                        <AirVent className="text-white w-18" />
-                                    </div>
-                                    <div className="flex flex-col w-full">
-                                        <h1 className="text-gray-700 text-sm mb-2">
-                                            Detail Unit AC
-                                        </h1>
-                                        {order.acUnits.map((acUnit, index) => (
-                                            <div key={acUnit.id}>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div>
-                                                            <h1 className="font-medium text-sm">
-                                                                {
-                                                                    acTypes.find(
-                                                                        (
-                                                                            type
-                                                                        ) =>
-                                                                            type.id ===
-                                                                            acUnit.acTypeName
-                                                                    )?.name
-                                                                }{" "}
-                                                                {
-                                                                    acUnit.acCapacity
-                                                                }
-                                                            </h1>
-                                                            <p className="text-sm font-normal text-gray-700">
-                                                                {acUnit.brand ||
-                                                                    "Tidak ditentukan"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="font-normal text-sm w-4 text-center text-gray-700">
-                                                        {acUnit.quantity}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <div className="border-t-[1.5px] border-gray-150 mx-auto w-full">
-                                            <div className="mt-2 flex items-center justify-between">
-                                                <h1 className="font-medium text-sm">
-                                                    Total Unit
-                                                </h1>
-                                                <span className="text-sm text-center font-medium w-4">
-                                                    {order.totalUnits}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Dates */}
-                            <div className="bg-white p-4 rounded-3xl shadow-xs border border-gray-200">
-                                <div className="flex justify-between items-center mb-1">
-                                    <div className="text-xs text-gray-700">
-                                        Tanggal service
-                                    </div>
-                                    <div className="text-xs text-gray-700">
-                                        {formattedDate(order.serviceDate, {
-                                            withTime: false,
-                                        })}
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="text-xs text-gray-700">
-                                        Waktu pemesanan
-                                    </div>
-                                    {/* Created time */}
-                                    <div className="text-xs text-gray-700">
-                                        {formattedDate(order.createdAt, {
-                                            withTime: true,
-                                        })}
-                                    </div>
-                                </div>
-
-                                {order.updatedAt !== order.createdAt && (
-                                    <div className="flex justify-between items-center mt-1">
-                                        <div className="text-xs text-gray-700">
-                                            Waktu diperbarui
-                                        </div>
-                                        <div className="text-xs text-gray-700">
-                                            {formattedDate(order.updatedAt, {
-                                                withTime: true,
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <ServiceAddressCard
+                                order={order}
+                                serviceAddress={
+                                    (detailAddress as any)?.display_name ??
+                                    "Memuat alamat..."
+                                }
+                            />
+                            <AcProblemsCard problems={order.problems} />
+                            <AcUnitsCard
+                                acUnits={order.acUnits}
+                                totalUnits={order.totalUnits}
+                            />
+                            <OrderInfoCard order={order} />
 
                             {/* Cancel Button */}
                             {order.status !== "cancelled" &&
@@ -1003,17 +860,18 @@ export default function TechnicianOrderSummary() {
                             />
                         </div>
                         <SheetTitle className="text-xl font-bold">
-                            Pastiin hubungin pelanggan dulu!
+                            Hubungi Pelanggan Dulu, Yuk!
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Sebelum terima pesanan, pastiin dulu pesanan
-                            pelanggan lewat telepon atau WhatsApp ya
+                            Sebelum terima pesanan, coba hubungi pelanggan dulu
+                            lewat WhatsApp atau telepon. Siapa tau ada detail
+                            tambahan yang penting.
                         </SheetDescription>
                         <Button
                             onClick={() => setIsPhoneSheetOpen(false)}
                             className="bg-primary text-base text-white normal-case !font-[Rubik] w-full h-12 rounded-full text-md font-semibold mt-6 active:scale-95"
                         >
-                            Oke, siap
+                            Oke, mengerti
                         </Button>
                     </SheetHeader>
                 </SheetContent>
@@ -1032,13 +890,12 @@ export default function TechnicianOrderSummary() {
                     onEscapeKeyDown={(e) => e.preventDefault()}
                 >
                     <SheetHeader className="">
-                        <div className="rounded-4xl"></div>
                         <SheetTitle className="text-xl font-bold">
-                            Hubungi pelanggan pakai pulsa atau WhatsApp?
+                            Pilih Cara Menghubungi
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Kalau nomor pelanggan gak nyambung ke WhatsApp, coba
-                            hubungi pakai pulsa!
+                            Sebaiknya hubungi lewat WhatsApp dulu. Kalau tidak
+                            terhubung, baru coba telepon pakai pulsa biasa.
                         </SheetDescription>
                         {/* Button for phone call */}
                         <Button
@@ -1086,19 +943,13 @@ export default function TechnicianOrderSummary() {
                     onEscapeKeyDown={(e) => e.preventDefault()}
                 >
                     <SheetHeader className="">
-                        <div className="rounded-4xl">
-                            {/* <img
-                                src={phoneWhatsapp}
-                                alt="Ilustrasi Peta"
-                                className="w-full mx-auto"
-                            /> */}
-                        </div>
+                        <div className="rounded-4xl"></div>
                         <SheetTitle className="text-xl font-bold">
-                            Naik kendaraan apa?
+                            Pilih Kendaraanmu
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Ke lokasi pelanggan naik kendaraan apa? biar rutenya
-                            disesuaikan dengan kendaraan yang dipakai.
+                            Biar Google Maps bisa kasih rute paling pas, pilih
+                            dulu kendaraan yang mau dipakai ke lokasi pelanggan.
                         </SheetDescription>
                         {/* Button two-wheeler vehicel */}
                         <Button

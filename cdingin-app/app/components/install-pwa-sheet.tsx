@@ -35,25 +35,26 @@ export default function InstallPwaSheet({
                         className="w-24 mx-auto mb-4"
                     /> */}
                     <SheetTitle className="text-xl font-bold">
-                        Pasang cdingin di HP-mu!
+                        Pasang Cdingin di HP, yuk!
                     </SheetTitle>
                     <SheetDescription className="text-md text-gray-600">
-                        Dapetin akses lebih cepat, langsung dari layar utama.
+                        Akses jadi lebih sat-set, langsung dari layar utama.
+                        Cuma butuh beberapa detik!
                     </SheetDescription>
                 </SheetHeader>
                 <div className="mt-6 flex flex-col gap-2">
                     <Button
                         onClick={onInstall}
-                        className="w-full h-12 rounded-full text-md font-semibold bg-primary text-white"
+                        className="w-full h-12 rounded-full text-md font-semibold bg-primary text-white active:scale-95"
                     >
-                        Ya, Install Aplikasi
+                        Ya, Pasang Sekarang
                     </Button>
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="w-full h-12 rounded-full text-md font-semibold text-gray-600"
+                        className="w-full h-12 rounded-full text-md font-semibold text-gray-600 active:scale-95"
                     >
-                        Lain Kali Aja
+                        Nanti Saja
                     </Button>
                 </div>
             </SheetContent>

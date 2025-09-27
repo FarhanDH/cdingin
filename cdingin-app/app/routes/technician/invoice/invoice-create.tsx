@@ -302,7 +302,7 @@ export default function CreateInvoice() {
                             disabled={isSubmitting}
                             className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
                         >
-                            Cek kembali
+                            Bentar, Cek Lagi
                         </Button>
                         <Button
                             onClick={handleSubmitInvoice}
@@ -315,7 +315,7 @@ export default function CreateInvoice() {
                                     className="text-white"
                                 />
                             ) : (
-                                "Oke, kirim"
+                                "Ya, Kirim Sekarang"
                             )}
                         </Button>
                     </SheetFooter>

@@ -1,6 +1,5 @@
 import { Button } from "@mui/material";
 import { useState } from "react";
-import Header from "~/components/header";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Label } from "~/components/ui/label";
 
@@ -41,8 +40,7 @@ export default function ProblemsStep({
 
     return (
         <>
-            <Header title="Layanan / Keluhan" isSticky showBack />
-            <div className="p-4 pb-28">
+            <div className="p-4 pb-28 bg-white">
                 {" "}
                 {/* Tambahkan padding bottom agar tidak tertutup tombol navigasi */}
                 <h1 className="text-xl font-semibold mb-4">AC-nya kenapa?</h1>

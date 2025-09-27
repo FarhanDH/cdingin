@@ -17,13 +17,13 @@ import { Textarea } from "~/components/ui/textarea";
 // List of cancellation reasons
 const customerCancelReasons = [
     { id: "change_details", label: "Saya ingin mengubah detail pesanan" },
-    { id: "wait_too_long", label: "Saya sudah menunggu terlalu lama" },
+    { id: "wait_too_long", label: "Teknisi tidak kunjung memberi konfirmasi" },
     { id: "accidental_booking", label: "Saya tidak sengaja membuat pesanan" },
     { id: "other_customer", label: "Alasan lainnya" },
 ];
 
 const technicianCancelReasons = [
-    { id: "cannot_contact", label: "Tidak bisa menghubungi pelanggan" },
+    { id: "cannot_contact", label: "Pelanggan tidak bisa dihubungi" },
     { id: "customer_request", label: "Pelanggan meminta untuk dibatalkan" },
     { id: "road_issue", label: "Ada kendala di jalan (ban bocor, dll.)" },
     { id: "incomplete_tools", label: "Alat tidak lengkap untuk masalah ini" },
@@ -84,7 +84,7 @@ export default function CancelOrderSheet({
                     customToastStyle
                 );
             } else {
-                toast("Oke, Pesanan ini batal, ya.", customToastStyle);
+                toast("Pesanan berhasil dibatalkan.", customToastStyle);
             }
             onSuccess();
         } catch (error) {
@@ -106,16 +106,16 @@ export default function CancelOrderSheet({
                     <div className="py-4 pl-4">
                         <SheetHeader>
                             <div className="flex gap-4 text-start items-start justify-start -ml-4">
-                                <div className="w-15 h-15 bg-red-500 flex items-center text-3xl justify-center rounded-2xl">
-                                    <p>🥺</p>
+                                <div className="w-15 h-15 bg-red-500 flex items-center text-3xl justify-center rounded-2xl flex-shrink-0">
+                                    🥺
                                 </div>
                                 <div>
                                     <SheetTitle className="text-xl font-bold">
-                                        Loh, kamu mau batalin?
+                                        Yakin mau batalin pesanan ini?
                                     </SheetTitle>
                                     <p className="text-gray-500">
-                                        Kalau gak terpaksa, jangan dibatalin,
-                                        ya.
+                                        Sayang banget. Kalau gak terpaksa,
+                                        jangan dibatalin, ya.
                                     </p>
                                 </div>
                             </div>
@@ -166,7 +166,7 @@ export default function CancelOrderSheet({
                             disabled={isSubmitting}
                             className="w-full h-[48px] normal-case rounded-full font-semibold text-md bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer !font-[Rubik] text-base disabled:bg-white/50 disabled:cursor-not-allowed"
                         >
-                            Tunggu Dulu
+                            Nggak Jadi
                         </Button>
                         <Button
                             onClick={handleCancelSubmit}

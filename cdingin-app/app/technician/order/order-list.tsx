@@ -191,8 +191,12 @@ export default function TechnicianOrderList() {
                             className="w-80 max-w-lg mb-6"
                         />
                         <h1 className="font-semibold text-lg">
-                            Lagi sepi. Santai dulu
+                            Belum Ada Pesanan, Nih
                         </h1>
+                        <p className="text-sm text-gray-500 font-light max-w-xs">
+                            Lagi santai, ya? Nanti kalau ada pesanan baru, bakal
+                            langsung muncul di sini. Siap-siap, ya!
+                        </p>
                     </div>
                 ) : (
                     orders.map((order) => (

@@ -25,11 +25,11 @@ export function Welcome() {
                     className="w-full max-w-md mb-6"
                 />
                 <h2 className="text-2xl font-bold mb-2">
-                    Selamat datang di cdingin!
+                    AC Gerah? Bikin Adem Lagi!
                 </h2>
                 <p className="font-light">
                     Cukup AC aja yang dingin, kamu jangan. Servis AC jadi
-                    gampang tinggal ngeklik doang..
+                    gampang tinggal klik, beres!
                 </p>
             </div>
 

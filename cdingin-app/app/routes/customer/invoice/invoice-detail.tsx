@@ -164,10 +164,7 @@ export default function InvoiceDetailPage() {
                         navigate(`/order/${orderId}`);
                     },
                     onPending: () => {
-                        toast(
-                            "Pembayaranmu sedang diproses.",
-                            customToastStyle
-                        );
+                        toast("Pembayaran sedang diproses.", customToastStyle);
                         setIsPaymentGatewaySheetOpen(false);
                         navigate(`/order/${orderId}`);
                     },

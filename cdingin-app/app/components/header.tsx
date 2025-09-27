@@ -1,7 +1,7 @@
 import PersonIcon from "@mui/icons-material/Person";
 import { IconButton } from "@mui/material";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/contexts/auth.context";
 
 export default function Header({
@@ -10,6 +10,7 @@ export default function Header({
     showBack = false,
     navigateTo = "/",
     title,
+    onBack,
     showBorder = true,
     className = "",
     children,
@@ -19,12 +20,14 @@ export default function Header({
     showBorder?: boolean;
     showBack?: boolean;
     navigateTo?: string;
+    onBack?: () => void;
     className?: string;
     title: string;
     children?: React.ReactNode;
 }>) {
     const { user } = useAuth();
     let navigateToProfile = "/";
+    const navigate = useNavigate();
 
     if (user?.role === "technician") {
         navigateToProfile = "/technician/profile";
@@ -47,14 +50,13 @@ export default function Header({
             >
                 <div className={`flex items-center gap-3`}>
                     {showBack && (
-                        <Link to={navigateTo}>
-                            <IconButton size="small" className="m-0">
-                                <ArrowLeft
-                                    size={24}
-                                    className="text-gray-800"
-                                />
-                            </IconButton>
-                        </Link>
+                        <IconButton
+                            size="small"
+                            className="m-0"
+                            onClick={onBack ?? (() => navigate(navigateTo))}
+                        >
+                            <ArrowLeft size={24} className="text-gray-800" />
+                        </IconButton>
                     )}
                     <h1 className={`font-semibold `}>{title}</h1>
                 </div>
