@@ -157,7 +157,7 @@ export default function InvoiceDetailPage() {
                         <Table className="text-xs ">
                             {invoice.status === "paid" && (
                                 <TableCaption className="text-start">
-                                    Bayar Pakai{" "}
+                                    Dibayar Pakai{" "}
                                     {invoice.payments.find(
                                         (payment) =>
                                             payment.status === "success" ||

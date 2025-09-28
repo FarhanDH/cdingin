@@ -37,8 +37,8 @@ export class Order {
     @Column({ type: 'double precision' })
     longitude_service_location: number;
 
-    @Column({ type: 'varchar', length: 255, nullable: true })
-    service_location_address?: string;
+    @Column({ type: 'jsonb', nullable: true })
+    service_location_detail: object | null;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     service_location_note?: string;

@@ -138,6 +138,28 @@ export class OrderService {
                 );
             }
 
+            // Fetch address detail from Nominatim
+            let serviceLocationDetail = null;
+            try {
+                const { data } = await this.httpService.axiosRef.get(
+                    'https://nominatim.openstreetmap.org/reverse',
+                    {
+                        params: {
+                            lat: createOrderDto.serviceLocation.latitude,
+                            lon: createOrderDto.serviceLocation.longitude,
+                            format: 'json',
+                            'accept-language': 'id',
+                        },
+                    },
+                );
+                serviceLocationDetail = data;
+            } catch (err) {
+                this.logger.error(
+                    `Failed to reverse geocode on order creation: ${err.message}`,
+                );
+                // Continue without address detail if Nominatim fails
+            }
+
             // If slot available, continue to process create order
             // Ensure all save operations using queryRunner.manager
             // Create a new Order entity with the provided details and associate it with the customer.
@@ -150,8 +172,7 @@ export class OrderService {
                     createOrderDto.serviceLocation.latitude,
                 longitude_service_location:
                     createOrderDto.serviceLocation.longitude,
-                service_location_address:
-                    createOrderDto.serviceLocation.address,
+                service_location_detail: serviceLocationDetail,
                 service_location_note: createOrderDto.serviceLocation.note,
                 property_type: createOrderDto.propertyType,
                 property_floor: createOrderDto.floor.toString(),
@@ -407,35 +428,7 @@ export class OrderService {
             },
         });
 
-        // Fetch detailed address from OpenStreetMap for orders that don't have one.
-        const ordersWithAddress = await Promise.all(
-            orders.map(async (order) => {
-                try {
-                    const { data } = await this.httpService.axiosRef.get(
-                        'https://nominatim.openstreetmap.org/reverse',
-                        {
-                            params: {
-                                lat: order.latitude_service_location,
-                                lon: order.longitude_service_location,
-                                format: 'json',
-                                'accept-language': 'id', // Get address in Indonesian
-                            },
-                        },
-                    );
-                    if (data?.display_name) {
-                        order.service_location_address = data.display_name;
-                    }
-                } catch (err) {
-                    this.logger.error(
-                        `Failed to reverse geocode for order ${order.id}: ${err.message}`,
-                    );
-                }
-
-                return order;
-            }),
-        );
-
-        return ordersWithAddress.map((order) => toOrderResponse(order));
+        return orders.map((order) => toOrderResponse(order));
     }
 
     async getOneByIdForTechnician(

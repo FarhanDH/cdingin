@@ -1,14 +1,15 @@
+import HomeFilledIcon from "@mui/icons-material/HomeFilled";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import type { OrderItem } from "~/types/order.types";
 
 interface ServiceAddressCardProps {
     order: OrderItem;
-    serviceAddress: object;
+    serviceAddressDetail: any; // Can be string or object from Nominatim
 }
 
 export default function ServiceAddressCard({
     order,
-    serviceAddress,
+    serviceAddressDetail,
 }: Readonly<ServiceAddressCardProps>) {
     return (
         <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200">
@@ -24,21 +25,23 @@ export default function ServiceAddressCard({
             <div className="flex ml-13 flex-col -mt-3 text-start gap-1">
                 <div>
                     <div>
-                        <h1 className="font-semibold text-start text-lg text-gray-800 ">
-                            {order?.serviceLocation.address.address?.amenity ||
-                                order?.serviceLocation.address.address?.road ||
-                                order?.serviceLocation.address.address
-                                    ?.village ||
+                        <p className="font-semibold text-start text-lg text-gray-800 ">
+                            {serviceAddressDetail?.address?.amenity ||
+                                serviceAddressDetail?.address?.road ||
+                                order.serviceLocation.address ||
                                 "Lokasi belum diisi"}{" "}
-                        </h1>
+                        </p>
                         <p className="mt-1 text-sm text-gray-700 ">
-                            {order.serviceLocation.address?.display_name ||
-                                "Lokasi belum diisi"}
+                            {typeof serviceAddressDetail === "string"
+                                ? serviceAddressDetail
+                                : serviceAddressDetail?.display_name ||
+                                  "Lokasi belum diisi"}
                         </p>
 
                         {order.serviceLocation.note && (
-                            <div className="flex items-start mt-2 gap-2 w-full bg-gray-100 p-2 border-l-4 border-gray-400 rounded">
-                                <p className="text-gray-600 text-sm w-full">
+                            <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
+                                <HomeFilledIcon className="text-green-600" />
+                                <p className="text-gray-800 text-xs w-full">
                                     {order.serviceLocation.note}
                                 </p>
                             </div>

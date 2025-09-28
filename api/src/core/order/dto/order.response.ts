@@ -11,7 +11,7 @@ export class OrderResponse {
     serviceLocation: {
         latitude: number;
         longitude: number;
-        address?: string;
+        address: object;
         note?: string;
     };
     serviceDate: Date;
@@ -48,7 +48,7 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
     serviceLocation: {
         latitude: order.latitude_service_location,
         longitude: order.longitude_service_location,
-        address: order.service_location_address,
+        address: order.service_location_detail,
         note: order.service_location_note,
     },
     serviceDate: order.service_date,

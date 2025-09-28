@@ -7,22 +7,21 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import { Button, CircularProgress, Fab } from "@mui/material";
 import { Dialog, DialogContent } from "@radix-ui/react-dialog";
 import axios, { AxiosError } from "axios";
-import L, { latLng } from "leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { AirVent, MoveLeft } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { MoveLeft } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Circle,
     MapContainer,
     Marker,
-    Popup,
     Polyline,
+    Popup,
     TileLayer,
 } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import mapPin from "~/assets/map-pin.png";
-import noteFilled from "~/assets/note-filled.png";
 import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import {
@@ -31,6 +30,10 @@ import {
     prettyDate,
 } from "~/common/utils";
 import EnableLocationSheet from "~/components/enable-location-sheet";
+import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
+import AcUnitsCard from "~/components/orders/detail/ac-units-card";
+import OrderInfoCard from "~/components/orders/detail/order-info-card";
+import ServiceAddressCard from "~/components/orders/detail/service-address-card";
 import {
     Drawer,
     DrawerContent,
@@ -48,7 +51,7 @@ import {
 import Spinner from "~/components/ui/spinner";
 import SwipeButton from "~/components/ui/swipe-button";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
-import { acTypes } from "~/customer/order/new/ac-unit-card";
+import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
 import {
@@ -57,12 +60,6 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import type { Route } from "./+types/technician-order-summary";
-import React from "react";
-import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
-import ServiceAddressCard from "~/components/orders/detail/service-address-card";
-import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
-import AcUnitsCard from "~/components/orders/detail/ac-units-card";
-import OrderInfoCard from "~/components/orders/detail/order-info-card";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -80,7 +77,6 @@ export default function TechnicianOrderSummary() {
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
-    const [detailAddress, setDetailAddress] = useState(null);
     const [error, setError] = useState<string | null>(null);
     const [isPhoneSheetOpen, setIsPhoneSheetOpen] = useState(false);
     const { text: statusText, bgColor: statusColor } = getStatusLabel(
@@ -232,7 +228,7 @@ export default function TechnicianOrderSummary() {
 
         const fetchOrder = async () => {
             try {
-                const response = await axios.get(
+                const response = await axios.get<ApiRespons<OrderItem>>(
                     `${
                         import.meta.env.VITE_API_URL
                     }/orders/technician/${orderId}`,
@@ -240,19 +236,7 @@ export default function TechnicianOrderSummary() {
                         withCredentials: true,
                     }
                 );
-                const detailLocation = await axios.get(
-                    "https://nominatim.openstreetmap.org/reverse",
-                    {
-                        params: {
-                            lat: response.data.data.serviceLocation.latitude,
-                            lon: response.data.data.serviceLocation.longitude,
-                            format: "json",
-                        },
-                    }
-                );
-                setDetailAddress(detailLocation.data);
                 setOrder(response.data.data);
-                setIsLoading(false);
             } catch (error) {
                 setError("Gagal mengambil detail pesanan");
                 console.error(error);
@@ -694,13 +678,8 @@ export default function TechnicianOrderSummary() {
                                             </div>
                                             {/* Note for technician */}
                                             {order.note && (
-                                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                                    <img
-                                                        src={noteFilled}
-                                                        alt="noteSuccess"
-                                                        className="w-4"
-                                                    />
-                                                    <p className="text-gray-800 text-xs">
+                                                <div className="flex items-start mt-2 gap-2 w-full rounded bg-gray-100 p-2 border-l-4 border-gray-400">
+                                                    <p className="text-gray-600 text-sm w-full">
                                                         {order.note}
                                                     </p>
                                                 </div>
@@ -729,7 +708,7 @@ export default function TechnicianOrderSummary() {
                             <ServiceAddressCard
                                 order={order}
                                 serviceAddress={
-                                    (detailAddress as any)?.display_name ??
+                                    order.serviceLocation.address ??
                                     "Memuat alamat..."
                                 }
                             />

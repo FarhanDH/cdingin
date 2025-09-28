@@ -70,19 +70,19 @@ export default function SwipeButton({
     return (
         <div
             ref={containerRef}
-            className={`relative w-full h-14 rounded-full p-1 flex items-center select-none border border-primary bg-primary overflow-hidden ${className}`}
+            className={`relative w-full h-15 rounded-full p-1 flex items-center select-none border border-primary bg-primary overflow-hidden ${className}`}
         >
             {isLoading ? (
                 <CircularProgress size={20} className="text-primary" />
             ) : (
                 <>
                     <motion.div
-                        className="absolute left-1 h-12 bg-white rounded-full"
+                        className="absolute left-1 h-13 bg-white rounded-full"
                         style={{ width: progressWidth }}
                     />
 
                     <motion.div
-                        className="relative w-17 h-12 bg-white rounded-full flex justify-center items-center shadow-md cursor-grab active:cursor-grabbing z-10"
+                        className="relative w-18 h-13 bg-white rounded-full flex justify-center items-center shadow-md cursor-grab active:cursor-grabbing z-10"
                         drag="x"
                         dragConstraints={{ left: 0, right: maxDrag }}
                         style={{ x }}

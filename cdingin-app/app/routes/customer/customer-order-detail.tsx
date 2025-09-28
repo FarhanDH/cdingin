@@ -36,7 +36,6 @@ export default function CustomerOrderDetail() {
     const { text: statusText, bgColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
-    const [serviceAddress, setServiceAddress] = useState<string>("");
     const navigate = useNavigate();
 
     const mapPinIcon = L.icon({
@@ -86,33 +85,6 @@ export default function CustomerOrderDetail() {
         };
         fetchOrder();
     }, [orderId]);
-
-    // Get address
-    const getDetailAddress = async () => {
-        try {
-            const response = await axios.get(
-                "https://nominatim.openstreetmap.org/reverse",
-                {
-                    params: {
-                        lat: order?.serviceLocation.latitude,
-                        lon: order?.serviceLocation.longitude,
-                        format: "json",
-                    },
-                }
-            );
-            setServiceAddress(
-                response.data.display_name || "Alamat tidak ditemukan"
-            );
-        } catch {
-            setServiceAddress("Gagal mendapatkan alamat");
-        }
-    };
-
-    useEffect(() => {
-        if (order) {
-            getDetailAddress();
-        }
-    }, [order]);
 
     if (isLoading) {
         return (
@@ -219,7 +191,7 @@ export default function CustomerOrderDetail() {
                         <div className="p-4 flex flex-col gap-2">
                             <ServiceAddressCard
                                 order={order}
-                                serviceAddress={serviceAddress}
+                                serviceAddress={order.serviceLocation.address}
                             />
                             <AcProblemsCard problems={order.problems} />
                             <AcUnitsCard

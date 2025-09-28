@@ -1,6 +1,6 @@
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { StyledEngineProvider } from "@mui/material/styles";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import { Toaster } from "sonner";
 import type { Route } from "./+types/root";
@@ -8,6 +8,7 @@ import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import NotFoundPage from "./pages/not-found";
 import axios from "axios";
+import OfflineSheet from "./components/offline-sheet";
 
 export const links: Route.LinksFunction = () => [
     { rel: "icon", href: "/favicon.ico" },
@@ -36,6 +37,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+    const [isOnline, setIsOnline] = useState(true);
+
     useEffect(() => {
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker
@@ -68,6 +71,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 );
             };
         }
+
+        // Handle Online/Offline status
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        // Set initial status
+        if (typeof navigator !== "undefined") setIsOnline(navigator.onLine);
+
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            window.removeEventListener("offline", handleOffline);
+        };
     }, []);
 
     const markNotificationAsRead = async (notificationId: string) => {
@@ -79,9 +97,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {},
                 { withCredentials: true }
             );
-            // Setelah berhasil, Anda bisa memperbarui state atau me-refresh data notifikasi
-            // Misalnya:
-            // fetchNotifications();
         } catch (error) {
             console.error("Failed to mark notification as read:", error);
         }
@@ -109,6 +124,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <body>
                 <div className="min-h-screen max-w-lg mx-auto border border-gray-100">
                     {children}
+                    <OfflineSheet isOpen={!isOnline} />
                 </div>
                 <Toaster
                     position="top-center"

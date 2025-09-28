@@ -93,7 +93,7 @@ export type OrderItem = {
     serviceLocation: {
         latitude: number;
         longitude: number;
-        address?: string;
+        address?: any;
         note?: string;
     };
     serviceDate: Date;
