@@ -8,15 +8,16 @@ import {
     Res,
     UseGuards,
 } from '@nestjs/common';
+import { CookieOptions, Response } from 'express';
+import { ApiResponse } from '~/common/api-response.dto';
+import { configuration } from '~/common/configuration';
+import { RequestWithUser } from '~/common/utils';
+import { CreatePushSubscriptionRequest } from '../push-subscription/dto/push-subscription.request';
+import { CreateCustomerProfileRequest } from '../user/dto/user.request';
 import { AuthService } from './auth.service';
 import { VerifyOtpRequest } from './dto/auth.request';
-import { CreateCustomerProfileRequest } from '../user/dto/user.request';
-import { CookieOptions, Response } from 'express';
-import { configuration } from '~/common/configuration';
-import { ApiResponse } from '~/common/api-response.dto';
 import { VerifyOtpResponse } from './dto/auth.response';
 import { JwtGuard } from './guards/jwt.guard';
-import { RequestWithUser } from '~/common/utils';
 
 @Controller('auth')
 export class AuthController {
@@ -90,11 +91,14 @@ export class AuthController {
     @Delete('logout')
     async logout(
         @Req() request: RequestWithUser,
+        @Body() subscription: CreatePushSubscriptionRequest,
         @Res({ passthrough: true }) response: Response,
     ) {
         this.logger.debug(
             `AuthController.logout(${JSON.stringify({ userId: request.user.sub })})`,
         );
+
+        await this.authService.logout(subscription);
         response.clearCookie('accessToken');
         response.clearCookie('refreshToken');
 

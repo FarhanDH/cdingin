@@ -28,6 +28,7 @@ import {
 import Spinner from "~/components/ui/spinner";
 import { useAuth } from "~/contexts/auth.context";
 import type { Route } from "./+types/profile";
+import { useNotificationPermission } from "~/hooks/use-notification-permission";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -46,13 +47,16 @@ export default function Profile() {
     const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
     const [email, setEmail] = useState(user?.email ?? "");
     const navigate = useNavigate();
+    const { subscribe } = useNotificationPermission();
 
     const logoutHandler = async () => {
+        const subscription = await subscribe();
         setIsLoading(true);
         try {
             const response = await axios.delete(
                 `${import.meta.env.VITE_API_URL}/auth/logout`,
                 {
+                    data: subscription,
                     withCredentials: true,
                 }
             );
@@ -60,7 +64,7 @@ export default function Profile() {
             if (response.status === 200) {
                 logout();
                 navigate("/");
-                toast("Logout berhasil", customToastStyle);
+                toast("Sampai ketemu lagi! 👋", customToastStyle);
             } else {
                 toast(
                     "Yah, kayaknya ada yang salah. Coba lagi nanti, ya",

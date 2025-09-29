@@ -104,6 +104,23 @@ export class PushSubscriptionService {
         return result;
     }
 
+    async deleteByEndpoint(endpoint: string) {
+        this.logger.debug(
+            `PushSubscriptionService.deleteByEndpoint(endpoint: ${endpoint})`,
+        );
+
+        const result = await this.subscriptionRepository.delete({ endpoint });
+
+        if (result.affected === 0) {
+            this.logger.warn(
+                `No push subscription found with endpoint: ${endpoint}`,
+            );
+            // We don't throw an error, as the goal is to ensure it's gone.
+        }
+
+        return { message: 'Subscription deleted successfully' };
+    }
+
     async getAllTechnicianSubscriptions() {
         this.logger.debug(
             `PushSubscriptionService.getAllTechnicianSubscriptions()`,

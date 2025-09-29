@@ -131,6 +131,7 @@ export function useNotificationPermission() {
                 { withCredentials: true } // Include cookies with the request.
             );
             console.log("[Push] Subscription successfully sent to backend!"); // Log success message.
+            return subscription; // Return the subscription object.
         } catch (err) {
             // Catch any errors that occur during the subscription process.
             // Log the error if subscription fails.
