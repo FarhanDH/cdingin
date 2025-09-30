@@ -112,7 +112,7 @@ export default function NewOrder() {
         if (successState === "animating" && order?.id) {
             const timer = setTimeout(() => {
                 navigate(`/order/${order.id}`);
-            }, 2000);
+            }, 2500);
             return () => clearTimeout(timer);
         }
     }, [successState, order, navigate]);

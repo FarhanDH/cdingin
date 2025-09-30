@@ -10,6 +10,7 @@ import {
 import axios from "axios";
 import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
 import { id } from "date-fns/locale";
+import ErrorIcon from "@mui/icons-material/Error";
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import {
     AlertCircle,
@@ -199,7 +200,7 @@ export default function SummaryStep({
 
     return (
         <>
-            <main className="pt-4">
+            <main className="pt-4 max-w-lg">
                 <div className="">
                     <div className="flex flex-col bg-gray-50 min-h-screen">
                         {/* Service Address */}
@@ -259,14 +260,13 @@ export default function SummaryStep({
                             </div>
 
                             {/* Note for technician */}
-                            <div className="mt-4 relative">
+                            <div className="mt-4">
                                 {note ? (
                                     <Button
-                                        className="w-full bg-gray-100 normal-case !font-[Rubik] rounded-none border-none text-black flex p-0 text-start items-center justify-between gap-2 cursor-pointer"
+                                        className="w-full bg-gray-100 normal-case !font-[Rubik] rounded-none text-black p-0 px-2 text-start items-center justify-start cursor-pointer border-l-4 border-l-gray-500"
                                         onClick={handleOpenNoteDrawer}
                                     >
-                                        <div className="w-1.5 bg-gray-500 self-stretch"></div>
-                                        <p className="text-black text-xs font-light !font-[Rubik] w-full py-0.5">
+                                        <p className="text-black text-xs font-light !font-[Rubik] w-full py-0.5 max-w-lg text-wrap break-words">
                                             {note}
                                         </p>
                                     </Button>
@@ -292,8 +292,8 @@ export default function SummaryStep({
                         <div className="p-4 shadow-md mb-2 bg-white">
                             <div className="flex items-center justify-between">
                                 <div className="flex gap-3 ">
-                                    <div className="bg-gray-100 w-10 h-10 rounded-full flex items-center">
-                                        <AlertCircle className="w-10 text-yellow-500" />
+                                    <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                        <ErrorIcon className="w-20 text-white" />
                                     </div>
                                     <div>
                                         <h1 className="font-medium text-md text-gray-800">

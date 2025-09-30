@@ -37,8 +37,8 @@ export default function ServiceAddressCard({
                         </p>
 
                         {order.serviceLocation.note && (
-                            <div className="flex items-start mt-2 gap-2 w-full bg-gray-100 p-2 border-l-4 border-gray-400 rounded">
-                                <p className="text-gray-600 text-sm w-full">
+                            <div className="flex items-start mt-2 gap-2 w-full bg-gray-100 p-2 border-l-4 border-gray-500 rounded">
+                                <p className="text-gray-700 text-sm w-full">
                                     {order.serviceLocation.note}
                                 </p>
                             </div>

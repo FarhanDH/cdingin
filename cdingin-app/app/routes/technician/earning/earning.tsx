@@ -40,7 +40,6 @@ export default function Earning() {
                         withCredentials: true,
                     }
                 );
-                console.log(response.data);
                 setEarningData(response.data.data);
             } catch (error) {
                 console.error("Gagal mengambil ringkasan pendapatan:", error);

@@ -89,7 +89,7 @@ export default function EarningHistoryCard({
                             <div className="flex items-center justify-start w-full">
                                 <div className="bg-red-400 w-3 h-3 rounded-full ml-3"></div>
                                 <span className="line-clamp-1 ml-7 w-[85%]">
-                                    {order.serviceLocation.address}
+                                    {order.serviceLocation.address.display_name}
                                 </span>
                             </div>
                         </div>

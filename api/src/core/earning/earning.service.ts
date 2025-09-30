@@ -39,10 +39,10 @@ export class EarningService {
             },
         });
 
-        const missedOrder = await this.getPendingOrdersByDate(date);
+        const pendingOrders = await this.getPendingOrdersByDate(date);
 
         return {
-            orderTotal: orders.length + missedOrder.length,
+            orderTotal: orders.length + pendingOrders.length,
             earningTotal: orders.reduce((total, order) => {
                 if (order.invoice?.status === InvoiceStatus.PAID) {
                     return total + Number(order.invoice.total_amount);
@@ -70,11 +70,12 @@ export class EarningService {
             completedOrderCount: orders.filter(
                 (order) => order.status === OrderStatusEnum.COMPLETED,
             ).length,
-            missedOrderCount: missedOrder.filter(
-                (order) =>
-                    order.status !== OrderStatusEnum.CANCELLED &&
-                    order.status !== OrderStatusEnum.COMPLETED,
-            ).length,
+            missedOrderCount:
+                orders.filter(
+                    (order) =>
+                        order.status !== OrderStatusEnum.CANCELLED &&
+                        order.status !== OrderStatusEnum.COMPLETED,
+                ).length + pendingOrders.length,
             digitalPaymentTotal: orders.reduce((total, order) => {
                 const digitalPaymentAmount =
                     order.invoice?.payments

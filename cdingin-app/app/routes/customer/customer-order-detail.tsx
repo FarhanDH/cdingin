@@ -198,6 +198,24 @@ export default function CustomerOrderDetail() {
                                 acUnits={order.acUnits}
                                 totalUnits={order.totalUnits}
                             />
+
+                            {order?.note && (
+                                <div className="p-4 bg-white rounded-xl shadow-xs border border-gray-200 w-full">
+                                    <div className="flex gap-4">
+                                        <div className="w-full">
+                                            <h1 className="font-medium">
+                                                Catatan untuk teknisi
+                                            </h1>
+                                            <div className="flex items-start mt-2 gap-2 w-full bg-gray-100 p-2 border-l-4 border-gray-500 rounded">
+                                                <p className="text-gray-700 text-sm w-full">
+                                                    {order.note}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <OrderInfoCard order={order} />
 
                             {/* Button */}
