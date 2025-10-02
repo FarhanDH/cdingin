@@ -32,6 +32,7 @@ export default [
     // Technician Routes
     route("", "components/technician-route.tsx", [
         layout("routes/technician/layout.tsx", [
+            route("/technician/map", "routes/technician/map.tsx"),
             route(
                 "/technician/orders",
                 "routes/technician/technician-orders.tsx"

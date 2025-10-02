@@ -7,6 +7,7 @@ import {
     BottomNavigationAction,
     Paper,
 } from "@mui/material";
+import MapRoundedIcon from "@mui/icons-material/MapRounded";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -63,6 +64,44 @@ export default function TechnicianBottomNav() {
                 onChange={handleChange}
                 className="!border-none shadow-none"
             >
+                {/* Map */}
+                <BottomNavigationAction
+                    className={`
+                       ${
+                           activeTab === "/technician/map"
+                               ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik]`
+                               : "text-gray-500"
+                       }`}
+                    value="/technician/map"
+                    icon={
+                        <div className="text-center flex flex-col items-center">
+                            <MapRoundedIcon
+                                className={`mb-1 mt-2 transition-all duration-300
+                                    ${
+                                        activeTab === "/technician/map"
+                                            ? `!text-primary transform scale-110 `
+                                            : "text-gray-500"
+                                    }`}
+                            />
+                            <p
+                                className={`text-xs transition-all duration-300 ${
+                                    activeTab === "/technician/map"
+                                        ? "text-primary font-medium text-sm"
+                                        : "text-gray-600 font-light"
+                                } `}
+                            >
+                                Peta
+                            </p>
+                            <div
+                                className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
+                                    activeTab === "/technician/map"
+                                        ? "bg-primary"
+                                        : "bg-transparent"
+                                }`}
+                            ></div>
+                        </div>
+                    }
+                />
                 {/* Order */}
                 <BottomNavigationAction
                     className={`
@@ -148,7 +187,7 @@ export default function TechnicianBottomNav() {
                                 badgeContent={unreadCount}
                                 max={9}
                                 invisible={unreadCount === 0}
-                                className="!font-[Rubik] mb-1 mt-2 "
+                                className="!font-[Rubik] mt-2 "
                             >
                                 <NotificationsIcon
                                     className={`mb-1 mt-1 transition-all duration-300 ${

@@ -90,7 +90,7 @@ export default function TechnicianOrderSummary() {
     const [isCustomeCallSheetOpen, setIsCustomeCallSheetOpen] = useState(false);
     const [isNavigateSheetOpen, setIsNavigateSheetOpen] = useState(false);
     const { position: technicianPosition, requestLocation } =
-        useTechnicianLocation();
+        useTechnicianLocation({ fetchOnMount: true });
 
     const serviceLocationPosition = useMemo(() => {
         if (!order) return null;
@@ -520,7 +520,7 @@ export default function TechnicianOrderSummary() {
                     center={[
                         order.serviceLocation.latitude,
                         order.serviceLocation.longitude,
-                    ]}
+                    ]} // [latitude, longitude]
                     zoom={zoomValue}
                     style={{
                         height: "550px",
