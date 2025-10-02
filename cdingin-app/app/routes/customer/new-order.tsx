@@ -33,8 +33,8 @@ export function meta(args: Route.MetaArgs) {
 const steps: OrderStep[] = [
     "ac-problems",
     "location",
-    "ac-type",
     "property-type",
+    "ac-type",
     "summary",
 ];
 const stepDetails = [
@@ -289,7 +289,7 @@ export default function NewOrder() {
 
     return (
         <div
-            className={`relative max-w-lg mx-auto ${
+            className={`relative max-w-lg mx-auto min-h-screen ${
                 successState !== "idle"
                     ? "bg-primary overflow-hidden"
                     : "bg-gray-50"
@@ -315,11 +315,13 @@ export default function NewOrder() {
                 /**
                  * Renders the main content of the new order page.
                  * This includes the header and the main step content.
-                 * The header is only shown if the current step is not the location step.
+                 * The header is only shown if the current step is not the location, ac-type, or property-type steps.
                  * The main step content is rendered based on the current step index.
                  */
                 <>
-                    {!["location"].includes(steps[currentStepIndex]) && (
+                    {!["location", "ac-type", "property-type"].includes(
+                        steps[currentStepIndex]
+                    ) && (
                         <Header
                             /**
                              * The title of the header is based on the label of the current step.
@@ -331,13 +333,14 @@ export default function NewOrder() {
                                 )?.label || "Buat Pesanan"
                             }
                             isSticky
+                            showBorder={false}
                             showBack={true}
                             onBack={
                                 currentStepIndex > 0
                                     ? handlePrev
                                     : () => navigate("/orders")
                             }
-                            className={`bg-white`}
+                            className={`bg-white shadow-none border-none`}
                         />
                     )}
                     <main>{renderStep()}</main>

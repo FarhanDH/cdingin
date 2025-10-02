@@ -84,7 +84,7 @@ export default function PropertyTypeStep({
         <div className="flex flex-col h-full bg-white">
             <div className="p-4 pb-28 pt-4">
                 <h1 className="text-xl font-semibold mb-4">
-                    Bangunannya gimana?
+                    Tipe bangunannya gimana?
                 </h1>
                 <RadioGroup
                     value={selectedProperty?.id}

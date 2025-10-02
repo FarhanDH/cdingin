@@ -32,7 +32,9 @@ export default function Earning() {
         const fetchEarningSummary = async () => {
             setIsLoading(true);
             try {
-                const dateParam = formattedDate(selectedDate, {});
+                const dateParam = formattedDate(selectedDate, {
+                    locale: "en-US",
+                });
                 const response = await axios.get(
                     `${import.meta.env.VITE_API_URL}/earnings/summary`,
                     {
@@ -83,6 +85,7 @@ export default function Earning() {
                     <HorizontalDateScroller
                         selectedDate={selectedDate}
                         onDateSelect={setSelectedDate}
+                        numberOfDaysToShowFromNow={30}
                     />
                 </div>
             </Header>

@@ -78,7 +78,7 @@ export class UserService {
 
         user.full_name = request.fullName;
         user.phone_number = phoneNumber;
-        user.avatar_url = `https://ui-avatars.com/api/?background=random&color=random&rounded=true&size=128&length=1&bold=true&name=${request.fullName}`;
+        user.avatar_url = `https://ui-avatars.com/api/?background=057895&color=fff&rounded=true&size=128&length=2&bold=true&font-size=0.33&name=${request.fullName}`;
         user.is_profile_completed = true;
 
         await this.userRepository.save(user);

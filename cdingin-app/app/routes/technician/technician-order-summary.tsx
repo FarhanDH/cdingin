@@ -228,7 +228,7 @@ export default function TechnicianOrderSummary() {
 
         const fetchOrder = async () => {
             try {
-                const response = await axios.get<ApiRespons<OrderItem>>(
+                const response = await axios.get(
                     `${
                         import.meta.env.VITE_API_URL
                     }/orders/technician/${orderId}`,
@@ -252,14 +252,14 @@ export default function TechnicianOrderSummary() {
         switch (newStatus) {
             case "confirmed":
                 toast(
-                    `Sip!, Pelangganmu udah kami kabarin. 👍`,
+                    `Sip!, Pelanggan anda udah kami kabarin. 👍`,
                     customToastStyle
                 );
                 break;
 
             case "technician_on_the_way":
                 toast(
-                    `Berangkaaat! Hati-hati di jalan, ya. 🛵`,
+                    `Sip!, Pelanggan anda udah kami kabarin. 👍`,
                     customToastStyle
                 );
                 break;
@@ -413,7 +413,7 @@ export default function TechnicianOrderSummary() {
                             SERVICE_RADIUS_METERS
                         ) {
                             toast(
-                                `Masih sekitar ${distance} dari lokasi. Coba majuan lagi.`,
+                                `Masih sekitar ${distance} dari lokasi. Coba lebih dekat.`,
                                 customToastStyle
                             );
                         } else {
@@ -678,7 +678,7 @@ export default function TechnicianOrderSummary() {
                                             </div>
                                             {/* Note for technician */}
                                             {order.note && (
-                                                <div className="flex items-start mt-2 gap-2 w-full rounded bg-gray-100 p-2 border-l-4 border-gray-400">
+                                                <div className="flex items-start mt-2 gap-2 w-full rounded bg-gray-100 p-2 border-l-4 border-gray-500">
                                                     <p className="text-gray-600 text-sm w-full">
                                                         {order.note}
                                                     </p>
@@ -843,8 +843,7 @@ export default function TechnicianOrderSummary() {
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
                             Sebelum terima pesanan, coba hubungi pelanggan dulu
-                            lewat WhatsApp atau telepon. Siapa tau ada detail
-                            tambahan yang penting.
+                            lewat WhatsApp atau telepon.
                         </SheetDescription>
                         <Button
                             onClick={() => setIsPhoneSheetOpen(false)}
@@ -873,8 +872,8 @@ export default function TechnicianOrderSummary() {
                             Pilih Cara Menghubungi
                         </SheetTitle>
                         <SheetDescription className="text-[16px] text-gray-600">
-                            Sebaiknya hubungi lewat WhatsApp dulu. Kalau tidak
-                            terhubung, baru coba telepon pakai pulsa biasa.
+                            Kalau tidak terhubung di WhatsApp, coba telepon
+                            pakai pulsa biasa!
                         </SheetDescription>
                         {/* Button for phone call */}
                         <Button

@@ -1,3 +1,6 @@
+import ErrorIcon from "@mui/icons-material/Error";
+import LocationPinIcon from "@mui/icons-material/LocationPin";
+import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import {
     Button,
     Dialog,
@@ -10,23 +13,15 @@ import {
 import axios from "axios";
 import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
 import { id } from "date-fns/locale";
-import ErrorIcon from "@mui/icons-material/Error";
-import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
-import {
-    AlertCircle,
-    ArrowRightIcon,
-    CalendarRange,
-    ChevronRight,
-    MapPin,
-    Minus,
-    Plus,
-} from "lucide-react";
+import { ArrowRightIcon, ChevronRight, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import addNote from "~/assets/add-note.png";
 import noteFilled from "~/assets/note-filled.png";
+import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import { Calendar } from "~/components/ui/calendar";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CustomDay from "~/components/ui/custom-day";
 import {
     Drawer,
@@ -35,6 +30,14 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from "~/components/ui/drawer";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import type {
@@ -47,16 +50,7 @@ import {
     type AvailabilityData,
 } from "~/types/schedule.types";
 import "../../../app.css";
-import cashImage from "../../../assets/cash.png";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "~/components/ui/sheet";
-import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface SummaryStepProps {
     formData: Partial<OrderFormData>;
@@ -200,213 +194,222 @@ export default function SummaryStep({
 
     return (
         <>
-            <main className="pt-4 max-w-lg">
+            <main className="max-w-lg overflow-y-auto scroll-smooth">
                 <div className="">
-                    <div className="flex flex-col bg-gray-50 min-h-screen">
-                        {/* Service Address */}
-                        <div className="p-4 mb-2 shadow-md bg-white">
-                            <div className="flex text-center gap-3">
-                                <MapPin
-                                    size={21}
-                                    className="mb-2 text-gray-700"
-                                />
-                                <p className="text-sm font-medium text-gray-600">
-                                    Alamat service
-                                </p>
-                            </div>
-                            <p className="font-medium text-xl text-gray-900 flex items-center">
-                                {formData.serviceLocation?.address ??
-                                    "Lokasi belum diisi"}{" "}
-                                {/* Navigate to location step */}
-                                <button
-                                    className="cursor-pointer items-center"
-                                    onClick={() => navigateToStep("location")}
-                                >
-                                    <ChevronRight />
-                                </button>
-                            </p>
-
-                            {/* Address Note for technician */}
-                            {formData.serviceLocation?.note && (
-                                <div className="flex items-start mt-2 gap-2 w-full bg-blue-50 rounded-xl p-2 border border-gray-200">
-                                    <img
-                                        src={noteFilled}
-                                        alt="noteSuccess"
-                                        className="w-4"
+                    <ScrollArea className=" bg-gray-00 overflow-y-auto scroll-smooth mb-40">
+                        <div className="flex flex-col bg-gray-00">
+                            {/* Service Address */}
+                            <div className="p-4 mb-2 shadow-md bg-white">
+                                <div className="flex text-center items-center gap-3">
+                                    <LocationPinIcon
+                                        className="text-gray-700 -ml-1"
+                                        fontSize="small"
                                     />
-                                    <p className="text-gray-800 text-sm">
-                                        {formData.serviceLocation?.note}
+                                    <p className="text-sm font-medium text-gray-600">
+                                        Alamat service
                                     </p>
                                 </div>
-                            )}
-
-                            {/* Property Type */}
-                            <div className="flex items-center gap-2 text-sm mt-1">
-                                <p className="font-medium text-gray-700">
-                                    {formData.propertyType?.name ||
-                                        "Tipe properti belum dipilih"}
-                                </p>
-                                <p className="text-gray-600">
-                                    Lantai {formData.floor || "-"}
-                                </p>
-                                <button
-                                    className="cursor-pointer text-gray-700"
-                                    onClick={() =>
-                                        navigateToStep("property-type")
-                                    }
-                                >
-                                    <ChevronRight />
-                                </button>
-                            </div>
-
-                            {/* Note for technician */}
-                            <div className="mt-4">
-                                {note ? (
-                                    <Button
-                                        className="w-full bg-gray-100 normal-case !font-[Rubik] rounded-none text-black p-0 px-2 text-start items-center justify-start cursor-pointer border-l-4 border-l-gray-500"
-                                        onClick={handleOpenNoteDrawer}
+                                <p className="font-medium text-xl text-gray-900 flex items-center">
+                                    {formData.serviceLocation?.address ??
+                                        "Lokasi belum diisi"}{" "}
+                                    {/* Navigate to location step */}
+                                    <button
+                                        className="cursor-pointer items-center"
+                                        onClick={() =>
+                                            navigateToStep("location")
+                                        }
                                     >
+                                        <ChevronRight />
+                                    </button>
+                                </p>
+
+                                {/* Address Note for technician */}
+                                {formData.serviceLocation?.note && (
+                                    <div className="mt-2 w-full bg-gray-100 normal-case !font-[Rubik] rounded-none text-black p-0 px-2 text-start items-center justify-start cursor-pointer border-l-4 border-l-gray-500">
                                         <p className="text-black text-xs font-light !font-[Rubik] w-full py-0.5 max-w-lg text-wrap break-words">
-                                            {note}
+                                            {formData.serviceLocation?.note}
                                         </p>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        className="flex items-center border bg-gray-100 border-gray-300 rounded-full normal-case gap-2 justify-center py-2 px-4 active:scale-95"
-                                        onClick={handleOpenNoteDrawer}
-                                    >
-                                        <img
-                                            src={addNote}
-                                            alt="add-note"
-                                            className="w-[13.3px]"
-                                        />
-                                        <p className="text-black text-xs font-medium !font-[Rubik]">
-                                            Catatan
-                                        </p>
-                                    </Button>
+                                    </div>
                                 )}
-                            </div>
-                        </div>
 
-                        {/* AC Problems */}
-                        <div className="p-4 shadow-md mb-2 bg-white">
-                            <div className="flex items-center justify-between">
-                                <div className="flex gap-3 ">
-                                    <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
-                                        <ErrorIcon className="w-20 text-white" />
-                                    </div>
-                                    <div>
-                                        <h1 className="font-medium text-md text-gray-800">
-                                            Layanan / Keluhan
-                                        </h1>
-                                        <p className="text-xs text-gray-800">
-                                            {formData.problems?.join(", ") ||
-                                                "Tipe layanan belum dipilih"}
-                                        </p>
-                                    </div>
+                                {/* Property Type */}
+                                <div className="flex items-center gap-2 text-sm mt-1">
+                                    <p className="font-medium text-gray-700">
+                                        {formData.propertyType?.name ||
+                                            "Tipe properti belum dipilih"}
+                                    </p>
+                                    <p className="text-gray-600">
+                                        Lantai {formData.floor || "-"}
+                                    </p>
+                                    <button
+                                        className="cursor-pointer text-gray-700"
+                                        onClick={() =>
+                                            navigateToStep("property-type")
+                                        }
+                                    >
+                                        <ChevronRight />
+                                    </button>
                                 </div>
-                                <Button
-                                    onClick={() =>
-                                        navigateToStep("ac-problems")
-                                    }
-                                    className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 normal-case text-base !font-[Rubik] flex-shrink-0"
-                                >
-                                    Ganti
-                                </Button>
-                            </div>
-                        </div>
 
-                        {/* Detail Unit AC */}
-                        {(formData.acUnits?.length ?? 0) > 0 && (
+                                {/* Note for technician */}
+                                <div className="mt-2">
+                                    {note ? (
+                                        <Button
+                                            className="w-full bg-gray-100 normal-case !font-[Rubik] rounded-none text-black p-0 px-2 text-start items-center justify-start cursor-pointer border-l-4 border-l-gray-500"
+                                            onClick={handleOpenNoteDrawer}
+                                        >
+                                            <p className="text-black text-xs font-light !font-[Rubik] w-full py-0.5 max-w-lg text-wrap break-words">
+                                                {note}
+                                            </p>
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            className="flex items-center border bg-gray-100 border-gray-300 rounded-full normal-case gap-2 justify-center py-2 px-4 active:scale-95"
+                                            onClick={handleOpenNoteDrawer}
+                                        >
+                                            <img
+                                                src={addNote}
+                                                alt="add-note"
+                                                className="w-[13.3px]"
+                                            />
+                                            <p className="text-black text-xs font-medium !font-[Rubik]">
+                                                Catatan
+                                            </p>
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* AC Problems */}
                             <div className="p-4 shadow-md mb-2 bg-white">
-                                <div className="space-y-2 gap-3 items-center">
-                                    {formData.acUnits?.map((unit, index) => (
-                                        <div key={unit.id}>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={unit.acType?.icon}
-                                                        alt={unit.acType?.name}
-                                                        className="w-15"
-                                                    />
-                                                    <div>
-                                                        <h1 className="font-semibold text-gray-800 text-md">
-                                                            {`${unit.acType?.name} ${unit.pk}`}
-                                                        </h1>
-                                                        <p className="text-xs text-gray-500 font-medium">
-                                                            {unit.brand ||
-                                                                "Tidak ditentukan"}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <IconButton
-                                                        className="rounded-full border border-primary text-primary cursor-pointer active:scale-95"
-                                                        onClick={() =>
-                                                            handleDecreaseQuantity(
-                                                                unit
-                                                            )
-                                                        }
-                                                    >
-                                                        <Minus className="w-4 h-4" />
-                                                    </IconButton>
-                                                    <span className="font-semibold text-lg w-4 text-center">
-                                                        {unit.quantity}
-                                                    </span>
-                                                    <IconButton
-                                                        className="rounded-full border-primary text-primary cursor-pointer active:scale-95 border"
-                                                        onClick={() =>
-                                                            handleIncreaseQuantity(
-                                                                unit
-                                                            )
-                                                        }
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </IconButton>
-                                                </div>
-                                            </div>
-                                            {index <
-                                                (formData.acUnits?.length ??
-                                                    0) -
-                                                    1 && (
-                                                <div className="border-t-[1.5px] border-dashed border-gray-300 mx-auto w-full my-2"></div>
-                                            )}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex gap-3 ">
+                                        <div className="bg-orange-300 w-9 h-9 rounded-full flex items-center justify-center text-center">
+                                            <ErrorIcon className="w-20 text-white" />
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Additional button to add another unit ac if current total quantity less than 10 */}
-                        {(formData.acUnits || []).reduce(
-                            (acc, unit) => acc + unit.quantity,
-                            0
-                        ) < 10 && (
-                            <div className="p-4 shadow-md mb-2 bg-white">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h1 className="font-semibold text-md">
-                                            Ada tambahan?
-                                        </h1>
-                                        <p className="text-gray-600 text-sm">
-                                            Masih bisa nambah unit AC, ya.
-                                        </p>
+                                        <div>
+                                            <h1 className="font-medium text-md text-gray-800">
+                                                Layanan / Keluhan
+                                            </h1>
+                                            <p className="text-xs text-gray-800">
+                                                {formData.problems?.join(
+                                                    ", "
+                                                ) ||
+                                                    "Tipe layanan belum dipilih"}
+                                            </p>
+                                        </div>
                                     </div>
                                     <Button
                                         onClick={() =>
-                                            navigateToStep("ac-type")
+                                            navigateToStep("ac-problems")
                                         }
-                                        className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 text-base normal-case !font-[Rubik]"
+                                        className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 normal-case text-base !font-[Rubik] flex-shrink-0"
                                     >
-                                        Tambah
+                                        Ganti
                                     </Button>
                                 </div>
                             </div>
-                        )}
-                    </div>
+
+                            {/* Detail Unit AC */}
+                            {(formData.acUnits?.length ?? 0) > 0 && (
+                                <div className="p-4 shadow-md mb-2 bg-white">
+                                    <div className="space-y-2 gap-3 items-center">
+                                        {formData.acUnits?.map(
+                                            (unit, index) => (
+                                                <div key={unit.id}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <img
+                                                                src={
+                                                                    unit.acType
+                                                                        ?.icon
+                                                                }
+                                                                alt={
+                                                                    unit.acType
+                                                                        ?.name
+                                                                }
+                                                                className="w-15"
+                                                            />
+                                                            <div>
+                                                                <h1 className="font-semibold text-gray-800 text-md">
+                                                                    {`${unit.acType?.name} ${unit.pk}`}
+                                                                </h1>
+                                                                <p className="text-xs text-gray-500 font-medium">
+                                                                    {unit.brand ||
+                                                                        "Tidak ditentukan"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <IconButton
+                                                                className="rounded-full border border-primary text-primary cursor-pointer active:scale-95"
+                                                                onClick={() =>
+                                                                    handleDecreaseQuantity(
+                                                                        unit
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Minus className="w-4 h-4" />
+                                                            </IconButton>
+                                                            <span className="font-semibold text-lg w-4 text-center">
+                                                                {unit.quantity}
+                                                            </span>
+                                                            <IconButton
+                                                                className="rounded-full border-primary text-primary cursor-pointer active:scale-95 border"
+                                                                onClick={() =>
+                                                                    handleIncreaseQuantity(
+                                                                        unit
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Plus className="w-4 h-4" />
+                                                            </IconButton>
+                                                        </div>
+                                                    </div>
+                                                    {index <
+                                                        (formData.acUnits
+                                                            ?.length ?? 0) -
+                                                            1 && (
+                                                        <div className="border-t-[1.5px] border-dashed border-gray-300 mx-auto w-full my-2"></div>
+                                                    )}
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Additional button to add another unit ac if current total quantity less than 10 */}
+                            {(formData.acUnits || []).reduce(
+                                (acc, unit) => acc + unit.quantity,
+                                0
+                            ) < 10 && (
+                                <div className="p-4 shadow-md mb-2 bg-white">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <h1 className="font-semibold text-md">
+                                                Ada tambahan?
+                                            </h1>
+                                            <p className="text-gray-600 text-sm">
+                                                Masih bisa nambah unit AC, ya.
+                                            </p>
+                                        </div>
+                                        <Button
+                                            onClick={() =>
+                                                navigateToStep("ac-type")
+                                            }
+                                            className="text-primary border-primary rounded-full cursor-pointer font-semibold border-[1.5px] w-20 active:scale-95 text-base normal-case !font-[Rubik]"
+                                        >
+                                            Tambah
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </ScrollArea>
 
                     {/* Navigation Buttons */}
-                    <div className="w-full p-4 gap-4 flex flex-col sticky bottom-0 max-w-lg mx-auto bg-white border">
+                    <div className="w-full p-4 gap-4 flex flex-col fixed bottom-0 max-w-lg mx-auto bg-white border">
                         <div className="flex items-start gap-2">
                             <PaymentsRoundedIcon className="text-primary" />
                             <p className="text-sm text-gray-600">
@@ -421,7 +424,10 @@ export default function SummaryStep({
                                 className="h-12 w-12 p-0 rounded-full border border-primary flex items-center justify-center active:scale-95 cursor-pointer"
                                 onClick={handleOpenCalendar}
                             >
-                                <CalendarRange className="text-primary w-6 h-6" />
+                                <CalendarMonthIcon
+                                    className="text-primary w-8 h-8"
+                                    // fontSize="medium"
+                                />
                             </button>
 
                             {/* Confirm Button */}
@@ -502,7 +508,7 @@ export default function SummaryStep({
                             disabled={isSubmitting}
                             className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
                         >
-                            Bentar, Cek Lagi
+                            Cek Lagi
                         </Button>
                         <Button
                             onClick={() => {
@@ -525,7 +531,7 @@ export default function SummaryStep({
                             {isSubmitting ? (
                                 <Spinner size={20} />
                             ) : (
-                                "Ya, Lanjutin"
+                                "Lanjut aja"
                             )}
                         </Button>
                     </SheetFooter>
@@ -689,8 +695,8 @@ export default function SummaryStep({
                                 id="alert-dialog-description"
                                 className="text-sm font !font-[Rubik]"
                             >
-                                Apakah kamu yakin ingin hapus unit AC ini dari
-                                daftar servicemu?
+                                Anda yakin ingin hapus unit AC ini dari daftar
+                                servicemu?
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>

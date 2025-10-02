@@ -41,9 +41,9 @@ export default function ProblemsStep({
     return (
         <>
             <div className="p-4 pb-28 bg-white">
-                {" "}
-                {/* Tambahkan padding bottom agar tidak tertutup tombol navigasi */}
-                <h1 className="text-xl font-semibold mb-4">AC-nya kenapa?</h1>
+                <h1 className="text-xl font-semibold mb-4">
+                    Pilih layanan / keluhan AC Anda
+                </h1>
                 {acServices.map((service) => {
                     const isChecked = selectedProblems.includes(service.name);
                     return (

@@ -7,6 +7,11 @@ import { IconButton } from "@mui/material";
 interface DateScrollerProps {
     selectedDate: Date;
     onDateSelect: (date: Date) => void;
+    /**
+     * The number of days ago from now to display in the date picker.
+     * Default is 14, which means the date picker will display dates from 14 days ago up to today.
+     */
+    numberOfDaysToShowFromNow?: number; // default is 14
 }
 
 /**
@@ -16,12 +21,13 @@ interface DateScrollerProps {
 export default function HorizontalDateScroller({
     selectedDate,
     onDateSelect,
+    numberOfDaysToShowFromNow = 14,
 }: Readonly<DateScrollerProps>) {
     const scrollerRef = useRef<HTMLDivElement>(null);
 
     // Generate a list of dates from 14 days ago up to today.
-    const dates = Array.from({ length: 15 }).map((_, i) =>
-        addDays(new Date(), i - 14)
+    const dates = Array.from({ length: numberOfDaysToShowFromNow + 1 }).map(
+        (_, i) => addDays(new Date(), i - numberOfDaysToShowFromNow)
     );
 
     // Effect to scroll the selected date into the center of the view.

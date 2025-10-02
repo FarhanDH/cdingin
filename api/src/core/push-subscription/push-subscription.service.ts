@@ -79,7 +79,7 @@ export class PushSubscriptionService {
             userEntity.role === RoleEnum.CUSTOMER
                 ? {
                       title: 'Kriing! Notifikasi udah nyala 🔔',
-                      body: 'Tenang, semua update penting soal pesananmu bakal langsung aku kabarin di sini. 😉',
+                      body: 'Semua update soal pesanan Anda bakal langsung dkabarin. 😉',
                       tag: 'subscription-activated',
                   }
                 : {

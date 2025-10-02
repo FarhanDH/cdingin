@@ -1,5 +1,5 @@
 import LocationPinIcon from "@mui/icons-material/LocationPin";
-import { Button, Fab } from "@mui/material";
+import { Button, Fab, IconButton } from "@mui/material";
 import axios from "axios";
 import { MoveLeft } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -336,7 +336,7 @@ export default function LocationStep({
                                     fontSize="small"
                                 />
                             </div>
-                            <div className="flex justify-between w-full">
+                            <div className="flex justify-between items-center w-full">
                                 <div>
                                     <h3 className="font-medium text-md mb-1">
                                         {isGeocoding
@@ -353,32 +353,25 @@ export default function LocationStep({
                                     </p>
                                 </div>
                                 {/* Location Note */}
-                                <button
-                                    className="bg-none p-1 rounded-full cursor-pointer"
+                                <IconButton
+                                    size="small"
+                                    className="w-10 h-10"
                                     onClick={() => setIsNoteSheetOpen(true)}
                                 >
                                     {locationNote.trim().length > 0 ? (
                                         <img
                                             src={noteSucces}
                                             alt="note-filled"
-                                            className={`${
-                                                isGeocoding
-                                                    ? "w-5 lg:w-5"
-                                                    : "w-10.5 lg:w-8"
-                                            }`}
+                                            className="w-5 h-5"
                                         />
                                     ) : (
                                         <img
                                             src={addNote}
                                             alt="add-note"
-                                            className={`${
-                                                isGeocoding
-                                                    ? "w-5 lg:w-5"
-                                                    : "w-10.5 lg:w-8"
-                                            }`}
+                                            className="w-5 h-5"
                                         />
                                     )}
-                                </button>
+                                </IconButton>
                             </div>
                         </div>
                     )}

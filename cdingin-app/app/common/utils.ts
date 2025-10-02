@@ -7,22 +7,29 @@ export const formattedDate = (
     options: {
         withTime?: boolean;
         withDay?: boolean;
-    } = { withTime: false, withDay: true }
+        locale?: string;
+    } = {}
 ) => {
+    const defaultOptions = { withTime: false, withDay: true, locale: "id-ID" };
+    const mergedOptions = { ...defaultOptions, ...options };
+
     const dateOptions = {
-        weekday: options.withDay ? "long" : undefined,
+        weekday: mergedOptions.withDay ? "long" : undefined,
         day: "numeric",
         month: "long",
         year: "numeric",
     } as const;
 
-    const formatDate = new Date(date).toLocaleDateString("id-ID", dateOptions);
+    const formatDate = new Date(date).toLocaleDateString(
+        mergedOptions.locale,
+        dateOptions
+    );
 
     const formatTime = `${new Date(date).getHours()}:${new Date(
         date
     ).getMinutes()}`;
 
-    return `${formatDate} ${options.withTime ? formatTime : ""}`;
+    return `${formatDate} ${mergedOptions.withTime ? formatTime : ""}`.trim();
 };
 
 /**

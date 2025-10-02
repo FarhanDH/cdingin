@@ -46,7 +46,7 @@ export default function Header({
             }
         >
             <div
-                className={`flex items-center justify-between mb-2 px-4 pt-4 pb-2 `}
+                className={`flex items-center justify-between mb- px-4 pt-4 pb-2 `}
             >
                 <div className={`flex items-center gap-3`}>
                     {showBack && (
