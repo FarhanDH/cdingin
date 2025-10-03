@@ -166,7 +166,7 @@ export default function CancelOrderSheet({
                             disabled={isSubmitting}
                             className="w-full h-[48px] normal-case rounded-full font-semibold text-md bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer !font-[Rubik] text-base disabled:bg-white/50 disabled:cursor-not-allowed"
                         >
-                            Nggak Jadi
+                            Nggak jadi
                         </Button>
                         <Button
                             onClick={handleCancelSubmit}

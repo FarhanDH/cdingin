@@ -1,11 +1,11 @@
 import PersonIcon from "@mui/icons-material/Person";
-import { CircularProgress } from "@mui/material";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import { CircularProgress, Fab } from "@mui/material";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-    Circle,
     MapContainer,
     Marker,
     Polyline,
@@ -16,14 +16,17 @@ import {
 import { useNavigate } from "react-router";
 import mapPin from "~/assets/map-pin.png";
 import motorcycle from "~/assets/motorcycle.png";
+import { formattedDate } from "~/common/utils";
 import ZoomControl from "~/customer/order/new/maps/zoom-control";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
 import type { OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/map";
-import { ChevronRight } from "lucide-react";
 
-function RouteLine({ start, end }: { start: L.LatLng | null; end: L.LatLng }) {
+function RouteLine({
+    start,
+    end,
+}: Readonly<{ start: L.LatLng | null; end: L.LatLng }>) {
     const { route } = useRouteCalculator(start, end);
 
     if (route.length === 0) return null;
@@ -38,53 +41,70 @@ export function meta(args: Route.MetaArgs) {
     ];
 }
 
+/**
+ * TechnicianMapPage is a component that displays a map with the technician's current location and the locations of their orders for the day.
+ * It fetches the orders from the API and stores them in the state.
+ * It also provides a method to request an update of the technician's location.
+ * The component is protected by authentication and will redirect to the login page if the user is not authenticated.
+ */
 export default function TechnicianMapPage() {
+    // Stores the list of orders to be displayed on the map
     const [orders, setOrders] = useState<OrderItem[]>([]);
+    // Stores whether the orders are being loaded
     const [isLoading, setIsLoading] = useState(true);
+    // Navigates to the specified route
     const navigate = useNavigate();
-    const { position: technicianPosition } = useTechnicianLocation({
-        fetchOnMount: true,
-    });
+    // Retrieves the technician's current location and provides a method to request an update
+    const { position: technicianPosition, requestLocation } =
+        useTechnicianLocation({
+            fetchOnMount: true,
+        });
+    // Stores the map instance
     const mapRef = useRef<L.Map>(null);
 
+    // Defines the icon to be used for the technician's location
     const mapPinIcon = L.icon({
         iconUrl: mapPin,
         iconSize: [25, 41],
     });
 
+    // Defines the icon to be used for the motorcycle
     const motorcycleIcon = L.icon({
         iconUrl: motorcycle,
         iconSize: [30, 50],
     });
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/orders/technician`,
-                    {
-                        params: { "service-date": "today" },
-                        withCredentials: true,
-                    }
-                );
-                setOrders(response.data.data);
-            } catch (error) {
-                console.error(error);
-                if (
-                    axios.isAxiosError(error) &&
-                    error.response?.status === 401
-                ) {
-                    navigate("/login");
+    // Fetches the orders from the API and stores them in the state
+    const fetchOrders = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders/technician`,
+                {
+                    params: { "service-date": "today" },
+                    withCredentials: true,
                 }
-            } finally {
-                setIsLoading(false);
+            );
+            setOrders(response.data.data);
+        } catch (error) {
+            console.error(error);
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                navigate("/login");
             }
-        };
-        fetchOrders();
+        } finally {
+            setIsLoading(false);
+        }
     }, [navigate]);
 
     useEffect(() => {
-        if (!mapRef.current || orders.length === 0) return;
+        // Fetches the orders when the component mounts
+        fetchOrders();
+    }, [fetchOrders]);
+
+    useEffect(() => {
+        // Updates the map bounds when the orders or technician position changes
+        if (!mapRef.current || orders.length === 0 || !technicianPosition)
+            return;
 
         const markers = orders.map((order) =>
             L.latLng(
@@ -93,9 +113,7 @@ export default function TechnicianMapPage() {
             )
         );
 
-        if (technicianPosition) {
-            markers.push(technicianPosition);
-        }
+        markers.push(technicianPosition);
 
         if (markers.length > 0) {
             const bounds = L.latLngBounds(markers);
@@ -104,6 +122,7 @@ export default function TechnicianMapPage() {
     }, [orders, technicianPosition]);
 
     if (isLoading) {
+        // Displays a loading indicator while the orders are being fetched
         return (
             <div className="flex flex-col h-screen items-center justify-center">
                 <CircularProgress size={30} className="text-primary" />
@@ -113,7 +132,38 @@ export default function TechnicianMapPage() {
     }
 
     return (
-        <div>
+        <div className="relative">
+            <div className="bg-none absolute px-4 top-4 left-0 right-0">
+                <Fab
+                    className="border border-white bg-primary shrink-0 active:scale-95 disabled:cursor-not-allowed w-12 h-12 normal-case rounded-full !font-[Rubik] font-semibold text-primary"
+                    size="medium"
+                    onClick={() => navigate("/technician/profile")}
+                >
+                    <PersonIcon className="text-white" />
+                </Fab>
+                <div className="flex items-center justify-center -mt-12">
+                    <Fab
+                        className="disabled:cursor-not-allowed bg-white shadow-lg shrink-0 w-50 h-12 normal-case rounded-full !font-[Rubik] font-semibold text-primary"
+                        size="medium"
+                        disabled
+                    >
+                        <p className="text-sm text-gray-700 w-full">
+                            {formattedDate(new Date(), { withTime: false })}
+                        </p>
+                    </Fab>
+                </div>
+                <Fab
+                    className="border border-primary bg-white shrink-0 active:scale-95 disabled:cursor-not-allowed w-12 h-12 normal-case rounded-full !font-[Rubik] font-semibold text-primary absolute -top-0 right-4"
+                    size="medium"
+                    onClick={() => {
+                        fetchOrders();
+                        requestLocation();
+                    }}
+                >
+                    <RefreshRoundedIcon className="text-primary" />
+                </Fab>
+            </div>
+
             {/* Map */}
             <div className="w-full">
                 <MapContainer
@@ -133,14 +183,12 @@ export default function TechnicianMapPage() {
                     <ZoomControl onPositionChange={() => {}} />
                     {/* Technician location marker */}
                     {technicianPosition && (
-                        <>
-                            <Marker
-                                position={technicianPosition}
-                                icon={motorcycleIcon}
-                            >
-                                <Popup>Lokasi Kamu</Popup>
-                            </Marker>
-                        </>
+                        <Marker
+                            position={technicianPosition}
+                            icon={motorcycleIcon}
+                        >
+                            <Popup>Lokasi Anda</Popup>
+                        </Marker>
                     )}
                     {/* Service location marker */}
                     {orders.map((order) => {
@@ -173,18 +221,24 @@ export default function TechnicianMapPage() {
                                                 );
                                             },
                                         }}
-                                        className="cursor-pointer active:scale-95"
+                                        className="cursor-pointer"
                                     >
                                         <div className="p-1 text-center cursor-pointer">
-                                            <p className="font-bold">
+                                            <p className="font-bold text-xs">
                                                 {`${order.customer.fullName} - ${order.totalUnits} unit`}
-                                            </p>
+                                            </p>{" "}
                                             <p className="text-xs line-clamp-1">
-                                                {`${order.serviceLocation.address.address.road}`}
-                                            </p>
-                                            <p className="text-xs line-clamp-1 flex items-center justify-center">
-                                                {`Lihat detail `}{" "}
-                                                <ChevronRight size={15} />
+                                                {`${
+                                                    order?.serviceLocation
+                                                        .address.address
+                                                        ?.road ||
+                                                    order?.serviceLocation
+                                                        .address.address
+                                                        ?.amenity ||
+                                                    order?.serviceLocation
+                                                        .address.address
+                                                        ?.village
+                                                }`}
                                             </p>
                                         </div>
                                     </Tooltip>

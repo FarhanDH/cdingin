@@ -106,7 +106,7 @@ export default function Profile() {
             <Header
                 title="Profilku"
                 showBack
-                navigateTo="/technician/orders"
+                onBack={() => navigate(-1)}
                 isSticky
                 showBorder={false}
                 className="bg-none"
