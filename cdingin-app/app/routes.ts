@@ -6,15 +6,16 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
-    // Public Routes
+    // !Public Routes
     route("", "components/public-route.tsx", [
-        index("routes/home.tsx"),
+        index("routes/index.tsx"),
         route("/auth", "routes/authentication.tsx"),
     ]),
 
-    // Customer Routes
+    // !Customer Routes
     route("", "components/customer-route.tsx", [
         layout("routes/customer/layout.tsx", [
+            route("/home", "routes/customer/home.tsx"),
             route("/orders", "routes/customer/customer-orders.tsx"),
             route("/notifications", "routes/customer/notification.tsx"),
         ]),
@@ -29,7 +30,7 @@ export default [
         ),
     ]),
 
-    // Technician Routes
+    // !Technician Routes
     route("", "components/technician-route.tsx", [
         layout("routes/technician/layout.tsx", [
             route(

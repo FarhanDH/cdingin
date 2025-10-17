@@ -1,5 +1,6 @@
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import {
     Badge,
     BottomNavigation,
@@ -61,6 +62,33 @@ export default function CustomerBottomNav() {
                 onChange={handleChange}
                 className="!border-none shadow-none"
             >
+                <BottomNavigationAction
+                    className={
+                        activeTab === "/home"
+                            ? `!text-primary !bg-gradient-to-b from-secondary/10 to-secondary/0 !font-[Rubik] font-medium`
+                            : "text-gray-500 font-light"
+                    }
+                    label="Beranda"
+                    value="/home"
+                    icon={
+                        <>
+                            <HomeRoundedIcon
+                                className={
+                                    activeTab === "/home"
+                                        ? `!text-primary `
+                                        : "text-gray-500"
+                                }
+                            />
+                            <div
+                                className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
+                                    activeTab === "/home"
+                                        ? "bg-primary"
+                                        : "bg-transparent"
+                                }`}
+                            ></div>
+                        </>
+                    }
+                />
                 <BottomNavigationAction
                     className={
                         activeTab === "/orders"

@@ -23,7 +23,7 @@ async function bootstrap() {
     const frontendUrl =
         configuration().env === 'production'
             ? configuration().frontendUrl
-            : 'http://localhost:5173';
+            : ['http://localhost:5173', 'http://localhost:8081'];
 
     app.use(cookieParser());
 
