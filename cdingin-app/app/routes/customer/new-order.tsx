@@ -233,6 +233,7 @@ export default function NewOrder() {
                     ? error.response?.data?.message
                     : "Yah, kayaknya ada yang salah. Coba lagi nanti, ya";
             toast(errorMessage, customToastStyle);
+            setLoading(false);
         } finally {
             setLoading(false);
         }

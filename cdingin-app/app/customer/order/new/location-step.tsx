@@ -302,10 +302,10 @@ export default function LocationStep({
             <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border rounded-t-2xl">
                 {/* Back Button */}
                 <Fab
-                    size="medium"
+                    size="small"
                     // aria-label="add"
                     onClick={onBack}
-                    className="absolute -top-15 left-4 z-10 bg-white p-2 rounded-full shadow-md cursor-pointer active:scale-95"
+                    className="absolute -top-15 left-4 z-10 bg-white p-2 rounded-full shadow-md border border-gray-300 cursor-pointer active:scale-95"
                 >
                     <MoveLeft className="text-gray-600" />
                 </Fab>

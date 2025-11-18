@@ -84,8 +84,7 @@ export class OrderService {
 
         try {
             // Check schedule availability
-            // Convert the service date string from the DTO to a Date object.
-            const serviceDate = new Date(createOrderDto.serviceDate);
+            const serviceDate = createOrderDto.serviceDate;
 
             if (serviceDate.getDay() === 0) {
                 throw new BadRequestException(

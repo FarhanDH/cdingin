@@ -95,7 +95,7 @@ export class CreateOrderRequestDto {
     @MinDate(new Date(), {
         message: 'Jadwal service tidak bisa sebelum atau hari ini',
     })
-    serviceDate: string;
+    serviceDate: Date;
 
     @IsString()
     @IsOptional()
