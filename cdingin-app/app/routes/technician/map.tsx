@@ -15,8 +15,8 @@ import {
 } from "react-leaflet";
 import { useNavigate } from "react-router";
 import mapPin from "~/assets/map-pin.png";
-import motorcycle from "~/assets/motorcycle.png";
 import { formattedDate } from "~/common/utils";
+import { blueDotIcon } from '~/customer/order/new/maps/current-location-marker';
 import ZoomControl from "~/customer/order/new/maps/zoom-control";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
@@ -55,10 +55,12 @@ export default function TechnicianMapPage() {
     // Navigates to the specified route
     const navigate = useNavigate();
     // Retrieves the technician's current location and provides a method to request an update
-    const { position: technicianPosition, requestLocation } =
-        useTechnicianLocation({
-            fetchOnMount: true,
-        });
+    const {
+        position: technicianPosition,
+        requestLocation,
+        startWatching,
+        stopWatching,
+    } = useTechnicianLocation();
     // Stores the map instance
     const mapRef = useRef<L.Map>(null);
 
@@ -68,11 +70,6 @@ export default function TechnicianMapPage() {
         iconSize: [25, 41],
     });
 
-    // Defines the icon to be used for the motorcycle
-    const motorcycleIcon = L.icon({
-        iconUrl: motorcycle,
-        iconSize: [30, 50],
-    });
 
     // Fetches the orders from the API and stores them in the state
     const fetchOrders = useCallback(async () => {
@@ -95,6 +92,13 @@ export default function TechnicianMapPage() {
             setIsLoading(false);
         }
     }, [navigate]);
+
+    useEffect(() => {
+        startWatching();
+        return () => {
+            stopWatching();
+        };
+    }, [startWatching, stopWatching]);
 
     useEffect(() => {
         // Fetches the orders when the component mounts
@@ -185,7 +189,7 @@ export default function TechnicianMapPage() {
                     {technicianPosition && (
                         <Marker
                             position={technicianPosition}
-                            icon={motorcycleIcon}
+                            icon={blueDotIcon}
                         >
                             <Popup>Lokasi Anda</Popup>
                         </Marker>

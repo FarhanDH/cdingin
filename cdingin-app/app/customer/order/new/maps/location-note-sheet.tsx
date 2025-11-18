@@ -89,7 +89,7 @@ export default function LocationNoteSheet({
                     {/* Save Button */}
                     <Button
                         onClick={handleSave}
-                        className="w-full h-12 rounded-full text-md font-semibold bg-primary text-white normal-case active:scale-95"
+                        className="w-full h-12 rounded-full text-base font-semibold bg-primary text-white normal-case active:scale-95"
                     >
                         Lanjut
                     </Button>

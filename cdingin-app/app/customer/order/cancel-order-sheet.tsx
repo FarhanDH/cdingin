@@ -26,6 +26,7 @@ const technicianCancelReasons = [
     { id: "cannot_contact", label: "Pelanggan tidak bisa dihubungi" },
     { id: "customer_request", label: "Pelanggan meminta untuk dibatalkan" },
     { id: "road_issue", label: "Ada kendala di jalan (ban bocor, dll.)" },
+    { id: "weather_issue", label: "Cuacanya hujan deras" },
     { id: "incomplete_tools", label: "Alat tidak lengkap untuk masalah ini" },
     { id: "other_technician", label: "Alasan lainnya" },
 ];

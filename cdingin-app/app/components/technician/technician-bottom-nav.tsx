@@ -21,6 +21,7 @@ export default function TechnicianBottomNav() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("/technician/orders");
     const [unreadCount, setUnreadCount] = useState(0);
+    const [orders, setOrders] = useState([]);
 
     // Effect to sync the active tab with the current URL path.
     // This ensures the correct tab is highlighted if the user navigates directly
@@ -44,6 +45,29 @@ export default function TechnicianBottomNav() {
                 console.error("Gagal mengambil jumlah notifikasi:", error);
             }
         };
+
+        const fetchOrders = async () => {
+            // setIsLoading(true);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/orders/technician`,
+                    {
+                        params: {
+                            "service-date": "upcoming",
+                        },
+                        withCredentials: true,
+                    }
+                );
+
+                setOrders(response.data.data);
+            } catch (error) {
+                console.error(
+                    `Gagal mengambil pesanan untuk tab ${activeTab}:`,
+                    error
+                );
+            }
+        };
+        fetchOrders();
 
         fetchUnreadCount();
     }, [activeTab]);
@@ -113,14 +137,22 @@ export default function TechnicianBottomNav() {
                     value="/technician/orders"
                     icon={
                         <div className="text-center flex flex-col items-center">
-                            <StickyNote2RoundedIcon
-                                className={`mb-1 mt-2 transition-all duration-300
+                            <Badge
+                                color="error"
+                                variant="dot"
+                                max={9}
+                                invisible={orders.length === 0}
+                                className="!font-[Rubik] mt-2 "
+                            >
+                                <StickyNote2RoundedIcon
+                                    className={`mb-1 mt-2 transition-all duration-300
                                     ${
                                         activeTab === "/technician/orders"
                                             ? `!text-primary transform scale-110 `
                                             : "text-gray-500"
                                     }`}
-                            />
+                                />
+                            </Badge>
                             <p
                                 className={`text-xs transition-all duration-300 ${
                                     activeTab === "/technician/orders"

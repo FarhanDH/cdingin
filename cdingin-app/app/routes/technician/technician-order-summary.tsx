@@ -89,8 +89,12 @@ export default function TechnicianOrderSummary() {
         useState<boolean>(false);
     const [isCustomeCallSheetOpen, setIsCustomeCallSheetOpen] = useState(false);
     const [isNavigateSheetOpen, setIsNavigateSheetOpen] = useState(false);
-    const { position: technicianPosition, requestLocation } =
-        useTechnicianLocation({ fetchOnMount: true });
+    const {
+        position: technicianPosition,
+        requestLocation,
+        startWatching,
+        stopWatching,
+    } = useTechnicianLocation();
 
     const serviceLocationPosition = useMemo(() => {
         if (!order) return null;
@@ -130,6 +134,18 @@ export default function TechnicianOrderSummary() {
         iconUrl: mapPin, // path to your image
         iconSize: [25, 41], // size of the icon
     });
+
+    useEffect(() => {
+        if (order?.status === "technician_on_the_way") {
+            startWatching();
+        } else {
+            stopWatching();
+        }
+
+        return () => {
+            stopWatching();
+        };
+    }, [order?.status, startWatching, stopWatching]);
 
     /**
      * Checks the current status of the geolocation permission.
@@ -523,7 +539,7 @@ export default function TechnicianOrderSummary() {
                     ]} // [latitude, longitude]
                     zoom={zoomValue}
                     style={{
-                        height: "550px",
+                        height: "72vh",
                         width: "100%",
                     }}
                     preferCanvas={true}
@@ -532,7 +548,7 @@ export default function TechnicianOrderSummary() {
                     zoomControl={false}
                 >
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        attribution="&copy; OpenStreetMap"
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         className="absolute -top-10 left-0 right-0 mx-auto"
                     />
@@ -571,7 +587,7 @@ export default function TechnicianOrderSummary() {
                         <Polyline
                             positions={route}
                             color="#057895"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
                     )}
                 </MapContainer>
@@ -580,21 +596,25 @@ export default function TechnicianOrderSummary() {
             {/* Order Details Drawer */}
             <Drawer
                 open={true}
-                snapPoints={[0.4, 1]}
+                snapPoints={[0.32, 0.5, 0.95]}
+                // activeSnapPoint={0.5}
+                dismissible={false}
                 snapToSequentialPoint={true}
                 modal={false}
-                repositionInputs={false}
+                repositionInputs={true}
                 defaultOpen={true}
             >
                 <DrawerContent
-                    className="max-w-lg mx-auto bg-gray-100 rounded-t-3xl border-none z-10 h-[97%] scroll-smooth"
+                    className="max-w-lg mx-auto bg-white border-t-gray-300 border-t z-10 h-[96vh] scroll-smooth"
                     isOverlay={false}
+                    isTopRounded={false}
+                    isDoubleHandleBar={true}
                 >
                     {/* Back button */}
                     <div className="absolute -top-15 left-4 flex items-center gap-2">
                         <Fab
-                            size="medium"
-                            className="z-10 bg-white p-2 rounded-full shadow-none cursor-pointer active:scale-95"
+                            size="small"
+                            className="z-10 bg-white p-2 rounded-full cursor-pointer active:scale-95 shadow-md border border-gray-300"
                             onClick={() => {
                                 setIsLoading(true);
                                 navigate("/technician/orders");
@@ -607,7 +627,7 @@ export default function TechnicianOrderSummary() {
                     {/* Google Map Navigation Button  */}
                     <div className="absolute -top-14 left-0 right-0 mx-auto max-w-lg justify-center flex items-center gap-4">
                         <Button
-                            className="z-10 bg-secondary text-white normal-case !font-[Rubik] px-3 py-2 rounded-full shadow-md cursor-pointer active:scale-95"
+                            className="z-10 bg-secondary text-white normal-case !font-[Rubik] px-3 rounded-full shadow-md cursor-pointer active:scale-95"
                             onClick={() => {
                                 setIsNavigateSheetOpen(true);
                             }}
@@ -621,22 +641,22 @@ export default function TechnicianOrderSummary() {
                     <div className="absolute -top-15 right-4 flex flex-col items-center gap-6">
                         {/* Request current location */}
                         <Fab
-                            size="medium"
-                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md cursor-pointer"
+                            size="small"
+                            className="z-10 bg-gray-50 p-2 rounded-full shadow-md border border-gray-300 cursor-pointer"
                             onClick={handleCenterMap}
                         >
                             <GpsFixedIcon className="text-gray-700" />
                         </Fab>
                     </div>
 
-                    <DrawerHeader className="border-b-2 border-gray-200 flex flex-col justify-center items-center">
+                    <DrawerHeader className="border-b-2 border-gray-200 flex flex-col justify-center">
                         {/* Order status badge */}
                         <span
-                            className={`px-3 rounded-sm text-xs text-white text-center ${statusColor} flex items-center h-7 w-fit`}
+                            className={`rounded-sm text-base text-gray-900 text-start font-medium`}
                         >
                             {statusText}
                         </span>
-                        <DrawerTitle className="font-medium text-gray-800 text-[15px] mt-1">
+                        <DrawerTitle className="text-gray-500 text-sm text-start font-normal">
                             {prettyDate(new Date(order.serviceDate), "id")
                                 .charAt(0)
                                 .toUpperCase() +
@@ -651,7 +671,7 @@ export default function TechnicianOrderSummary() {
                         </DrawerTitle>
                     </DrawerHeader>
                     <ScrollArea
-                        className="px-4 flex-grow bg-gray-100 overflow-y-auto z-10 scroll-smooth"
+                        className="px-4 flex-grow bg-gray-100 overflow-y-auto z-10 scroll-smooth mb-12"
                         showScrollBar={false}
                     >
                         <div className="space-y-3 mt-4">
@@ -740,7 +760,7 @@ export default function TechnicianOrderSummary() {
 
             {/* Bottom panel */}
             <div
-                className={`w-full px-3 gap-4 fixed bottom-0 max-w-lg mx-auto  bg-white z-50`}
+                className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto z-50 px-4 pb-2 bg-white "`}
             >
                 <div className="flex items-center mb-2 gap-2 justify-between">
                     {/* Order ID */}

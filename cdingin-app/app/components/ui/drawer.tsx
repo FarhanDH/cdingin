@@ -46,10 +46,14 @@ function DrawerOverlay({
 function DrawerContent({
     className,
     isOverlay = true,
+    isTopRounded = true,
+    isDoubleHandleBar = false,
     children,
     ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
     isOverlay?: boolean;
+    isDoubleHandleBar?: boolean;
+    isTopRounded?: boolean;
 }) {
     return (
         <DrawerPortal data-slot="drawer-portal">
@@ -59,14 +63,24 @@ function DrawerContent({
                 className={cn(
                     "group/drawer-content bg-background fixed z-50 flex h-auto flex-col",
                     "data-[vaul-drawer-direction=top]:inset-x-0 data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:max-h-[80vh] data-[vaul-drawer-direction=top]:rounded-b-lg data-[vaul-drawer-direction=top]:border-b",
-                    "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[100vh] data-[vaul-drawer-direction=bottom]:rounded-t-3xl data-[vaul-drawer-direction=bottom]:border-t",
+                    "data-[vaul-drawer-direction=bottom]:inset-x-0 data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:max-h-[100vh]",
+                    isTopRounded
+                        ? "data-[vaul-drawer-direction=bottom]:rounded-t-3xl"
+                        : "data-[vaul-drawer-direction=bottom]:rounded-t-none",
                     "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=right]:sm:max-w-sm",
                     "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=left]:sm:max-w-sm",
                     className
                 )}
                 {...props}
             >
-                <div className="bg-gray-400 mx-auto mt-3 hidden h-[4px] w-[28px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                {isDoubleHandleBar ? (
+                    <>
+                        <div className="bg-gray-300 mx-auto mt-3 hidden h-[3px] w-[28px] group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                        <div className="bg-gray-300 mx-auto mt-1 hidden h-[3px] w-[28px] group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                    </>
+                ) : (
+                    <div className="bg-gray-400 mx-auto mt-3 hidden h-[4px] w-[28px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                )}
 
                 {children}
             </DrawerPrimitive.Content>

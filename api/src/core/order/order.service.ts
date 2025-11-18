@@ -867,7 +867,7 @@ export class OrderService {
                 };
             case OrderStatusEnum.TECHNICIAN_ON_THE_WAY:
                 return {
-                    title: 'Teknisi OTW! 🛵',
+                    title: 'Teknisi Meluncur! 🛵',
                     body: `Berangkaaat! Teknisi lagi di jalan menuju lokasi. Siap-siap, ya!`,
                     tag,
                 };

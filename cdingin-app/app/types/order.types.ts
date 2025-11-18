@@ -143,7 +143,7 @@ export const getStatusLabel = (status: OrderStatus) => {
             textColor: "text-[#3B82F6]",
         },
         technician_on_the_way: {
-            text: "Teknisi OTW",
+            text: "Teknisi Meluncur",
             bgColor: "bg-[#0EA5E9]",
             textColor: "text-[#0EA5E9]",
         },

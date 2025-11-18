@@ -136,7 +136,7 @@ export default function CustomerOrderDetail() {
                     zoomControl={false}
                 >
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        attribution="&copy; OpenStreetMap"
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         className="absolute -top-10 left-0 right-0 mx-auto"
                     />
@@ -163,7 +163,7 @@ export default function CustomerOrderDetail() {
                 defaultOpen={true}
             >
                 <DrawerContent
-                    className={`max-w-lg mx-auto rounded-t-3xl z-10 h-[90%] ${
+                    className={`max-w-lg mx-auto z-10 h-[85vh] ${
                         order.invoiceId &&
                         order.status !== "completed" &&
                         "mb-30"
@@ -172,14 +172,16 @@ export default function CustomerOrderDetail() {
                         order.status === "completed" &&
                         "mb-10"
                     }`}
+                    isTopRounded={false}
+                    isDoubleHandleBar
                     isOverlay={false}
                 >
-                    <DrawerHeader className="bg-white flex items-center">
+                    <DrawerHeader className="bg-white flex">
                         {/* <DrawerTitle className="text-base font-bold text-gray-800"> */}
                         <span
-                            className={`px-3 rounded-sm w-fit text-xs text-white text-center ${statusColor} flex justify-center items-center h-7`}
+                            className={`rounded-sm text-base text-gray-900 text-center flex items-center h-7 w-fit font-medium`}
                         >
-                            <p>{statusText}</p>
+                            {statusText}
                         </span>
                         {/* </DrawerTitle> */}
                     </DrawerHeader>
