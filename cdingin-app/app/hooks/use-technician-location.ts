@@ -29,7 +29,6 @@ export function useTechnicianLocation() {
                 setPosition(
                     new L.LatLng(pos.coords.latitude, pos.coords.longitude)
                 );
-                console.log(pos.coords.latitude, pos.coords.longitude);
                 setError(null);
                 setIsFetching(false);
             },

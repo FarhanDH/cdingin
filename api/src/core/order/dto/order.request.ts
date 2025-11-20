@@ -12,8 +12,8 @@ import {
     IsOptional,
     IsPositive,
     IsString,
+    Matches,
     Max,
-    MinDate,
     ValidateNested,
 } from 'class-validator';
 import { ACBrandEnum } from '~/common/enums/ac-brand.enum';
@@ -90,12 +90,12 @@ export class CreateOrderRequestDto {
     @Type(() => AcUnitDto)
     acUnits: AcUnitDto[];
 
-    @IsDate()
-    @Type(() => Date)
-    @MinDate(new Date(), {
-        message: 'Jadwal service tidak bisa sebelum atau hari ini',
+    @IsString()
+    @IsNotEmpty()
+    @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'Format tanggal service harus YYYY-MM-DD',
     })
-    serviceDate: Date;
+    serviceDate: string;
 
     @IsString()
     @IsOptional()

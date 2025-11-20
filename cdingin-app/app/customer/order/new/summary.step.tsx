@@ -559,16 +559,16 @@ export default function SummaryStep({
                                 // Use a temporary state for selection inside the calendar
                                 onSelect={setTempDate}
                                 disabled={(date) =>
-                                    // Condition 1: Disable past dates
+                                    // Disable past dates
                                     date <
                                         new Date(
                                             new Date().setDate(
                                                 new Date().getDate()
                                             )
                                         ) ||
-                                    // Condition 2: Disable Sundays
+                                    // Disable Sundays
                                     date.getDay() === 0 ||
-                                    // Condition 3: Use the dynamically calculated disabledDates
+                                    // Use the dynamically calculated disabledDates
                                     disabledDates.some(
                                         (disabledDate) =>
                                             disabledDate.getDate() ===

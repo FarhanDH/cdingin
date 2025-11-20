@@ -13,16 +13,17 @@ export default function CustomDay(props: DayProps) {
 
     let badgeContent = null;
 
-    if (isSunday) {
-        badgeContent = (
-            <Badge
-                variant="secondary"
-                className="absolute bottom-0 text-[10px] h-3 px-1 leading-none text-white"
-            >
-                Libur
-            </Badge>
-        );
-    } else if (isFullyBooked) {
+    // if (isSunday) {
+    //     badgeContent = (
+    //         <Badge
+    //             variant="secondary"
+    //             className="absolute bottom-0 text-[10px] h-3 px-1 leading-none text-white"
+    //         >
+    //             Libur
+    //         </Badge>
+    //     );
+    // } else
+    if (isFullyBooked) {
         badgeContent = (
             <Badge
                 variant="destructive"

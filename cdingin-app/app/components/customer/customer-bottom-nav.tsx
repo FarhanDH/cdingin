@@ -9,12 +9,17 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import type { CustomerOrderCounts } from "~/types/order.types";
 
 /**
  * A reusable bottom navigation component for the customer section.
  * It automatically highlights the active tab based on the current URL.
  */
-export default function CustomerBottomNav() {
+export default function CustomerBottomNav({
+    orderCounts,
+}: Readonly<{
+    orderCounts: CustomerOrderCounts;
+}>) {
     const location = useLocation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("/orders");
@@ -49,6 +54,8 @@ export default function CustomerBottomNav() {
         navigate(newValue);
     };
 
+    const progressOrderCount = orderCounts?.progress ?? 0;
+
     return (
         <Paper
             sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50 }}
@@ -71,13 +78,20 @@ export default function CustomerBottomNav() {
                     value="/orders"
                     icon={
                         <>
-                            <StickyNote2RoundedIcon
-                                className={
-                                    activeTab === "/orders"
-                                        ? `!text-primary `
-                                        : "text-gray-500"
-                                }
-                            />
+                            <Badge
+                                color="error"
+                                variant="dot"
+                                badgeContent={progressOrderCount}
+                                invisible={progressOrderCount === 0}
+                            >
+                                <StickyNote2RoundedIcon
+                                    className={
+                                        activeTab === "/orders"
+                                            ? `!text-primary `
+                                            : "text-gray-500"
+                                    }
+                                />
+                            </Badge>
                             <div
                                 className={`w-full h-1 rounded-b-3xl absolute top-0 left-0 ${
                                     activeTab === "/orders"
@@ -95,6 +109,7 @@ export default function CustomerBottomNav() {
                         <>
                             <Badge
                                 color="error"
+                                variant="dot"
                                 badgeContent={unreadCount}
                                 max={9}
                                 invisible={unreadCount === 0}
@@ -128,7 +143,7 @@ export default function CustomerBottomNav() {
                     value="/profile"
                     icon={
                         <>
-                            <PersonIcon
+                            <PersonStandingIcon
                                 className={
                                     activeTab === "/profile"
                                         ? `!text-primary `

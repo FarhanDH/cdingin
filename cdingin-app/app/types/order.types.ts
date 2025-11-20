@@ -20,19 +20,26 @@ export interface CustomerTabItem {
     active?: boolean;
 }
 
-export interface TechnicianabItem {
+export interface TechnicianTabItem {
     id: "today" | "tomorrow" | "upcoming"; // For Technician
     label: string;
     active?: boolean;
 }
 
-export interface OrderTabsProps {
+export interface CustomerOrderTabsProps {
     tabs: CustomerTabItem[];
-    activeTab: string;
+    activeTab: CustomerOrderTabType;
     onTabChange: (tabId: "progress" | "completed" | "cancelled") => void;
+    orderCounts: CustomerOrderCounts | null;
 }
 
 export type CustomerOrderTabType = "progress" | "completed" | "cancelled";
+
+export type CustomerOrderCounts = {
+    progress: number;
+    completed: number;
+    cancelled: number;
+};
 
 export type AcUnitDetail = {
     id: string;
@@ -61,7 +68,7 @@ export type OrderFormData = {
     } | null;
     floor: number;
     note?: string;
-    serviceDate: Date;
+    serviceDate: Date | string;
 };
 
 export type AcUnitDto = {
@@ -82,7 +89,7 @@ export type CreateOrderRequestDto = {
     propertyType: string;
     floor: number;
     acUnits: AcUnitDto[];
-    serviceDate: Date;
+    serviceDate: string;
     note?: string;
 };
 
@@ -125,6 +132,12 @@ export type OrderItem = {
     totalUnits: number;
     createdAt: Date;
     updatedAt: Date;
+};
+
+export type OrderCounts = {
+    today: number;
+    tomorrow: number;
+    upcoming: number;
 };
 
 export const getStatusLabel = (status: OrderStatus) => {

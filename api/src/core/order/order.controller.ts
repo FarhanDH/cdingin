@@ -55,10 +55,12 @@ export class OrderController {
         @Request() request: RequestWithUser,
         @Query('status')
         status?: OrderStatusEnum | 'progress',
+        @Query('countOnly') countOnly?: boolean,
     ): Promise<ApiResponse<OrderResponse[]>> {
         const data = await this.orderService.getAllForCustomer(
             request.user,
             status,
+            countOnly,
         );
         return {
             message: 'Orders fetched successfully',
@@ -96,12 +98,14 @@ export class OrderController {
     async getAllForTechnician(
         @Request() request: RequestWithUser,
         @Query('service-date') serviceDate: OrderDateFilter | Date,
+        @Query('countOnly') countOnly?: boolean,
         @Query('status') status?: 'completed' | 'cancelled' | 'missed',
     ): Promise<ApiResponse<OrderResponse[]>> {
         const data = await this.orderService.getAllForTechnician(
             request.user,
             serviceDate,
             status,
+            countOnly,
         );
         return {
             message: 'Orders fetched successfully',

@@ -84,7 +84,8 @@ export class OrderService {
 
         try {
             // Check schedule availability
-            const serviceDate = createOrderDto.serviceDate;
+            // Parse the date string as UTC. new Date('YYYY-MM-DD') creates a UTC date.
+            const serviceDate = new Date(createOrderDto.serviceDate);
 
             if (serviceDate.getDay() === 0) {
                 throw new BadRequestException(
@@ -92,9 +93,9 @@ export class OrderService {
                 );
             }
 
-            // Get the start of the day for the service date.
+            // Get the start and end of the day for the service date in UTC.
+            // This ensures that the query is independent of the server's timezone.
             const dayStart = startOfDay(serviceDate);
-            // Get the end of the day for the service date.
             const dayEnd = endOfDay(serviceDate);
 
             // Query the database to sum the quantity of AC units booked for the given service date.
@@ -207,7 +208,7 @@ export class OrderService {
                         this.notificationService.create({
                             orderId: savedOrder.id,
                             recipientId: technician.id,
-                            title: 'Orderan Masuk, Nih! 🚀',
+                            title: 'Pesanan Baru, Nih! 🔔',
                             message:
                                 'Ada pelanggan baru yang butuh bantuanmu. Langsung cek detailnya, yuk!',
                             type: NotificationType.NEW_ORDER,
@@ -269,10 +270,49 @@ export class OrderService {
     async getAllForCustomer(
         user: JwtPayload,
         status?: OrderStatusEnum | 'progress',
+        countOnly?: boolean,
     ): Promise<OrderResponse[]> {
         this.logger.debug(
             `OrderService.getAllByCustomer(user: ${JSON.stringify(user)}, status: ${JSON.stringify(status)})`,
         );
+
+        if (countOnly) {
+            const countQuery = async (
+                statusFilter: OrderStatusEnum[] | 'progress',
+            ): Promise<number> => {
+                let where: FindOptionsWhere<Order>['status'];
+                if (statusFilter === 'progress') {
+                    where = Not(
+                        In([
+                            OrderStatusEnum.CANCELLED,
+                            OrderStatusEnum.COMPLETED,
+                        ]),
+                    );
+                } else {
+                    where = In(statusFilter);
+                }
+
+                return this.orderRepository.count({
+                    where: {
+                        customer: { id: user.sub },
+                        status: where,
+                    },
+                });
+            };
+
+            const [progressCount, completedCount, cancelledCount] =
+                await Promise.all([
+                    countQuery('progress'),
+                    countQuery([OrderStatusEnum.COMPLETED]),
+                    countQuery([OrderStatusEnum.CANCELLED]),
+                ]);
+
+            return {
+                progress: progressCount,
+                completed: completedCount,
+                cancelled: cancelledCount,
+            } as any;
+        }
 
         // Get all orders with status is not completed and cancelled
         if (status === 'progress') {
@@ -323,6 +363,7 @@ export class OrderService {
         user: JwtPayload,
         serviceDate?: OrderDateFilter | Date,
         status?: 'completed' | 'cancelled' | 'missed',
+        countOnly?: boolean,
     ): Promise<OrderResponse[]> {
         this.logger.debug(
             `OrderService.getAllForTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)}, status: ${status})`,
@@ -330,6 +371,62 @@ export class OrderService {
 
         let whereClause: FindOptionsWhere<Order> | FindOptionsWhere<Order>[] =
             {};
+
+        if (countOnly) {
+            // const counts = {
+            //     today: 0,
+            //     tomorrow: 0,
+            //     upcoming: 0,
+            // };
+
+            const countQuery = async (
+                dateFilter: OrderDateFilter,
+            ): Promise<number> => {
+                let dateClause: FindOptionsWhere<Order>['service_date'];
+                if (dateFilter === OrderDateFilter.TODAY) {
+                    dateClause = Between(
+                        startOfDay(new Date()),
+                        endOfDay(new Date()),
+                    );
+                } else if (dateFilter === OrderDateFilter.TOMORROW) {
+                    const tomorrow = addDays(new Date(), 1);
+                    dateClause = Between(
+                        startOfDay(tomorrow),
+                        endOfDay(tomorrow),
+                    );
+                } else {
+                    // upcoming
+                    dateClause = MoreThanOrEqual(
+                        startOfDay(addDays(new Date(), 2)),
+                    );
+                }
+
+                return this.orderRepository.count({
+                    where: {
+                        service_date: dateClause,
+                        status: Not(
+                            In([
+                                OrderStatusEnum.CANCELLED,
+                                OrderStatusEnum.COMPLETED,
+                            ]),
+                        ),
+                    },
+                });
+            };
+
+            const [todayCount, tomorrowCount, upcomingCount] =
+                await Promise.all([
+                    countQuery(OrderDateFilter.TODAY),
+                    countQuery(OrderDateFilter.TOMORROW),
+                    countQuery(OrderDateFilter.UPCOMING),
+                ]);
+
+            return {
+                today: todayCount,
+                tomorrow: tomorrowCount,
+                upcoming: upcomingCount,
+            } as any;
+        }
 
         if (
             serviceDate !== OrderDateFilter.TODAY &&
@@ -700,9 +797,9 @@ export class OrderService {
             // Notification received by all technicians
             const technicians = await this.userService.getAllTechnicians();
             const notificationMassage = {
-                title: 'Yah, Orderan Dibatalkan Pelanggan 😥',
+                title: 'Yah, Pesanan Dibatalkan Pelanggan 🥲',
                 message:
-                    'Sabar ya, ada orderan yang dibatalkan pelanggan. Tetap semangat, masih banyak yang butuh bantuanmu!',
+                    'Sabar ya. Tetap semangat!, masih banyak yang butuh bantuanmu!',
                 type: NotificationType.CANCELLED_ORDER,
             };
             const savedNotification = technicians.map(async (technician) => {
@@ -878,19 +975,19 @@ export class OrderService {
                 };
             case OrderStatusEnum.WAITING_PAYMENT:
                 return {
-                    title: 'Kerjaan Beres, Tagihan Siap! 💸',
-                    body: `Mantap! Servis AC-nya udah kelar. Tagihannya udah ada, yuk langsung dibayar.`,
+                    title: 'Kerjaan Beres, Tagihan Siap! 📃',
+                    body: `Tagihannya udah siap, yuk langsung dibayar.`,
                     tag,
                 };
             case OrderStatusEnum.COMPLETED:
                 return {
                     title: 'Hore, Servis Selesai! 🎉',
-                    body: `AC-nya udah adem lagi, nih. Makasih banyak udah pakai jasa Cdingin, ya! Sampai ketemu lagi.`,
+                    body: `AC-nya udah adem lagi, nih. Makasih banyak udah pakai jasa Herdi Jaya Service, ya!`,
                     tag,
                 };
             case OrderStatusEnum.CANCELLED:
                 return {
-                    title: 'Yah, Pesanan Dibatalkan 😥',
+                    title: 'Yah, Pesanan Dibatalkan 🥲',
                     body: `Maaf banget, ${userName}. Karena satu dan lain hal, teknisi harus batalin pesanannya. Yuk, coba buat pesanan baru.`,
                     tag: NotificationType.CANCELLED_ORDER,
                 };

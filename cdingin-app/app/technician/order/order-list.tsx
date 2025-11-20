@@ -7,12 +7,14 @@ import {
 } from "@radix-ui/react-dialog";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
+import { useOutletContext } from "react-router";
 import threeTechniciansImage from "~/assets/three-technicians.png";
 import EnableLocationSheet from "~/components/enable-location-sheet";
 import Header from "~/components/header";
 import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 import { useNotificationPermission } from "~/hooks/use-notification-permission";
-import type { OrderItem, TechnicianabItem } from "~/types/order.types";
+import type { OrderItem, TechnicianTabItem } from "~/types/order.types";
+import type { TechnicianLayoutContext } from "~/routes/technician/layout";
 import TechnicianOrderCard from "./order-card";
 import type { TechnicianTabId } from "./technician-order-tab";
 import TechnicianOrderTab from "./technician-order-tab";
@@ -21,6 +23,8 @@ export default function TechnicianOrderList() {
     const [orders, setOrders] = useState<OrderItem[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<TechnicianTabId>("today");
+    const { orderCounts, refetchOrderCounts } =
+        useOutletContext<TechnicianLayoutContext>();
     const [locationPermission, setLocationPermission] = useState<
         "prompt" | "granted" | "denied"
     >("prompt");
@@ -113,6 +117,11 @@ export default function TechnicianOrderList() {
         );
     };
 
+    useEffect(() => {
+        // Refetch counts every time the tab changes to ensure data is fresh
+        refetchOrderCounts();
+    }, [activeTab, refetchOrderCounts]);
+
     // Fetch orders data for each activeTab changing
     useEffect(() => {
         const fetchOrders = async () => {
@@ -138,10 +147,11 @@ export default function TechnicianOrderList() {
                 setIsLoading(false);
             }
         };
+
         fetchOrders();
     }, [activeTab]);
 
-    const tabs: TechnicianabItem[] = [
+    const tabs: TechnicianTabItem[] = [
         { id: "today", label: "Hari Ini" },
         { id: "tomorrow", label: "Besok" },
         { id: "upcoming", label: "Mendatang" },
@@ -174,10 +184,12 @@ export default function TechnicianOrderList() {
                     title="Daftar Pesanan"
                     showProfile
                     className="bg-white"
+                    orderCounts={orderCounts ?? undefined}
                 >
                     <TechnicianOrderTab
                         tabs={tabs}
                         activeTab={activeTab}
+                        orderCounts={orderCounts}
                         onTabChange={setActiveTab}
                     />
                 </Header>

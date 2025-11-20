@@ -3,6 +3,7 @@ import { IconButton } from "@mui/material";
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "~/contexts/auth.context";
+import type { OrderCounts } from "~/types/order.types";
 
 export default function Header({
     isSticky = false,
@@ -13,6 +14,7 @@ export default function Header({
     onBack,
     showBorder = true,
     className = "",
+    orderCounts,
     children,
 }: Readonly<{
     isSticky?: boolean;
@@ -23,6 +25,7 @@ export default function Header({
     onBack?: () => void;
     className?: string;
     title: string;
+    orderCounts?: OrderCounts;
     children?: React.ReactNode;
 }>) {
     const { user } = useAuth();

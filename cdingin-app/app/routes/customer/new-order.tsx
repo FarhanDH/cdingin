@@ -80,7 +80,7 @@ const mapFormDataToApiRequest = (
             brand: unit.brand,
             quantity: unit.quantity,
         })),
-        serviceDate: formData.serviceDate,
+        serviceDate: formData.serviceDate as any, // Will be formatted to string before sending
         note: formData.note,
     } satisfies CreateOrderRequestDto;
 };
@@ -206,13 +206,22 @@ export default function NewOrder() {
         const completeFormData = {
             ...formData,
             note: data.note,
-            serviceDate: data.serviceDate,
+            serviceDate: data.serviceDate, // Keep as Date object for now
         };
 
         try {
             // 1. Mapping data
             setLoading(true);
-            const apiPayload = mapFormDataToApiRequest(completeFormData);
+            const apiPayload = mapFormDataToApiRequest({
+                ...completeFormData,
+                // Format date to YYYY-MM-DD string right before sending
+                serviceDate: completeFormData.serviceDate
+                    ? new Date(
+                          completeFormData.serviceDate.getTime() -
+                              completeFormData.serviceDate.getTimezoneOffset() * 60000
+                      ).toISOString().split("T")[0]
+                    : undefined,
+            });
 
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/orders`,

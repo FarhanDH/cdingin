@@ -90,7 +90,7 @@ export default function CancelOrderSheet({
             onSuccess();
         } catch (error) {
             console.error("Gagal membatalkan pesanan");
-            toast("Gagal membatalkan pesanan. Coba lagi.", customToastStyle);
+            toast("Gagal membatalkan pesanan.", customToastStyle);
         } finally {
             setIsSubmitting(false);
         }

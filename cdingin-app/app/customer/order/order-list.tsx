@@ -7,8 +7,8 @@ import {
 } from "@radix-ui/react-dialog";
 import axios from "axios";
 import { PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router";
 import { toast } from "sonner";
 import threeTechniciansImage from "~/assets/three-technicians.png";
 import Header from "~/components/header";
@@ -19,9 +19,11 @@ import { useNotificationPermission } from "~/hooks/use-notification-permission";
 import type {
     CustomerOrderTabType,
     CustomerTabItem,
+    CustomerOrderCounts,
     OrderItem,
 } from "~/types/order.types";
 import CustomerOrderTab from "./order-tab-status";
+import type { CustomerLayoutContext } from "~/routes/customer/layout";
 
 export default function CustomerOrderList() {
     const navigate = useNavigate();
@@ -30,6 +32,8 @@ export default function CustomerOrderList() {
     const [isNavigating, setIsNavigating] = useState<boolean>(false);
     const [activeTab, setActiveTab] =
         useState<CustomerOrderTabType>("progress");
+    const { orderCounts, refetchOrderCounts } =
+        useOutletContext<CustomerLayoutContext>();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const { permission, requestPermission } = useNotificationPermission();
 
@@ -115,6 +119,7 @@ export default function CustomerOrderList() {
                         tabs={tabs}
                         activeTab={activeTab}
                         onTabChange={setActiveTab}
+                        orderCounts={orderCounts}
                     />
                 </Header>
 

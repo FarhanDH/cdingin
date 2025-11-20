@@ -1,3 +1,4 @@
+import MapRoundedIcon from "@mui/icons-material/MapRounded";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
 import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
@@ -7,21 +8,24 @@ import {
     BottomNavigationAction,
     Paper,
 } from "@mui/material";
-import MapRoundedIcon from "@mui/icons-material/MapRounded";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import type { OrderCounts } from "~/types/order.types";
 
 /**
  * A reusable bottom navigation component for the technician section.
  * It automatically highlights the active tab based on the current URL.
  */
-export default function TechnicianBottomNav() {
+export default function TechnicianBottomNav({
+    orderCounts,
+}: Readonly<{
+    orderCounts: OrderCounts | null;
+}>) {
     const location = useLocation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("/technician/orders");
     const [unreadCount, setUnreadCount] = useState(0);
-    const [orders, setOrders] = useState([]);
 
     // Effect to sync the active tab with the current URL path.
     // This ensures the correct tab is highlighted if the user navigates directly
@@ -46,35 +50,16 @@ export default function TechnicianBottomNav() {
             }
         };
 
-        const fetchOrders = async () => {
-            // setIsLoading(true);
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/orders/technician`,
-                    {
-                        params: {
-                            "service-date": "upcoming",
-                        },
-                        withCredentials: true,
-                    }
-                );
-
-                setOrders(response.data.data);
-            } catch (error) {
-                console.error(
-                    `Gagal mengambil pesanan untuk tab ${activeTab}:`,
-                    error
-                );
-            }
-        };
-        fetchOrders();
-
         fetchUnreadCount();
-    }, [activeTab]);
+    }, []);
 
     const handleChange = (event: React.SyntheticEvent, newValue: string) => {
         navigate(newValue);
     };
+
+    const totalOrders = orderCounts
+        ? orderCounts.today + orderCounts.tomorrow + orderCounts.upcoming
+        : 0;
 
     return (
         <Paper
@@ -139,9 +124,8 @@ export default function TechnicianBottomNav() {
                         <div className="text-center flex flex-col items-center">
                             <Badge
                                 color="error"
-                                variant="dot"
-                                max={9}
-                                invisible={orders.length === 0}
+                                badgeContent={totalOrders}
+                                invisible={totalOrders === 0}
                                 className="!font-[Rubik] mt-2 "
                             >
                                 <StickyNote2RoundedIcon

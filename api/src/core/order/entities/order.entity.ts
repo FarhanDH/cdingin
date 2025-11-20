@@ -49,7 +49,7 @@ export class Order {
     @Column({ type: 'varchar', length: 2 })
     property_floor: string;
 
-    @Column({ type: 'date' })
+    @Column({ type: 'timestamp with time zone' })
     service_date: Date;
 
     @Column({ type: 'varchar', length: 255, nullable: true })

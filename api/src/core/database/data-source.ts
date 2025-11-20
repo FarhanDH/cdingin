@@ -13,7 +13,7 @@ export const dataSourceOptions: DataSourceOptions & SeederOptions = {
     password: configuration().database.password,
     database: configuration().database.name,
     url: configuration().database.url,
-    useUTC: true,
+    // useUTC: true,
     entities: [
         'dist/**/*.entity.js',
         'src/**/*.entity.ts', // enable when seeding and migrations
