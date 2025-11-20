@@ -28,6 +28,7 @@ import {
 } from "~/components/ui/table";
 import { type InvoiceResponse } from "~/types/invoice.types";
 import type { Route } from "./+types/invoice-detail";
+import Pusher from "pusher-js";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -48,23 +49,23 @@ export default function InvoiceDetailPage() {
     const [isCashInfoOpen, setIsCashInfoOpen] = useState(false);
     const [customerAddress, setCustomerAddress] = useState<string>("");
 
+    const fetchInvoice = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice`,
+                { withCredentials: true }
+            );
+            setInvoice(response.data.data);
+        } catch (error) {
+            toast("Gagal memuat tagihan.", customToastStyle);
+            navigate(`/order/${orderId}`); // Kembali jika gagal
+        } finally {
+            setIsLoading(false);
+        }
+    };
     // Fetch invoice details on component mount
     useEffect(() => {
-        const fetchInvoice = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice`,
-                    { withCredentials: true }
-                );
-                setInvoice(response.data.data);
-            } catch (error) {
-                toast("Gagal memuat tagihan.", customToastStyle);
-                navigate(`/order/${orderId}`); // Kembali jika gagal
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchInvoice();
     }, [orderId, navigate]);
 
@@ -99,6 +100,30 @@ export default function InvoiceDetailPage() {
             getDetailAddress();
         }
     }, [invoice]);
+
+    // Effect to connect Pusher Real-Time
+    useEffect(() => {
+        const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+        });
+
+        const channelName = `order-${orderId}-technician`;
+        const channel = pusher.subscribe(channelName);
+
+        // Bind and Listen Even 'status-updated'
+        channel.bind("status-updated-technician", (data: any) => {
+            console.log("Real-time Status update: ", data.newStatus);
+
+            fetchInvoice();
+
+            toast(data.message, customToastStyle);
+        });
+
+        return () => {
+            pusher.unsubscribe(channelName);
+            pusher.disconnect();
+        };
+    }, [orderId]);
 
     if (isLoading) {
         return (

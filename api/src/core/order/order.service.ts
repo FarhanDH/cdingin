@@ -43,6 +43,7 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
+import { PusherService } from '../pusher/pusher.service';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -58,6 +59,7 @@ export class OrderService {
         private readonly notificationService: NotificationService,
         private readonly dataSource: DataSource,
         private readonly httpService: HttpService,
+        private readonly pusherService: PusherService,
     ) {}
 
     private readonly logger = new Logger(OrderService.name);
@@ -673,6 +675,19 @@ export class OrderService {
                 type: notificationMessage.tag,
             });
 
+            // Trigger REAL-TIME UPDATE
+            const channelName = `order-${order.id}-customer`;
+
+            await this.pusherService.trigger(
+                channelName,
+                'status-updated-customer',
+                {
+                    orderId: order.id,
+                    newStatus: order.status,
+                    message: savedNotification.title,
+                },
+            );
+
             // Send the notification to the customer
             await this.pushSubscriptionService.sendNotificationToUser(
                 savedNotification.recipient.id,
@@ -811,6 +826,19 @@ export class OrderService {
             });
             const savedNotifications = await Promise.all(savedNotification);
 
+            // Trigger REAL-TIME UPDATE
+            const channelName = `order-${order.id}-technician`;
+
+            await this.pusherService.trigger(
+                channelName,
+                'status-updated-technician',
+                {
+                    orderId: order.id,
+                    newStatus: order.status,
+                    message: notificationMassage.title,
+                },
+            );
+
             const technicianSubscriptions =
                 await this.pushSubscriptionService.getAllTechnicianSubscriptions();
 
@@ -888,6 +916,18 @@ export class OrderService {
                 OrderStatusEnum.CANCELLED,
             );
 
+            // Trigger REAL-TIME UPDATE
+            const channelName = `order-${order.id}-customer`;
+
+            await this.pusherService.trigger(
+                channelName,
+                'status-updated-customer',
+                {
+                    orderId: order.id,
+                    newStatus: order.status,
+                    message: notificationMassage.title,
+                },
+            );
             // Save notification message
             const savedNotification = await this.notificationService.create({
                 orderId: order.id,

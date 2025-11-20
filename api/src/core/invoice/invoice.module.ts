@@ -8,6 +8,7 @@ import { Invoice } from './entities/invoice.entity';
 import { InvoiceController } from './invoice.controller';
 import { InvoiceService } from './invoice.service';
 import { HttpModule } from '@nestjs/axios';
+import { PusherModule } from '../pusher/pusher.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { HttpModule } from '@nestjs/axios';
         OrderModule,
         NotificationModule,
         PushSubscriptionModule,
+        PusherModule,
     ],
     controllers: [InvoiceController],
     providers: [InvoiceService],

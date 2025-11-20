@@ -37,6 +37,7 @@ import { useMidtrans } from "~/hooks/use-midtrans";
 import type { InvoiceResponse } from "~/types/invoice.types";
 import type { MidtransTokenResponse } from "~/types/payment.type";
 import type { Route } from "./+types/invoice-detail";
+import Pusher from "pusher-js";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -99,23 +100,39 @@ export default function InvoiceDetailPage() {
         }
     };
 
+    const fetchInvoice = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice`,
+                { withCredentials: true }
+            );
+            setInvoice(response.data.data);
+        } catch (error) {
+            toast("Gagal memuat tagihan.", customToastStyle);
+            navigate(`/order/${orderId}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Fetch invoice details
     useEffect(() => {
-        const fetchInvoice = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice`,
-                    { withCredentials: true }
-                );
-                setInvoice(response.data.data);
-            } catch (error) {
-                toast("Gagal memuat tagihan.", customToastStyle);
-                navigate(`/order/${orderId}`);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        // const fetchInvoice = async () => {
+        //     setIsLoading(true);
+        //     try {
+        //         const response = await axios.get(
+        //             `${import.meta.env.VITE_API_URL}/orders/${orderId}/invoice`,
+        //             { withCredentials: true }
+        //         );
+        //         setInvoice(response.data.data);
+        //     } catch (error) {
+        //         toast("Gagal memuat tagihan.", customToastStyle);
+        //         navigate(`/order/${orderId}`);
+        //     } finally {
+        //         setIsLoading(false);
+        //     }
+        // };
         fetchInvoice();
     }, [orderId, navigate]);
 
@@ -227,6 +244,39 @@ export default function InvoiceDetailPage() {
             setIsPaying(false);
         }
     };
+
+    // Effect to connect Pusher Real-Time
+    useEffect(() => {
+        const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+        });
+
+        const channelName = `order-${orderId}-customer`;
+        const channel = pusher.subscribe(channelName);
+
+        // Bind and Listen Even 'status-updated'
+        channel.bind("status-updated-customer", (data: any) => {
+            console.log("Real-time Status update: ", data.newStatus);
+
+            fetchInvoice();
+
+            toast(data.message, customToastStyle);
+        });
+
+        return () => {
+            pusher.unsubscribe(channelName);
+            pusher.disconnect();
+        };
+    }, [orderId]);
+
+    useEffect(() => {
+        if (
+            invoice?.order?.status === "completed" ||
+            invoice?.order.status === "cancelled"
+        ) {
+            setIsPaymentGatewaySheetOpen(false);
+        }
+    }, [invoice?.order?.status]);
 
     if (isLoading) {
         return (
@@ -368,39 +418,43 @@ export default function InvoiceDetailPage() {
             </main>
 
             {/* Footer Pilih Metode */}
-            {invoice.status === "unpaid" && (
-                <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
-                    <h3 className="font-semibold">Pilih Metode Pembayaran</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <Button
-                            variant="outlined"
-                            className="h-12 text-base text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95 rounded-full"
-                            disabled={isPaymentGatewaySheetOpen}
-                            onClick={() => setIsCashInfoOpen(true)}
-                        >
-                            Bayar tunai
-                        </Button>
-                        <Button
-                            className="h-12 text-base bg-primary font-medium text-white normal-case !font-[Rubik] active:scale-95 rounded-full disabled:bg-primary/50 disabled:cursor-not-allowed"
-                            onClick={handleDigitalPayment}
-                            disabled={
-                                isPaying ||
-                                !isScriptLoaded ||
-                                isPaymentGatewaySheetOpen
-                            }
-                        >
-                            {isPaying ? (
-                                <CircularProgress
-                                    size={20}
-                                    className="text-white"
-                                />
-                            ) : (
-                                "Bayar digital"
-                            )}
-                        </Button>
-                    </div>
-                </footer>
-            )}
+            {invoice.status === "unpaid" &&
+                invoice.order.status !== "cancelled" &&
+                invoice.order.status !== "completed" && (
+                    <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t-2 p-4 space-y-3 rounded-t-3xl z-50 shadow-card border-x-2">
+                        <h3 className="font-semibold">
+                            Pilih Metode Pembayaran
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button
+                                variant="outlined"
+                                className="h-12 text-base text-primary font-medium border-primary normal-case !font-[Rubik] active:scale-95 rounded-full"
+                                disabled={isPaymentGatewaySheetOpen}
+                                onClick={() => setIsCashInfoOpen(true)}
+                            >
+                                Bayar tunai
+                            </Button>
+                            <Button
+                                className="h-12 text-base bg-primary font-medium text-white normal-case !font-[Rubik] active:scale-95 rounded-full disabled:bg-primary/50 disabled:cursor-not-allowed"
+                                onClick={handleDigitalPayment}
+                                disabled={
+                                    isPaying ||
+                                    !isScriptLoaded ||
+                                    isPaymentGatewaySheetOpen
+                                }
+                            >
+                                {isPaying ? (
+                                    <CircularProgress
+                                        size={20}
+                                        className="text-white"
+                                    />
+                                ) : (
+                                    "Bayar digital"
+                                )}
+                            </Button>
+                        </div>
+                    </footer>
+                )}
 
             {/* Cash Dialog */}
             <Dialog open={isCashInfoOpen} onOpenChange={setIsCashInfoOpen}>

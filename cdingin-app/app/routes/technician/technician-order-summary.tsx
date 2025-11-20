@@ -60,6 +60,7 @@ import {
     type OrderStatus,
 } from "~/types/order.types";
 import type { Route } from "./+types/technician-order-summary";
+import Pusher from "pusher-js";
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -79,7 +80,7 @@ export default function TechnicianOrderSummary() {
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPhoneSheetOpen, setIsPhoneSheetOpen] = useState(false);
-    const { text: statusText, bgColor: statusColor } = getStatusLabel(
+    const { text: statusText, textColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
     const [locationPermission, setLocationPermission] = useState<
@@ -87,7 +88,7 @@ export default function TechnicianOrderSummary() {
     >("prompt");
     const [isLocationPermissionSheetOpen, setIsLocationPermissionSheetOpen] =
         useState<boolean>(false);
-    const [isCustomeCallSheetOpen, setIsCustomeCallSheetOpen] = useState(false);
+    const [isCallSheetOpen, setIsCallSheetOpen] = useState(false);
     const [isNavigateSheetOpen, setIsNavigateSheetOpen] = useState(false);
     const {
         position: technicianPosition,
@@ -261,6 +262,30 @@ export default function TechnicianOrderSummary() {
             }
         };
         fetchOrder();
+    }, [orderId]);
+
+    // Effect to connect Pusher Real-Time
+    useEffect(() => {
+        const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+        });
+
+        const channelName = `order-${orderId}-technician`;
+        const channel = pusher.subscribe(channelName);
+
+        // Bind and Listen Even 'status-updated'
+        channel.bind("status-updated-technician", (data: any) => {
+            console.log("Real-time Status update: ", data.newStatus);
+
+            fetchOrderDetail();
+
+            toast(data.message, customToastStyle);
+        });
+
+        return () => {
+            pusher.unsubscribe(channelName);
+            pusher.disconnect();
+        };
     }, [orderId]);
 
     // Custom toast message
@@ -461,10 +486,14 @@ export default function TechnicianOrderSummary() {
         }
     };
 
-    // Show the phone sheet only if the order status is "pending"
     useEffect(() => {
         if (order?.status === "pending") {
             setIsPhoneSheetOpen(true);
+        } else if (order?.status === "cancelled") {
+            setIsCancelSheetOpen(false);
+            setIsCallSheetOpen(false);
+            setIsPhoneSheetOpen(false);
+            setIsNavigateSheetOpen(false);
         }
     }, [order?.status]);
 
@@ -652,7 +681,7 @@ export default function TechnicianOrderSummary() {
                     <DrawerHeader className="border-b-2 border-gray-200 flex flex-col justify-center">
                         {/* Order status badge */}
                         <span
-                            className={`rounded-sm text-base text-gray-900 text-start font-medium`}
+                            className={`rounded-sm text-base ${statusColor} text-start font-medium`}
                         >
                             {statusText}
                         </span>
@@ -775,7 +804,7 @@ export default function TechnicianOrderSummary() {
                     {/* Phone Button */}
                     <Button
                         onClick={() => {
-                            setIsCustomeCallSheetOpen(true);
+                            setIsCallSheetOpen(true);
                         }}
                         disabled={!order.customer.phone}
                         className="!font-[Rubik] normal-case text-gray-600 text-xs font-normal flex flex-col rounded-none border-gray-200 hover:bg-gray-50 active:bg-gray-100 w-full h-full"
@@ -876,10 +905,7 @@ export default function TechnicianOrderSummary() {
             </Sheet>
 
             {/* Show when "Hubungi Pelanggan" is clicked */}
-            <Sheet
-                open={isCustomeCallSheetOpen}
-                onOpenChange={setIsCustomeCallSheetOpen}
-            >
+            <Sheet open={isCallSheetOpen} onOpenChange={setIsCallSheetOpen}>
                 <SheetContent
                     side="bottom"
                     className="rounded-t-2xl max-w-lg mx-auto text-start"
@@ -898,7 +924,7 @@ export default function TechnicianOrderSummary() {
                         {/* Button for phone call */}
                         <Button
                             onClick={() => {
-                                setIsCustomeCallSheetOpen(false);
+                                setIsCallSheetOpen(false);
                                 // Handle phone call
                                 window.open(
                                     `tel:+62${order.customer.phone}`,
@@ -913,7 +939,7 @@ export default function TechnicianOrderSummary() {
                         {/* Button for whatsapp call */}
                         <Button
                             onClick={() => {
-                                setIsCustomeCallSheetOpen(false);
+                                setIsCallSheetOpen(false);
                                 // Handle phone call to WhatsApp
                                 window.open(
                                     `https://api.whatsapp.com/send?phone=62${order.customer.phone}`,

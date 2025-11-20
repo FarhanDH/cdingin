@@ -16,11 +16,11 @@ export const dataSourceOptions: DataSourceOptions & SeederOptions = {
     // useUTC: true,
     entities: [
         'dist/**/*.entity.js',
-        'src/**/*.entity.ts', // enable when seeding and migrations
+        // 'src/**/*.entity.ts', // enable when seeding and migrations
     ],
     migrations: [
         `dist/core/database/migrations/*.js`,
-        `src/core/database/migrations/*.ts`, // enable when seeding and migrations
+        // `src/core/database/migrations/*.ts`, // enable when seeding and migrations
     ],
     logger: 'simple-console',
     seeds: ['dist/**/*.seed.js'],

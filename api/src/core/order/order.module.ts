@@ -9,12 +9,14 @@ import { PushSubscriptionModule } from '../push-subscription/push-subscription.m
 import { NotificationModule } from '../notification/notification.module';
 import { InvoiceModule } from '../invoice/invoice.module';
 import { HttpModule } from '@nestjs/axios';
+import { PusherModule } from '../pusher/pusher.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Order, AcUnit]),
         UserModule,
         PushSubscriptionModule,
+        PusherModule,
         HttpModule,
         NotificationModule,
     ],

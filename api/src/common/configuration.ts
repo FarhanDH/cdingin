@@ -51,5 +51,12 @@ export const configuration = () => {
         browserless: {
             apiKey: process.env.BROWSERLESS_API_KEY,
         },
+        pusher: {
+            appId: process.env.PUSHER_APP_ID,
+            key: process.env.PUSHER_KEY,
+            secret: process.env.PUSHER_SECRET,
+            cluster: process.env.PUSHER_CLUSTER,
+            useTLS: process.env.USE_TLS as unknown as boolean,
+        },
     };
 };

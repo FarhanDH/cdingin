@@ -24,6 +24,9 @@ import { Order } from '../order/entities/order.entity';
 import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
 import { MidtransTokenResponse } from './dto/payment.response';
 import { Payment } from './entities/payment.entity';
+import { PusherService } from '../pusher/pusher.service';
+import { OrderService } from '../order/order.service';
+import { JwtPayload } from '../auth/dto/auth.response';
 
 @Injectable()
 export class PaymentService {
@@ -35,6 +38,8 @@ export class PaymentService {
         private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly notificationService: NotificationService,
         private readonly dataSource: DataSource,
+        private readonly pusherService: PusherService,
+        private readonly orderService: OrderService,
     ) {}
 
     private readonly logger = new Logger(PaymentService.name);
@@ -109,17 +114,9 @@ export class PaymentService {
         };
     }
 
-    /**
-     * Confirms that an invoice has been paid with cash.
-     * This action is performed by a technician.
-     * This operation is transactional to ensure data integrity.
-     * @param invoiceId - The ID of the invoice being confirmed.
-     * @param technicianId - The ID of the technician confirming the payment.
-     * @returns The updated invoice entity.
-     */
     async confirmCashPayment(
         invoiceId: string,
-        technicianId: string,
+        user: JwtPayload,
     ): Promise<OrderResponse> {
         this.logger.log(`Confirming cash payment for invoice ${invoiceId}`);
         const queryRunner = this.dataSource.createQueryRunner();
@@ -147,7 +144,7 @@ export class PaymentService {
 
             // 2. Perform business logic validation.
             // Check if the invoice belongs to the technician
-            if (invoice.order.technician.id !== technicianId) {
+            if (invoice.order.technician.id !== user.sub) {
                 throw new ForbiddenException(
                     'You are not authorized to confirm this payment.',
                 );
@@ -199,28 +196,53 @@ export class PaymentService {
             queryRunner.manager.create(Order, order);
             await queryRunner.manager.save(order);
 
-            //   Send notification to the customer (after transaction is committed).
-            const notification = await this.notificationService.create({
-                recipientId: order.customer.id,
-                orderId: order.id,
-                type: NotificationType.COMPLETED_ORDER,
-                title: 'Mantap, Pembayaran Lunas! 🎉',
-                message: `Pembayaran tunaimu udah diterima teknisi. Makasih banyak, ya!`,
-            });
-
-            await this.pushSubscriptionService.sendNotificationToUser(
-                notification.recipient.id,
-                {
-                    title: notification.title,
-                    body: notification.message,
-                    tag: notification.type,
-                    link: '/notifications',
-                },
-            );
-            // Commit the transaction.
+            // Commit the transaction BEFORE sending notifications.
             await queryRunner.commitTransaction();
 
-            return toOrderResponse(invoice.order);
+            // --- Send notifications AFTER the transaction is successfully committed ---
+            try {
+                const notification = await this.notificationService.create({
+                    recipientId: order.customer.id,
+                    orderId: order.id,
+                    type: NotificationType.COMPLETED_ORDER,
+                    title: 'Mantap, Pembayaran Lunas! 🎉',
+                    message: `Pembayaran tunaimu udah diterima teknisi. Makasih banyak, ya!`,
+                });
+
+                // Trigger REAL-TIME UPDATE for the customer's page
+                const channelName = `order-${order.id}-customer`;
+                await this.pusherService.trigger(
+                    channelName,
+                    'status-updated-customer',
+                    {
+                        orderId: order.id,
+                        newStatus: order.status, // Use the actual final status
+                        message: notification.title,
+                    },
+                );
+
+                // Send Push Notification
+                await this.pushSubscriptionService.sendNotificationToUser(
+                    notification.recipient.id,
+                    {
+                        title: notification.title,
+                        body: notification.message,
+                        tag: notification.type,
+                        link: '/notifications',
+                    },
+                );
+            } catch (notificationError) {
+                this.logger.error(
+                    `Failed to send notifications for order ${order.id} after cash payment confirmation`,
+                    notificationError,
+                );
+                // Do not throw an error here, as the core payment logic was successful.
+            }
+
+            return await this.orderService.getOneByIdForTechnician(
+                user,
+                order.id,
+            );
         } catch (error) {
             await queryRunner.rollbackTransaction();
             this.logger.error(
@@ -384,6 +406,18 @@ export class PaymentService {
                 );
                 // Commit the transaction BEFORE sending notifications.
                 await queryRunner.commitTransaction();
+
+                // Trigger REAL-TIME UPDATE for the customer's page
+                const channelName = `order-${order.id}-technician`;
+                await this.pusherService.trigger(
+                    channelName,
+                    'status-updated-technician',
+                    {
+                        orderId: order.id,
+                        newStatus: order.status, // Use the actual final status
+                        message: technicianNotification.title,
+                    },
+                );
             } else {
                 // If the status is not settlement, just commit the transaction status update.
                 await queryRunner.commitTransaction();

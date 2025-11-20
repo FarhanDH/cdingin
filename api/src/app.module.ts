@@ -17,6 +17,7 @@ import { ScheduledTaskModule } from './core/scheduled-task/scheduled-task.module
 import { InvoiceModule } from './core/invoice/invoice.module';
 import { PaymentModule } from './core/payment/payment.module';
 import { EarningModule } from './core/earning/earning.module';
+import { PusherModule } from './core/pusher/pusher.module';
 
 @Module({
     imports: [
@@ -39,6 +40,7 @@ import { EarningModule } from './core/earning/earning.module';
         InvoiceModule,
         PaymentModule,
         EarningModule,
+        PusherModule,
     ],
     controllers: [AppController],
 })

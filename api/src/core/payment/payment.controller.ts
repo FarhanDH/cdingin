@@ -53,7 +53,7 @@ export class PaymentController {
     ): Promise<ApiResponse<OrderResponse>> {
         const data = await this.paymentService.confirmCashPayment(
             invoiceId,
-            req.user.sub,
+            req.user,
         );
 
         return {

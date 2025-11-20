@@ -148,7 +148,7 @@ export const getStatusLabel = (status: OrderStatus) => {
         pending: {
             text: "Menunggu Konfirmasi",
             bgColor: "bg-[#9CA3AF]",
-            textColor: "text-[#9CA3AF]",
+            textColor: "text-[#101828]",
         },
         confirmed: {
             text: "Dalam Antrean",

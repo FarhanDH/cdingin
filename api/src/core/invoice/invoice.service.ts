@@ -26,6 +26,7 @@ import { CreateInvoiceDto } from './dto/invoice.request';
 import { toInvoiceResponseDto } from './dto/invoice.response';
 import { InvoiceItem } from './entities/invoice-item.entity';
 import { Invoice } from './entities/invoice.entity';
+import { PusherService } from '../pusher/pusher.service';
 
 @Injectable()
 export class InvoiceService {
@@ -37,6 +38,7 @@ export class InvoiceService {
         private readonly pushSubscriptionService: PushSubscriptionService,
         private readonly orderService: OrderService,
         private readonly notificationService: NotificationService,
+        private readonly pusherService: PusherService,
     ) {}
 
     private readonly logger = new Logger(InvoiceService.name);
@@ -156,9 +158,22 @@ export class InvoiceService {
                 recipientId: createdInvoice.order.customer.id,
                 orderId: createdInvoice.order.id,
                 type: NotificationType.INVOICE_CREATED,
-                title: 'Kerjaan Beres, Tagihan Siap! 💸',
+                title: 'Kerjaan Beres, Tagihan Siap! 📃',
                 message: `Mantap! AC-nya udah kelar diservis. Tagihannya udah ada, yuk langsung dibayar.`,
             });
+
+            // Trigger REAL-TIME UPDATE
+            const channelName = `order-${createdInvoice.order.id}-customer`;
+
+            await this.pusherService.trigger(
+                channelName,
+                'status-updated-customer',
+                {
+                    orderId: createdInvoice.order.id,
+                    newStatus: createdInvoice.order.status,
+                    message: notification.title,
+                },
+            );
 
             await this.pushSubscriptionService.sendNotificationToUser(
                 notification.recipient.id,

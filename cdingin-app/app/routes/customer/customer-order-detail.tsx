@@ -19,6 +19,9 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import CancelOrderSheet from "~/customer/order/cancel-order-sheet";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/customer-order-detail";
+import Pusher from "pusher-js";
+import { toast } from "sonner";
+import { customToastStyle } from "~/common/custom-toast-style";
 
 export function meta(args: Route.MetaArgs) {
     return [
@@ -33,7 +36,7 @@ export default function CustomerOrderDetail() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
-    const { text: statusText, bgColor: statusColor } = getStatusLabel(
+    const { text: statusText, textColor: statusColor } = getStatusLabel(
         order?.status || "pending"
     );
     const navigate = useNavigate();
@@ -61,6 +64,7 @@ export default function CustomerOrderDetail() {
         }
     };
 
+    // Effect to load initial data order
     useEffect(() => {
         if (!orderId) return;
         setIsLoading(true);
@@ -84,6 +88,30 @@ export default function CustomerOrderDetail() {
             }
         };
         fetchOrder();
+    }, [orderId]);
+
+    // Effect to connect Pusher Real-Time
+    useEffect(() => {
+        const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY, {
+            cluster: import.meta.env.VITE_PUSHER_CLUSTER,
+        });
+
+        const channelName = `order-${orderId}-customer`;
+        const channel = pusher.subscribe(channelName);
+
+        // Bind and Listen Even 'status-updated'
+        channel.bind("status-updated-customer", (data: any) => {
+            console.log("Real-time Status update: ", data.newStatus);
+
+            fetchOrderDetail();
+
+            toast(data.message, customToastStyle);
+        });
+
+        return () => {
+            pusher.unsubscribe(channelName);
+            pusher.disconnect();
+        };
     }, [orderId]);
 
     if (isLoading) {
@@ -179,7 +207,7 @@ export default function CustomerOrderDetail() {
                     <DrawerHeader className="bg-white flex">
                         {/* <DrawerTitle className="text-base font-bold text-gray-800"> */}
                         <span
-                            className={`rounded-sm text-base text-gray-900 text-center flex items-center h-7 w-fit font-medium`}
+                            className={`rounded-sm text-base ${statusColor} text-center flex items-center h-7 w-fit font-medium`}
                         >
                             {statusText}
                         </span>
@@ -241,9 +269,7 @@ export default function CustomerOrderDetail() {
             {/* Invoice Button */}
             {order.invoiceId && (
                 <div
-                    className={`w-full px-4 ${
-                        order.status !== "completed" && "bg-white"
-                    } gap-4 fixed bottom-0 max-w-lg mx-auto z-50`}
+                    className={`w-full px-4 pt-2 border bg-white  gap-4 fixed bottom-0 max-w-lg mx-auto z-50`}
                 >
                     <div
                         className={`bg-white pb-4 ${
