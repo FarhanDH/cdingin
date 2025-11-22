@@ -100,7 +100,7 @@ export default function SwipeButton({
                         </motion.div>
                     </motion.div>
 
-                    <motion.p className="absolute w-full text-center text-white font-medium pointer-events-none z-20 left-4">
+                    <motion.p className="absolute w-full text-center text-white font-medium pointer-events-none left-4">
                         {text}
                     </motion.p>
                 </>

@@ -184,7 +184,8 @@ export default function CustomerOrderDetail() {
             {/* Drawer */}
             <Drawer
                 open={true}
-                snapPoints={[0.4, 1]}
+                snapPoints={[0.4, 0.92]}
+                dismissible={false}
                 snapToSequentialPoint={true}
                 modal={false}
                 repositionInputs={false}
