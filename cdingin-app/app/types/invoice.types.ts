@@ -36,6 +36,7 @@ export type InvoiceResponse = {
         status: string;
         method: string;
         paymentGateway: string;
+        expiryTime: string;
         paymentChannel: string;
     }[];
 };

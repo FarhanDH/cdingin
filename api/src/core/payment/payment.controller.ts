@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Get,
     HttpCode,
     HttpStatus,
     Param,
@@ -15,6 +16,7 @@ import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { OrderResponse } from '../order/dto/order.response';
+import { CreateCoreApiPaymentRequestDto } from './dto/payment.request';
 import { MidtransTokenResponse } from './dto/payment.response';
 import { PaymentService } from './payment.service';
 
@@ -34,7 +36,7 @@ export class PaymentController {
         @Request() req: RequestWithUser,
     ): Promise<ApiResponse<MidtransTokenResponse>> {
         const customerId = req.user.sub;
-        const data = await this.paymentService.createMidtransTransaction(
+        const data = await this.paymentService.createSnapMidtransTransaction(
             invoiceId,
             customerId,
         );
@@ -58,6 +60,45 @@ export class PaymentController {
 
         return {
             message: 'Cash payment confirmed successfully.',
+            data,
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Post('invoices/:invoiceId/core-api')
+    async createCoreApiTransaction(
+        @Param('invoiceId') invoiceId: string,
+        @Request() req: RequestWithUser,
+        @Body() dto: CreateCoreApiPaymentRequestDto,
+    ) {
+        const data = await this.paymentService.createCoreApiTransaction(
+            invoiceId,
+            req.user.sub,
+            dto,
+        );
+
+        return {
+            message: 'Core API transaction created successfully',
+            data: {
+                paymentId: data.id,
+            },
+        };
+    }
+
+    @UseGuards(JwtGuard, RolesGuard)
+    @Roles(RoleEnum.CUSTOMER)
+    @Get(':id')
+    async getPaymentDetails(
+        @Param('id') paymentId: string,
+        @Request() req: RequestWithUser,
+    ) {
+        const data = await this.paymentService.getPaymentDetails(
+            paymentId,
+            req.user.sub,
+        );
+        return {
+            message: 'Payment details fetched successfully',
             data,
         };
     }

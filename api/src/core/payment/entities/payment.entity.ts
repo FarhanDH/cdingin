@@ -11,6 +11,12 @@ import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { PaymentMethod } from '~/common/enums/payment.enum';
 import { Invoice } from '~/core/invoice/entities/invoice.entity';
 
+type MidtransAction = {
+    name: string;
+    method: string;
+    url: string;
+};
+
 @Entity('payments')
 export class Payment {
     /** We use the transaction_id from Midtrans as our primary key. */
@@ -40,6 +46,21 @@ export class Payment {
     /** Store the full webhook response from the payment gateway for auditing. */
     @Column({ type: 'jsonb', nullable: true })
     gateway_response: object | null;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    va_number: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    bank: string;
+
+    @Column({ type: 'text', nullable: true })
+    qr_code_url: string;
+
+    @Column({ type: 'jsonb', nullable: true })
+    actions: MidtransAction[];
+
+    @Column({ type: 'timestamp with time zone', nullable: true })
+    expiry_time: Date;
 
     @CreateDateColumn({ type: 'timestamp with time zone' })
     created_at: Date;

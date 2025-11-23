@@ -27,8 +27,12 @@ export default [
             "/order/:orderId/invoice",
             "routes/customer/invoice/invoice-detail.tsx"
         ),
+        // Payment status
+        route(
+            "/order/:orderId/payment/:paymentId",
+            "routes/customer/invoice/payment-status.tsx"
+        ),
     ]),
-
     // Technician Routes
     route("", "components/technician-route.tsx", [
         layout("routes/technician/layout.tsx", [

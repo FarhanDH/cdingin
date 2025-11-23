@@ -1,5 +1,16 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 
-export class CreatePaymentDto {}
+export enum SupportedPaymentMethod {
+    QRIS = 'qris',
+    BCA = 'bca',
+    BNI = 'bni',
+    BRI = 'bri',
+    MANDIRI = 'mandiri',
+    PERMATA = 'permata',
+}
 
-export class UpdatePaymentDto extends PartialType(CreatePaymentDto) {}
+export class CreateCoreApiPaymentRequestDto {
+    @IsEnum(SupportedPaymentMethod)
+    @IsNotEmpty()
+    paymentMethod: SupportedPaymentMethod;
+}

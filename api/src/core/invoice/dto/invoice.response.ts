@@ -29,6 +29,7 @@ export class InvoiceResponseDto {
               id: string;
               status: string;
               method: PaymentMethod;
+              expiryTime: string;
               paymentChannel: string;
           }[]
         | [];
@@ -60,6 +61,7 @@ export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
                 id: payment.id,
                 status: payment.status,
                 method: payment.method,
+                expiryTime: payment.expiry_time as unknown as string,
                 paymentChannel: formatPaymentString(
                     (payment.gateway_response as { payment_type: string })
                         ?.payment_type,

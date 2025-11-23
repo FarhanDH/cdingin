@@ -15,18 +15,25 @@ import { NotificationType } from '~/common/enums/notification-type.enum';
 import { OrderStatusEnum } from '~/common/enums/order-status.enum';
 import { PaymentStatus } from '~/common/enums/payment-status.enum';
 import { PaymentMethod } from '~/common/enums/payment.enum';
+import { JwtPayload } from '../auth/dto/auth.response';
 import { formatPaymentString } from '../invoice/dto/invoice.response';
 import { Invoice } from '../invoice/entities/invoice.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { NotificationService } from '../notification/notification.service';
-import { OrderResponse, toOrderResponse } from '../order/dto/order.response';
+import { OrderResponse } from '../order/dto/order.response';
 import { Order } from '../order/entities/order.entity';
-import { PushSubscriptionService } from '../push-subscription/push-subscription.service';
+import { OrderService } from '../order/order.service';
+import {
+    PayloadMessage,
+    PushSubscriptionService,
+} from '../push-subscription/push-subscription.service';
+import { PusherService } from '../pusher/pusher.service';
+import {
+    CreateCoreApiPaymentRequestDto,
+    SupportedPaymentMethod,
+} from './dto/payment.request';
 import { MidtransTokenResponse } from './dto/payment.response';
 import { Payment } from './entities/payment.entity';
-import { PusherService } from '../pusher/pusher.service';
-import { OrderService } from '../order/order.service';
-import { JwtPayload } from '../auth/dto/auth.response';
 
 @Injectable()
 export class PaymentService {
@@ -56,7 +63,7 @@ export class PaymentService {
      * @param customerId - The ID of the customer making the payment.
      * @returns An object containing the Snap token for the frontend.
      */
-    async createMidtransTransaction(
+    async createSnapMidtransTransaction(
         invoiceId: string,
         customerId: string,
     ): Promise<MidtransTokenResponse> {
@@ -114,6 +121,218 @@ export class PaymentService {
         };
     }
 
+    async createCoreApiTransaction(
+        invoiceId: string,
+        customerId: string,
+        dto: CreateCoreApiPaymentRequestDto,
+    ): Promise<Payment> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        try {
+            const invoice = await queryRunner.manager.findOne(Invoice, {
+                where: {
+                    id: invoiceId,
+                    order: { customer: { id: customerId } },
+                },
+                relations: ['order', 'order.customer'],
+            });
+            console.log(invoice);
+
+            if (!invoice) {
+                throw new NotFoundException('Invoice not found.');
+            }
+
+            if (invoice.status !== InvoiceStatus.UNPAID) {
+                throw new ConflictException(
+                    'Invoice is already paid or expired.',
+                );
+            }
+
+            const transactionId = `${invoice.id}-${Date.now()}`;
+
+            // Determine the payment type based on the payment method
+            let paymentType: string;
+            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+                paymentType = 'qris';
+            } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
+                paymentType = 'echannel';
+            } else {
+                paymentType = 'bank_transfer';
+            }
+
+            let midtransPayload: any = {
+                payment_type: paymentType,
+                transaction_details: {
+                    order_id: transactionId,
+                    gross_amount: invoice.total_amount,
+                },
+                customer_details: {
+                    first_name: invoice.order.customer.full_name,
+                    email: invoice.order.customer.email,
+                    phone: invoice.order.customer.phone_number,
+                },
+            };
+
+            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+                midtransPayload.qris = {
+                    acquirer: 'gopay',
+                };
+                midtransPayload.expiry = {
+                    unit: 'minutes',
+                    expiry_duration: 15,
+                };
+            } else if (
+                [
+                    SupportedPaymentMethod.BCA,
+                    SupportedPaymentMethod.BNI,
+                    SupportedPaymentMethod.BRI,
+                    SupportedPaymentMethod.PERMATA,
+                ].includes(dto.paymentMethod)
+            ) {
+                midtransPayload.bank_transfer = {
+                    bank: dto.paymentMethod,
+                };
+                midtransPayload.expiry = {
+                    unit: 'minutes',
+                    expiry_duration: 120,
+                };
+            } else {
+                midtransPayload.echannel = {
+                    bill_info1: 'Payment For:',
+                    bill_info2: 'Service AC Invoice',
+                };
+                midtransPayload.expiry = {
+                    unit: 'minutes',
+                    expiry_duration: 120,
+                };
+            }
+
+            console.log('midtransPayload: ', midtransPayload);
+
+            const { data: midtransResponse } =
+                await this.httpService.axiosRef.post(
+                    configuration().midtrans.coreUrl,
+                    midtransPayload,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                            Authorization: `Basic ${Buffer.from(
+                                `${configuration().midtrans.serverKey}:`,
+                            ).toString('base64')}`,
+                        },
+                    },
+                );
+
+            let expiryTimeString = midtransResponse.expiry_time;
+            if (
+                !expiryTimeString.includes('+') &&
+                !expiryTimeString.includes('Z')
+            ) {
+                expiryTimeString = `${expiryTimeString} +0800`;
+            }
+            console.log('midtransResponse: ', midtransResponse);
+
+            // Hapus pembayaran PENDING sebelumnya jika ada
+            await queryRunner.manager.delete(Payment, {
+                invoice: { id: invoice.id },
+                status: PaymentStatus.PENDING,
+            });
+
+            const newPayment = queryRunner.manager.create(Payment, {
+                id: transactionId,
+                invoice: invoice,
+                amount: invoice.total_amount,
+                status: PaymentStatus.PENDING,
+                method: PaymentMethod.MIDTRANS,
+                gateway_response: midtransResponse,
+                expiry_time: new Date(expiryTimeString),
+                actions: midtransResponse.actions,
+            });
+
+            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+                newPayment.qr_code_url = midtransResponse.qr_string;
+            } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
+                newPayment.bank = SupportedPaymentMethod.MANDIRI;
+            } else if (dto.paymentMethod === SupportedPaymentMethod.PERMATA) {
+                newPayment.bank = SupportedPaymentMethod.PERMATA;
+                newPayment.va_number = midtransResponse.permata_va_number;
+            } else {
+                const vaAccount = midtransResponse.va_numbers[0];
+                newPayment.bank = vaAccount.bank;
+                newPayment.va_number = vaAccount.va_number;
+            }
+
+            const savedPayment = await queryRunner.manager.save(newPayment);
+
+            await queryRunner.commitTransaction();
+
+            // Send notifications to customer
+            const expiryTime = Math.floor(
+                (newPayment.expiry_time.getTime() - Date.now()) / (1000 * 60),
+            );
+            const payloadMessageNotification: PayloadMessage = {
+                title: newPayment.qr_code_url
+                    ? 'Selesaikan pembayaran QRIS sekarang, ya'
+                    : 'Selesaikan pembayaran VA sekarang, ya',
+                tag: NotificationType.PAYMENT_CREATED,
+                body: newPayment.qr_code_url
+                    ? `QRIS-nya berlaku selama ${expiryTime} menit. Silakan lakukan pembayaran pakai e-wallet atau mobile banking yang anda punya.`
+                    : `Nomor VA-nya berlaku selama ${expiryTime} jam. Silakan transfer Rp${Number(
+                          newPayment.amount,
+                      ).toLocaleString(
+                          'id-ID',
+                      )} ke ${newPayment.bank.toUpperCase()} Virtual Account.`,
+                link: `/order/${invoice.order.id}/payment/${newPayment.id}`,
+                userId: customerId,
+            };
+            await this.pushSubscriptionService.sendNotificationToUser(
+                customerId,
+                payloadMessageNotification,
+            );
+
+            return savedPayment;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            this.logger.error(
+                `Failed to create Core API transaction for invoice ${invoiceId}: ${JSON.stringify(error.response?.data) || error.message}`,
+            );
+            throw new (error.constructor || Error)(
+                error.response?.data?.status_message ||
+                    error.message ||
+                    'Failed to create payment.',
+            );
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    async getPaymentDetails(
+        paymentId: string,
+        customerId: string,
+    ): Promise<Payment> {
+        const payment = await this.paymentRepository.findOne({
+            where: {
+                id: paymentId,
+                invoice: { order: { customer: { id: customerId } } },
+            },
+            relations: ['invoice', 'invoice.order'],
+        });
+
+        if (!payment) {
+            this.logger.warn(
+                `Payment with ID ${paymentId} not found for customer ${customerId}`,
+            );
+            throw new NotFoundException(
+                'Detail pembayaran tidak ditemukan atau Anda tidak memiliki akses.',
+            );
+        }
+
+        return payment;
+    }
+
     async confirmCashPayment(
         invoiceId: string,
         user: JwtPayload,
@@ -124,7 +343,7 @@ export class PaymentService {
         await queryRunner.startTransaction();
 
         try {
-            // 1. Find the invoice and its related order, and lock them.
+            //ind the invoice and its related order, and lock them.
             const invoice = await queryRunner.manager.findOne(Invoice, {
                 where: { id: invoiceId },
                 relations: [
@@ -142,7 +361,7 @@ export class PaymentService {
                 );
             }
 
-            // 2. Perform business logic validation.
+            // Perform business logic validation.
             // Check if the invoice belongs to the technician
             if (invoice.order.technician.id !== user.sub) {
                 throw new ForbiddenException(
@@ -160,7 +379,7 @@ export class PaymentService {
                 );
             }
 
-            // 4. Update the payment.
+            // Update the payment.
             let payment = await queryRunner.manager.findOne(Payment, {
                 where: { invoice: { id: invoiceId } },
                 // lock: { mode: 'pessimistic_write' },
@@ -185,12 +404,12 @@ export class PaymentService {
 
             await queryRunner.manager.save(payment);
 
-            // 3. Update the invoice.
+            // Update the invoice.
             invoice.status = InvoiceStatus.PAID;
             invoice.paid_at = new Date();
             await queryRunner.manager.save(invoice);
 
-            // 4. Update the order.
+            // Update the order.
             const order = invoice.order;
             order.status = OrderStatusEnum.COMPLETED;
             queryRunner.manager.create(Order, order);
@@ -274,7 +493,7 @@ export class PaymentService {
             // Verify the notification
             const { data: midtransResponse } =
                 await this.httpService.axiosRef.get(
-                    `${configuration().midtrans.url}/${notificationPayload.transaction_id}/status`,
+                    `${configuration().midtrans.snapUrl}/${notificationPayload.transaction_id}/status`,
                     {
                         headers: {
                             accept: 'application/json',
@@ -407,18 +626,44 @@ export class PaymentService {
                 // Commit the transaction BEFORE sending notifications.
                 await queryRunner.commitTransaction();
 
-                // Trigger REAL-TIME UPDATE for the customer's page
+                // Trigger REAL-TIME UPDATE for the technician's page
                 const channelName = `order-${order.id}-technician`;
                 await this.pusherService.trigger(
                     channelName,
                     'status-updated-technician',
                     {
                         orderId: order.id,
-                        newStatus: order.status, // Use the actual final status
+                        newStatus: order.status,
                         message: technicianNotification.title,
                     },
                 );
+
+                const customerChannelName = `order-${order.id}-customer`;
+                await this.pusherService.trigger(
+                    customerChannelName,
+                    'payment-updated',
+                    {
+                        orderId: order.id,
+                        paymentId: transaction.id,
+                        newStatus: newStatus,
+                        message: customerNotification.title,
+                    },
+                );
             } else {
+                // If status is not settlement (e.g., expire, cancel), still notify the customer page to refetch.
+                const order = transaction.invoice.order;
+                const customerChannelName = `order-${order.id}-customer`;
+                await this.pusherService.trigger(
+                    customerChannelName,
+                    'payment-updated', // Use a specific event for payment
+                    {
+                        orderId: order.id,
+                        paymentId: transaction.id,
+                        newStatus: newStatus,
+                        message: 'Pembayaran gagal.',
+                    },
+                );
+
                 // If the status is not settlement, just commit the transaction status update.
                 await queryRunner.commitTransaction();
             }

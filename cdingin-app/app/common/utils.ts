@@ -7,16 +7,22 @@ export const formattedDate = (
     options: {
         withTime?: boolean;
         withDay?: boolean;
+        shortMonth?: boolean;
         locale?: string;
     } = {}
 ) => {
-    const defaultOptions = { withTime: false, withDay: true, locale: "id-ID" };
+    const defaultOptions = {
+        withTime: false,
+        withDay: true,
+        locale: "id-ID",
+        shortMonth: false,
+    };
     const mergedOptions = { ...defaultOptions, ...options };
 
     const dateOptions = {
         weekday: mergedOptions.withDay ? "long" : undefined,
         day: "numeric",
-        month: "long",
+        month: mergedOptions.shortMonth ? "short" : "long",
         year: "numeric",
     } as const;
 
