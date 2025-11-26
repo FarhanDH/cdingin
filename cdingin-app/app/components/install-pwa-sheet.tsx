@@ -6,7 +6,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-// import pwaIcon from "~/assets/pwa-install-icon.png";
+// import pwaIcon from "public/pwa-install-icon.png";
 
 interface InstallPwaSheetProps {
     isOpen: boolean;

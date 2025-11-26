@@ -121,6 +121,114 @@ export class PaymentService {
         };
     }
 
+    /**
+     * Builds the Midtrans API payload based on the selected payment method.
+     * @param invoice The invoice entity.
+     * @param transactionId A unique transaction ID.
+     * @param dto The DTO containing the selected payment method.
+     * @returns The constructed Midtrans API payload.
+     */
+    private _buildMidtransPayload(
+        invoice: Invoice,
+        transactionId: string,
+        dto: CreateCoreApiPaymentRequestDto,
+    ): any {
+        let paymentType: string;
+        let expiryDuration: number;
+
+        if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+            paymentType = 'qris';
+            expiryDuration = 15; // 15 minutes for QRIS
+        } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
+            paymentType = 'echannel';
+            expiryDuration = 120; // 120 minutes for Mandiri
+        } else {
+            paymentType = 'bank_transfer';
+            expiryDuration = 120; // 120 minutes for other VAs
+        }
+
+        const midtransPayload: any = {
+            payment_type: paymentType,
+            transaction_details: {
+                order_id: transactionId,
+                gross_amount: invoice.total_amount,
+            },
+            customer_details: {
+                first_name: invoice.order.customer.full_name,
+                email: invoice.order.customer.email,
+                phone: invoice.order.customer.phone_number,
+            },
+            custom_expiry: {
+                unit: 'minute',
+                expiry_duration: expiryDuration,
+            },
+        };
+
+        // Add specific details for each payment type
+        if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+            midtransPayload.qris = { acquirer: 'gopay' };
+        } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
+            midtransPayload.echannel = {
+                bill_info1: 'Payment For:',
+                bill_info2: 'Service AC Invoice',
+            };
+        } else if (
+            [
+                SupportedPaymentMethod.BCA,
+                SupportedPaymentMethod.BNI,
+                SupportedPaymentMethod.BRI,
+                SupportedPaymentMethod.PERMATA,
+            ].includes(dto.paymentMethod)
+        ) {
+            midtransPayload.bank_transfer = { bank: dto.paymentMethod };
+        }
+
+        return midtransPayload;
+    }
+
+    /**
+     * Populates the Payment entity with details from the Midtrans API response.
+     * @param payment The Payment entity to populate.
+     * @param dto The DTO containing the selected payment method.
+     * @param midtransResponse The response from Midtrans API.
+     */
+    private _populatePaymentDetails(
+        payment: Payment,
+        dto: CreateCoreApiPaymentRequestDto,
+        midtransResponse: any,
+    ): void {
+        if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
+            payment.qr_code_url = midtransResponse.qr_string;
+            payment.bank = null;
+            payment.va_number = null;
+        } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
+            // For Mandiri e-channel, let the va_number empty. Get biller_code and biller_key directly in gateway_response
+            payment.bank = SupportedPaymentMethod.MANDIRI;
+            payment.qr_code_url = null;
+            payment.actions = null;
+        } else if (dto.paymentMethod === SupportedPaymentMethod.PERMATA) {
+            payment.bank = SupportedPaymentMethod.PERMATA;
+            payment.va_number = midtransResponse.permata_va_number;
+            payment.qr_code_url = null;
+            payment.actions = null;
+        } else {
+            // For other bank transfers (BCA, BNI, BRI)
+            const vaAccount = midtransResponse.va_numbers[0];
+            payment.bank = vaAccount.bank;
+            payment.va_number = vaAccount.va_number;
+            payment.qr_code_url = null;
+            payment.actions = null;
+        }
+    }
+
+    /**
+     * Creates a new payment transaction using Midtrans Core API.
+     * This method handles various payment types (QRIS, VA, E-channel) and updates/creates a payment record.
+     * @param invoiceId The ID of the invoice for which to create the payment.
+     * @param customerId The ID of the customer initiating the payment.
+     * @param dto The DTO containing the selected payment method.
+     * @returns The created or updated Payment entity.
+     */
     async createCoreApiTransaction(
         invoiceId: string,
         customerId: string,
@@ -138,8 +246,6 @@ export class PaymentService {
                 },
                 relations: ['order', 'order.customer'],
             });
-            console.log(invoice);
-
             if (!invoice) {
                 throw new NotFoundException('Invoice not found.');
             }
@@ -151,65 +257,11 @@ export class PaymentService {
             }
 
             const transactionId = `${invoice.id}-${Date.now()}`;
-
-            // Determine the payment type based on the payment method
-            let paymentType: string;
-            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
-                paymentType = 'qris';
-            } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
-                paymentType = 'echannel';
-            } else {
-                paymentType = 'bank_transfer';
-            }
-
-            let midtransPayload: any = {
-                payment_type: paymentType,
-                transaction_details: {
-                    order_id: transactionId,
-                    gross_amount: invoice.total_amount,
-                },
-                customer_details: {
-                    first_name: invoice.order.customer.full_name,
-                    email: invoice.order.customer.email,
-                    phone: invoice.order.customer.phone_number,
-                },
-            };
-
-            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
-                midtransPayload.qris = {
-                    acquirer: 'gopay',
-                };
-                midtransPayload.expiry = {
-                    unit: 'minutes',
-                    expiry_duration: 15,
-                };
-            } else if (
-                [
-                    SupportedPaymentMethod.BCA,
-                    SupportedPaymentMethod.BNI,
-                    SupportedPaymentMethod.BRI,
-                    SupportedPaymentMethod.PERMATA,
-                ].includes(dto.paymentMethod)
-            ) {
-                midtransPayload.bank_transfer = {
-                    bank: dto.paymentMethod,
-                };
-                midtransPayload.expiry = {
-                    unit: 'minutes',
-                    expiry_duration: 120,
-                };
-            } else {
-                midtransPayload.echannel = {
-                    bill_info1: 'Payment For:',
-                    bill_info2: 'Service AC Invoice',
-                };
-                midtransPayload.expiry = {
-                    unit: 'minutes',
-                    expiry_duration: 120,
-                };
-            }
-
-            console.log('midtransPayload: ', midtransPayload);
+            const midtransPayload = this._buildMidtransPayload(
+                invoice,
+                transactionId,
+                dto,
+            );
 
             const { data: midtransResponse } =
                 await this.httpService.axiosRef.post(
@@ -226,71 +278,67 @@ export class PaymentService {
                     },
                 );
 
+            // Ensure expiry_time is in a valid format for Date constructor
             let expiryTimeString = midtransResponse.expiry_time;
             if (
                 !expiryTimeString.includes('+') &&
                 !expiryTimeString.includes('Z')
             ) {
-                expiryTimeString = `${expiryTimeString} +0800`;
+                expiryTimeString = `${expiryTimeString} +0800`; // Assuming WITA, adjust if needed
             }
-            console.log('midtransResponse: ', midtransResponse);
-
-            // Hapus pembayaran PENDING sebelumnya jika ada
-            await queryRunner.manager.delete(Payment, {
-                invoice: { id: invoice.id },
-                status: PaymentStatus.PENDING,
+            // find and update the existing payment record, or create a new one.
+            let payment = await queryRunner.manager.findOne(Payment, {
+                where: { invoice: { id: invoice.id } },
             });
 
-            const newPayment = queryRunner.manager.create(Payment, {
-                id: transactionId,
-                invoice: invoice,
-                amount: invoice.total_amount,
-                status: PaymentStatus.PENDING,
-                method: PaymentMethod.MIDTRANS,
-                gateway_response: midtransResponse,
-                expiry_time: new Date(expiryTimeString),
-                actions: midtransResponse.actions,
-            });
-
-            if (dto.paymentMethod === SupportedPaymentMethod.QRIS) {
-                newPayment.qr_code_url = midtransResponse.qr_string;
-            } else if (dto.paymentMethod === SupportedPaymentMethod.MANDIRI) {
-                newPayment.bank = SupportedPaymentMethod.MANDIRI;
-            } else if (dto.paymentMethod === SupportedPaymentMethod.PERMATA) {
-                newPayment.bank = SupportedPaymentMethod.PERMATA;
-                newPayment.va_number = midtransResponse.permata_va_number;
+            if (payment) {
+                // If a payment record exists, update it with the new transaction details.
+                payment.status = PaymentStatus.PENDING;
+                payment.method = PaymentMethod.MIDTRANS;
+                payment.gateway_response = midtransResponse;
+                payment.expiry_time = new Date(expiryTimeString);
+                payment.actions = midtransResponse.actions;
             } else {
-                const vaAccount = midtransResponse.va_numbers[0];
-                newPayment.bank = vaAccount.bank;
-                newPayment.va_number = vaAccount.va_number;
+                // If no payment record exists, create a new one.
+                payment = queryRunner.manager.create(Payment, {
+                    invoice: invoice,
+                    amount: invoice.total_amount,
+                    status: PaymentStatus.PENDING,
+                    method: PaymentMethod.MIDTRANS,
+                    gateway_response: midtransResponse,
+                    expiry_time: new Date(expiryTimeString),
+                    actions: midtransResponse.actions,
+                    gateway_transaction_id: midtransResponse.transaction_id,
+                });
             }
+            this._populatePaymentDetails(payment, dto, midtransResponse);
 
-            const savedPayment = await queryRunner.manager.save(newPayment);
+            const savedPayment = await queryRunner.manager.save(payment);
 
             await queryRunner.commitTransaction();
-
             // Send notifications to customer
             const expiryTime = Math.floor(
-                (newPayment.expiry_time.getTime() - Date.now()) / (1000 * 60),
+                (savedPayment.expiry_time.getTime() - Date.now()) / (1000 * 60),
             );
             const payloadMessageNotification: PayloadMessage = {
-                title: newPayment.qr_code_url
+                title: savedPayment.qr_code_url
                     ? 'Selesaikan pembayaran QRIS sekarang, ya'
                     : 'Selesaikan pembayaran VA sekarang, ya',
                 tag: NotificationType.PAYMENT_CREATED,
-                body: newPayment.qr_code_url
+                body: savedPayment.qr_code_url
                     ? `QRIS-nya berlaku selama ${expiryTime} menit. Silakan lakukan pembayaran pakai e-wallet atau mobile banking yang anda punya.`
                     : `Nomor VA-nya berlaku selama ${expiryTime} jam. Silakan transfer Rp${Number(
-                          newPayment.amount,
+                          savedPayment.amount,
                       ).toLocaleString(
                           'id-ID',
-                      )} ke ${newPayment.bank.toUpperCase()} Virtual Account.`,
-                link: `/order/${invoice.order.id}/payment/${newPayment.id}`,
+                      )} ke ${savedPayment.bank.toUpperCase()} Virtual Account.`,
+                link: `/order/${invoice.order.id}/payment/${savedPayment.id}`,
                 userId: customerId,
             };
-            await this.pushSubscriptionService.sendNotificationToUser(
+            await this._sendPaymentCreationNotification(
+                savedPayment,
+                invoice,
                 customerId,
-                payloadMessageNotification,
             );
 
             return savedPayment;
@@ -307,6 +355,40 @@ export class PaymentService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    /**
+     * Sends a push notification to the customer about the newly created payment.
+     * @param payment The saved Payment entity.
+     * @param invoice The associated Invoice entity.
+     * @param customerId The ID of the customer.
+     */
+    private async _sendPaymentCreationNotification(
+        payment: Payment,
+        invoice: Invoice,
+        customerId: string,
+    ): Promise<void> {
+        const expiryTimeMinutes = Math.floor(
+            (payment.expiry_time.getTime() - Date.now()) / (1000 * 60),
+        );
+        const title = payment.qr_code_url
+            ? 'Selesaikan pembayaran QRIS sekarang, ya'
+            : 'Selesaikan pembayaran VA sekarang, ya';
+        const body = payment.qr_code_url
+            ? `QRIS-nya berlaku selama ${expiryTimeMinutes} menit. Silakan lakukan pembayaran pakai e-wallet atau mobile banking yang anda punya.`
+            : `Nomor VA-nya berlaku selama ${expiryTimeMinutes} jam. Silakan transfer Rp${Number(
+                  payment.amount,
+              ).toLocaleString(
+                  'id-ID',
+              )} ke ${payment.bank?.toUpperCase() || 'Virtual Account'}.`;
+
+        await this.pushSubscriptionService.sendNotificationToUser(customerId, {
+            title,
+            body,
+            tag: NotificationType.PAYMENT_CREATED,
+            link: `/order/${invoice.order.id}/payment/${payment.id}`,
+            userId: customerId,
+        });
     }
 
     async getPaymentDetails(
@@ -343,7 +425,7 @@ export class PaymentService {
         await queryRunner.startTransaction();
 
         try {
-            //ind the invoice and its related order, and lock them.
+            // Find the invoice and its related order, and lock them.
             const invoice = await queryRunner.manager.findOne(Invoice, {
                 where: { id: invoiceId },
                 relations: [
@@ -379,27 +461,33 @@ export class PaymentService {
                 );
             }
 
-            // Update the payment.
+            // Find the existing payment record for the invoice.
+            // With a One-to-One relationship, we update the existing record instead of deleting.
             let payment = await queryRunner.manager.findOne(Payment, {
                 where: { invoice: { id: invoiceId } },
-                // lock: { mode: 'pessimistic_write' },
             });
 
-            if (!payment) {
-                const paymentId = `${invoice.id}-cash-${Date.now()}`;
-
-                // Create a new payment record if not found
+            if (payment) {
+                // If a payment record (e.g., from a pending Midtrans transaction) exists, update it.
+                payment.method = PaymentMethod.CASH;
+                payment.status = PaymentStatus.SUCCESS;
+                payment.amount = invoice.total_amount;
+                // Nullify Midtrans-specific fields to clean up the record.
+                payment.gateway_response = null;
+                payment.va_number = null;
+                payment.qr_code_url = null;
+                payment.bank = null;
+                payment.actions = null;
+                payment.expiry_time = null;
+                payment.gateway_transaction_id = null;
+            } else {
+                // If no payment record exists for some reason, create a new one.
                 payment = queryRunner.manager.create(Payment, {
-                    id: paymentId,
                     invoice: invoice,
                     amount: invoice.total_amount,
                     status: PaymentStatus.SUCCESS,
                     method: PaymentMethod.CASH,
                 });
-            } else {
-                payment.method = PaymentMethod.CASH;
-                payment.status = PaymentStatus.SUCCESS;
-                payment.amount = invoice.total_amount;
             }
 
             await queryRunner.manager.save(payment);
@@ -502,13 +590,13 @@ export class PaymentService {
                     },
                 );
 
-            const transactionId = midtransResponse.order_id;
+            const transactionId = midtransResponse.transaction_id;
             const transactionStatus = midtransResponse.transaction_status;
             const fraudStatus = midtransResponse.fraud_status;
 
-            // 2. Find the corresponding transaction in our database and lock it.
+            //  Find the corresponding transaction in our database and lock it.
             const transaction = await queryRunner.manager.findOne(Payment, {
-                where: { id: transactionId },
+                where: { gateway_transaction_id: transactionId },
                 relations: [
                     'invoice',
                     'invoice.order',
@@ -528,7 +616,7 @@ export class PaymentService {
                 return;
             }
 
-            // 3. Idempotency Check: If the transaction is already settled, do nothing.
+            // Idempotency Check: If the transaction is already settled, do nothing.
             if (transaction.status === PaymentStatus.SETTLEMENT) {
                 this.logger.log(
                     `Transaction ${transactionId} is already settled. Ignoring webhook.`,
@@ -537,7 +625,7 @@ export class PaymentService {
                 return;
             }
 
-            // 4. Update our transaction record with the latest status from Midtrans.
+            // Update our transaction record with the latest status from Midtrans.
             let newStatus: PaymentStatus;
             if (
                 transactionStatus == 'capture' ||
@@ -563,7 +651,7 @@ export class PaymentService {
                 await queryRunner.manager.save(transaction);
             }
 
-            // 5. If payment is successful, update the invoice and order.
+            //  If payment is successful, update the invoice and order.
             if (newStatus === PaymentStatus.SETTLEMENT) {
                 const invoice = transaction.invoice;
                 invoice.status = InvoiceStatus.PAID;

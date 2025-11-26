@@ -47,8 +47,9 @@ export class Invoice {
     items: Relation<InvoiceItem[]>;
 
     /** A log of all payment attempts for this invoice. */
-    @OneToMany(() => Payment, (transaction) => transaction.invoice)
-    payments: Relation<Payment[]>;
+    @OneToOne(() => Payment, (transaction) => transaction.invoice)
+    @JoinColumn()
+    payment: Relation<Payment>;
 
     @CreateDateColumn({ type: 'timestamp with time zone' })
     created_at: Date;

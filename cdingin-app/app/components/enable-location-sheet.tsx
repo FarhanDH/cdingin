@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import locationIllustration from "~/assets/location-illustration.png";
+import locationIllustration from "public/location-illustration.png";
 import {
     Sheet,
     SheetContent,

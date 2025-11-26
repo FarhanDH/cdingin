@@ -144,7 +144,7 @@ export class InvoiceService {
                 where: { order: { id: orderId } },
                 relations: {
                     items: true,
-                    payments: true,
+                    payment: true,
                     order: {
                         customer: true,
                         technician: true,
@@ -203,7 +203,7 @@ export class InvoiceService {
         const data = await this.invoiceRepository.findOne({
             where: { order: { id } },
             relations: {
-                payments: true,
+                payment: true,
                 order: {
                     technician: true,
                     customer: true,
@@ -219,7 +219,7 @@ export class InvoiceService {
         const data = await this.invoiceRepository.findOne({
             where: { id, order: { customer: { id: userId } } },
             relations: {
-                payments: true,
+                payment: true,
                 order: {
                     technician: true,
                     customer: true,

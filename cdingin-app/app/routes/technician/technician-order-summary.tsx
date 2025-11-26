@@ -21,8 +21,8 @@ import {
 } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import mapPin from "~/assets/map-pin.png";
-import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
+import mapPin from "public/map-pin.png";
+import phoneWhatsapp from "public/whatsapp-telephone.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import {
     calculateDistanceInMeters,

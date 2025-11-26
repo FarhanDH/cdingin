@@ -5,7 +5,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-import notificationIcon from "~/assets/notification-ilustration.png";
+import notificationIcon from "public/notification-ilustration.png";
 import { Button } from "@mui/material";
 
 interface NotificationPermissionSheetProps {

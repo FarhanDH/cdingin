@@ -4,6 +4,7 @@ import { CircularProgress, Fab } from "@mui/material";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import mapPin from "public/map-pin.png";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     MapContainer,
@@ -14,9 +15,8 @@ import {
     Tooltip,
 } from "react-leaflet";
 import { useNavigate } from "react-router";
-import mapPin from "~/assets/map-pin.png";
 import { formattedDate } from "~/common/utils";
-import { blueDotIcon } from '~/customer/order/new/maps/current-location-marker';
+import { blueDotIcon } from "~/customer/order/new/maps/current-location-marker";
 import ZoomControl from "~/customer/order/new/maps/zoom-control";
 import { useRouteCalculator } from "~/hooks/use-route-calculator";
 import { useTechnicianLocation } from "~/hooks/use-technician-location";
@@ -69,7 +69,6 @@ export default function TechnicianMapPage() {
         iconUrl: mapPin,
         iconSize: [25, 41],
     });
-
 
     // Fetches the orders from the API and stores them in the state
     const fetchOrders = useCallback(async () => {

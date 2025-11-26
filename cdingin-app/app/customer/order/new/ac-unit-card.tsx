@@ -1,8 +1,8 @@
 import { IconButton } from "@mui/material";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import cassetteACIcon from "~/assets/cassette-ac.png";
-import splitACIcon from "~/assets/split-ac.png";
-import standingACIcon from "~/assets/standing-ac.png";
+import cassetteACIcon from "public/cassette-ac.png";
+import splitACIcon from "public/split-ac.png";
+import standingACIcon from "public/standing-ac.png";
 import {
     Select,
     SelectContent,

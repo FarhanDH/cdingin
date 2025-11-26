@@ -24,15 +24,13 @@ export class InvoiceResponseDto {
     createdAt: Date;
     updatedAt: Date;
     items: InvoiceItemResponseDto[];
-    payments:
-        | {
-              id: string;
-              status: string;
-              method: PaymentMethod;
-              expiryTime: string;
-              paymentChannel: string;
-          }[]
-        | [];
+    payment: {
+        id: string;
+        status: string;
+        method: PaymentMethod;
+        expiryTime: string;
+        paymentChannel: string;
+    } | null;
 }
 
 export const formatPaymentString = (str: string | null | undefined) => {
@@ -56,16 +54,20 @@ export const toInvoiceResponseDto = (invoice: Invoice): InvoiceResponseDto => {
             unitPrice: item.unit_price,
             totalPrice: item.total_price,
         })),
-        payments:
-            invoice.payments.map((payment) => ({
-                id: payment.id,
-                status: payment.status,
-                method: payment.method,
-                expiryTime: payment.expiry_time as unknown as string,
-                paymentChannel: formatPaymentString(
-                    (payment.gateway_response as { payment_type: string })
-                        ?.payment_type,
-                ),
-            })) || [],
+        payment: invoice.payment
+            ? {
+                  id: invoice.payment.id,
+                  status: invoice.payment.status,
+                  method: invoice.payment.method,
+                  expiryTime: invoice.payment.expiry_time as unknown as string,
+                  paymentChannel: formatPaymentString(
+                      (
+                          invoice.payment.gateway_response as {
+                              payment_type: string;
+                          }
+                      )?.payment_type,
+                  ),
+              }
+            : null,
     };
 };

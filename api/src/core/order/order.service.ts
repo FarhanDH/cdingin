@@ -13,8 +13,8 @@ import {
     Between,
     DataSource,
     FindOptionsWhere,
-    IsNull,
     In,
+    IsNull,
     LessThanOrEqual,
     MoreThanOrEqual,
     Not,
@@ -35,6 +35,7 @@ import {
     PayloadMessage,
     PushSubscriptionService,
 } from '../push-subscription/push-subscription.service';
+import { PusherService } from '../pusher/pusher.service';
 import { UserService } from '../user/user.service';
 import {
     CancelOrderRequestDto,
@@ -43,7 +44,6 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
-import { PusherService } from '../pusher/pusher.service';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -518,7 +518,7 @@ export class OrderService {
                 customer: true,
                 invoice: {
                     items: true,
-                    payments: true,
+                    payment: true,
                 },
             },
             order: {
@@ -567,7 +567,7 @@ export class OrderService {
             where: { id: orderId },
             relations: {
                 invoice: {
-                    payments: true,
+                    payment: true,
                     order: {
                         customer: true,
                         ac_units: true,
@@ -718,7 +718,7 @@ export class OrderService {
                 customer: true,
                 invoice: {
                     items: true,
-                    payments: true,
+                    payment: true,
                 },
             },
             order: {

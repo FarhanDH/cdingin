@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import acHeroImage from "../assets/home-page.png";
+import acHeroImage from "public/home-page.png";
 import { Button } from "@mui/material";
 
 export function Welcome() {

@@ -8,9 +8,9 @@ import EarningTab, {
     type EarningTabId,
 } from "~/components/earning/earning-tab";
 import Header from "~/components/header";
-import successNote from "~/assets/note-success.png";
-import failedNote from "~/assets/failed-note.png";
-import cautionNote from "~/assets/caution-note.png";
+import successNote from "public/note-success.png";
+import failedNote from "public/failed-note.png";
+import cautionNote from "public/caution-note.png";
 import type { OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/earning-history";
 

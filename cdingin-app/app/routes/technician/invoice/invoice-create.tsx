@@ -1,6 +1,7 @@
 import { Button, CircularProgress, IconButton } from "@mui/material";
 import axios, { AxiosError } from "axios";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import technicianConfirmationIllustration from "public/technician-confirmation.png";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -15,7 +16,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-import Spinner from "~/components/ui/spinner";
 import {
     Table,
     TableBody,
@@ -25,7 +25,6 @@ import {
     TableRow,
 } from "~/components/ui/table";
 import type { InvoiceItemForm } from "~/types/invoice.types";
-import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
 
 /**
  * A page for technicians to create and submit a new invoice for an order.
@@ -144,7 +143,7 @@ export default function CreateInvoice() {
             {/* Main content area with padding for the sticky footer */}
             <main className="flex-grow p-4 space-y-4 pb-32">
                 <h2 className="text-lg font-semibold text-gray-700">
-                    Rincian Biaya untuk Pesanan #{orderId}
+                    Rincian biaya untuk pesanan #{orderId}
                 </h2>
 
                 {/* Dynamic list of invoice items */}
@@ -244,7 +243,7 @@ export default function CreateInvoice() {
             <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t p-4 space-y-3 rounded-t-3xl">
                 <div className="flex justify-between items-center">
                     <span className="text-base font-semibold text-gray-800">
-                        Total Tagihan
+                        Total tagihan
                     </span>
                     <span className="text-base font-bold text-primary">
                         Rp{totalAmount.toLocaleString("id-ID")}
@@ -302,7 +301,7 @@ export default function CreateInvoice() {
                             disabled={isSubmitting}
                             className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
                         >
-                            Bentar, Cek Lagi
+                            Bentar, cek lagi
                         </Button>
                         <Button
                             onClick={handleSubmitInvoice}
@@ -315,7 +314,7 @@ export default function CreateInvoice() {
                                     className="text-white"
                                 />
                             ) : (
-                                "Ya, Kirim Sekarang"
+                                "Ya, kirim sekarang"
                             )}
                         </Button>
                     </SheetFooter>

@@ -7,8 +7,8 @@ import { Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate, useParams } from "react-router";
-import cashImage from "~/assets/cash.png";
-import mapPin from "~/assets/map-pin.png";
+import cashImage from "public/cash.png";
+import mapPin from "public/map-pin.png";
 import Header from "~/components/header";
 import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
 import AcUnitsCard from "~/components/orders/detail/ac-units-card";
@@ -184,7 +184,7 @@ export default function CustomerOrderDetail() {
             {/* Drawer */}
             <Drawer
                 open={true}
-                snapPoints={[0.4, 0.1]}
+                snapPoints={[0.4, 0.94]}
                 dismissible={false}
                 snapToSequentialPoint={true}
                 modal={false}
@@ -216,7 +216,7 @@ export default function CustomerOrderDetail() {
                     </DrawerHeader>
 
                     <ScrollArea
-                        className={`flex-grow overflow-y-auto bg-gray-100`}
+                        className={`flex-grow overflow-y-auto bg-gray-100 mb-12`}
                         showScrollBar={false}
                     >
                         <div className="p-4 flex flex-col gap-2">

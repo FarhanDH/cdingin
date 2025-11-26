@@ -8,7 +8,7 @@ import {
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
-import threeTechniciansImage from "~/assets/three-technicians.png";
+import threeTechniciansImage from "public/three-technicians.png";
 import EnableLocationSheet from "~/components/enable-location-sheet";
 import Header from "~/components/header";
 import NotificationPermissionSheet from "~/components/notification-permission-sheet";

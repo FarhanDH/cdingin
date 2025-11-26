@@ -31,12 +31,5 @@ export type InvoiceResponse = {
     createdAt: Date;
     updatedAt: Date;
     items: InvoiceItemResponse[];
-    payments: {
-        id: string;
-        status: string;
-        method: string;
-        paymentGateway: string;
-        expiryTime: string;
-        paymentChannel: string;
-    }[];
+    payment: Payment | null;
 };

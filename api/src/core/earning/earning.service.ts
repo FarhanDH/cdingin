@@ -34,7 +34,7 @@ export class EarningService {
             },
             relations: {
                 invoice: {
-                    payments: true,
+                    payment: true,
                 },
             },
         });
@@ -50,19 +50,15 @@ export class EarningService {
                 return total;
             }, 0),
             cashPaymentTotal: orders.reduce((total, order) => {
-                const cashPaymentAmount =
-                    order.invoice?.payments
-                        ?.filter(
-                            (payment) =>
-                                payment.method === PaymentMethod.CASH &&
-                                payment.status === PaymentStatus.SUCCESS,
-                        )
-                        .reduce(
-                            (paymentTotal, payment) =>
-                                paymentTotal + Number(payment.amount),
-                            0,
-                        ) || 0;
-                return total + cashPaymentAmount;
+                const payment = order.invoice?.payment;
+                if (
+                    payment &&
+                    payment.method === PaymentMethod.CASH &&
+                    payment.status === PaymentStatus.SUCCESS
+                ) {
+                    return total + Number(payment.amount);
+                }
+                return total;
             }, 0),
             cancelledOrderCount: orders.filter(
                 (order) => order.status === OrderStatusEnum.CANCELLED,
@@ -77,19 +73,15 @@ export class EarningService {
                         order.status !== OrderStatusEnum.COMPLETED,
                 ).length + pendingOrders.length,
             digitalPaymentTotal: orders.reduce((total, order) => {
-                const digitalPaymentAmount =
-                    order.invoice?.payments
-                        ?.filter(
-                            (payment) =>
-                                payment.method === PaymentMethod.MIDTRANS &&
-                                payment.status === PaymentStatus.SETTLEMENT,
-                        )
-                        .reduce(
-                            (paymentTotal, payment) =>
-                                paymentTotal + Number(payment.amount),
-                            0,
-                        ) || 0;
-                return total + digitalPaymentAmount;
+                const payment = order.invoice?.payment;
+                if (
+                    payment &&
+                    payment.method === PaymentMethod.MIDTRANS &&
+                    payment.status === PaymentStatus.SETTLEMENT
+                ) {
+                    return total + Number(payment.amount);
+                }
+                return total;
             }, 0),
             earningDate: date,
         };

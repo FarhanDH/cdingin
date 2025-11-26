@@ -1,19 +1,19 @@
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
 import { Button, CircularProgress } from "@mui/material";
+import axios from "axios";
+import cautionNote from "public/caution-note.png";
+import failedNote from "public/failed-note.png";
+import successNote from "public/note-success.png";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import cautionNote from "~/assets/caution-note.png";
-import failedNote from "~/assets/failed-note.png";
-import successNote from "~/assets/note-success.png";
+import { customToastStyle } from "~/common/custom-toast-style";
+import { formattedDate } from "~/common/utils";
 import HorizontalDateScroller from "~/components/earning/horizontal-date-scroller";
 import Header from "~/components/header";
-import type { Route } from "./+types/earning";
 import type { EarningSummary } from "~/types/earning.types";
-import axios from "axios";
-import { formattedDate } from "~/common/utils";
-import { customToastStyle } from "~/common/custom-toast-style";
+import type { Route } from "./+types/earning";
 
 export function meta(args: Route.MetaArgs) {
     return [

@@ -64,7 +64,6 @@ export default function AcTypeStep({
             const currentUnit = acUnits.find((unit) => unit.id === id);
             const newQuantity = value as number;
 
-            // Jika kuantitas bertambah DAN total sudah mencapai batas
             if (
                 newQuantity > (currentUnit?.quantity ?? 0) &&
                 totalQuantity >= 10
@@ -74,13 +73,11 @@ export default function AcTypeStep({
             }
         }
 
-        // GUARD CLAUSE 2: Cek untuk menghapus unit jika kuantitas < 1
         if (field === "quantity" && typeof value === "number" && value < 1) {
             handleRemoveUnit(id);
             return;
         }
 
-        // DEFAULT ACTION: Jika semua pengecekan lolos, lakukan update state
         setAcUnits(
             acUnits.map((unit) =>
                 unit.id === id ? { ...unit, [field]: value } : unit

@@ -73,12 +73,18 @@ export const toOrderResponse = (order: Order): OrderResponse => ({
     ),
     invoiceId: order.invoice?.id || null,
     amount: order.invoice?.total_amount || 0,
-    paymentMethod:
-        order.invoice?.payments?.find((payment) =>
+    paymentMethod: (() => {
+        const payment = order.invoice?.payment;
+        if (
+            payment &&
             [PaymentStatus.SETTLEMENT, PaymentStatus.SUCCESS].includes(
                 payment.status,
-            ),
-        )?.method || null,
+            )
+        ) {
+            return payment.method;
+        }
+        return null;
+    })(),
     cancellationReason: order.cancellation_reason,
     cancellationNote: order.cancellation_note,
     cancelledBy: order.cancelled_by,

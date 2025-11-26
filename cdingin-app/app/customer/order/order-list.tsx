@@ -7,23 +7,22 @@ import {
 } from "@radix-ui/react-dialog";
 import axios from "axios";
 import { PlusIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router";
 import { toast } from "sonner";
-import threeTechniciansImage from "~/assets/three-technicians.png";
+import threeTechniciansImage from "public/three-technicians.png";
 import Header from "~/components/header";
 import NotificationPermissionSheet from "~/components/notification-permission-sheet";
 import Spinner from "~/components/ui/spinner";
 import CustomerOrderCard from "~/customer/order/order-card";
 import { useNotificationPermission } from "~/hooks/use-notification-permission";
+import type { CustomerLayoutContext } from "~/routes/customer/layout";
 import type {
     CustomerOrderTabType,
     CustomerTabItem,
-    CustomerOrderCounts,
     OrderItem,
 } from "~/types/order.types";
 import CustomerOrderTab from "./order-tab-status";
-import type { CustomerLayoutContext } from "~/routes/customer/layout";
 
 export default function CustomerOrderList() {
     const navigate = useNavigate();

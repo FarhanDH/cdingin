@@ -2,7 +2,7 @@ import L, { type LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import markerIcon from "~/assets/map-pin.png";
+import markerIcon from "public/map-pin.png";
 import ZoomControl from "./zoom-control";
 import CurrentLocationMarker from "./current-location-marker";
 import { toast } from "sonner";

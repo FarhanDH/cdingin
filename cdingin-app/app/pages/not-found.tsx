@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import Header from "~/components/header";
 import { Button } from "~/components/ui/button";
-import notFoundImage from "~/assets/not-found.png";
+import notFoundImage from "public/not-found.png";
 
 const NotFoundPage = () => {
     const navigate = useNavigate();

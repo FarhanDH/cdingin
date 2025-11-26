@@ -18,7 +18,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from "~/components/ui/sheet";
-import phoneWhatsapp from "~/assets/whatsapp-telephone.png";
+import phoneWhatsapp from "public/whatsapp-telephone.png";
 
 export default function PhoneStep({
     onSubmit,

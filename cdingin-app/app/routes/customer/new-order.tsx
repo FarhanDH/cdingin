@@ -6,7 +6,7 @@ import { AirVent, ClipboardList, Home, MapPin, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import successLottie from "~/assets/lottie/success.json";
+import successLottie from "public/lottie/success.json";
 import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
 import AcTypeStep from "~/customer/order/new/ac-type-step";
@@ -218,8 +218,11 @@ export default function NewOrder() {
                 serviceDate: completeFormData.serviceDate
                     ? new Date(
                           completeFormData.serviceDate.getTime() -
-                              completeFormData.serviceDate.getTimezoneOffset() * 60000
-                      ).toISOString().split("T")[0]
+                              completeFormData.serviceDate.getTimezoneOffset() *
+                                  60000
+                      )
+                          .toISOString()
+                          .split("T")[0]
                     : undefined,
             });
 

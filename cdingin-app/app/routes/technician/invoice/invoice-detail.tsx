@@ -144,6 +144,7 @@ export default function InvoiceDetailPage() {
                 isSticky
                 showBack
                 navigateTo={`/technician/order/${orderId}`}
+                className="bg-white"
             />
             <main className="p-2 space-y-4">
                 <div className="bg-white p-2 flex-col space-y-2 items-center">
@@ -181,21 +182,11 @@ export default function InvoiceDetailPage() {
                     <div className="w-full">
                         <Table className="text-xs ">
                             {invoice.status === "paid" && (
-                                <TableCaption className="text-start">
-                                    Dibayar Pakai{" "}
-                                    {invoice.payments.find(
-                                        (payment) =>
-                                            payment.status === "success" ||
-                                            payment.status === "settlement"
-                                    )?.method === "cash"
+                                <TableCaption className="text-start normal-case">
+                                    Dibayar pakai{" "}
+                                    {invoice.payment?.method === "cash"
                                         ? "Tunai"
-                                        : invoice.payments.find(
-                                              (payment) =>
-                                                  payment.status ===
-                                                      "success" ||
-                                                  payment.status ===
-                                                      "settlement"
-                                          )?.paymentChannel}
+                                        : invoice.payment?.paymentChannel}
                                 </TableCaption>
                             )}
                             <TableHeader className="bg-gray-100">

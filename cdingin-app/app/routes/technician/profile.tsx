@@ -12,7 +12,7 @@ import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import settingBg from "~/assets/setting-bg.png";
+import settingBg from "public/setting-bg.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";

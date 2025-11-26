@@ -1,3 +1,4 @@
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ErrorIcon from "@mui/icons-material/Error";
 import LocationPinIcon from "@mui/icons-material/LocationPin";
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
@@ -16,12 +17,10 @@ import { id } from "date-fns/locale";
 import { ArrowRightIcon, ChevronRight, Minus, Plus } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import addNote from "~/assets/add-note.png";
-import noteFilled from "~/assets/note-filled.png";
-import technicianConfirmationIllustration from "~/assets/technician-confirmation.png";
+import addNote from "public/add-note.png";
+import technicianConfirmationIllustration from "public/technician-confirmation.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import { Calendar } from "~/components/ui/calendar";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CustomDay from "~/components/ui/custom-day";
 import {
     Drawer,
@@ -30,6 +29,7 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from "~/components/ui/drawer";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import {
     Sheet,
     SheetContent,
@@ -50,7 +50,6 @@ import {
     type AvailabilityData,
 } from "~/types/schedule.types";
 import "../../../app.css";
-import { ScrollArea } from "~/components/ui/scroll-area";
 
 interface SummaryStepProps {
     formData: Partial<OrderFormData>;
@@ -508,7 +507,7 @@ export default function SummaryStep({
                             disabled={isSubmitting}
                             className="w-full h-12 rounded-full font-semibold text-base bg-white border-[1.5px] border-[#006C7F] text-[#006C7F] active:scale-95 cursor-pointer normal-case !font-[Rubik]"
                         >
-                            Cek Lagi
+                            Cek lagi
                         </Button>
                         <Button
                             onClick={() => {

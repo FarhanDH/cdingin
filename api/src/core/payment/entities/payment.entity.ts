@@ -2,8 +2,8 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    ManyToOne,
-    PrimaryColumn,
+    OneToOne,
+    PrimaryGeneratedColumn,
     Relation,
     UpdateDateColumn,
 } from 'typeorm';
@@ -19,12 +19,11 @@ type MidtransAction = {
 
 @Entity('payments')
 export class Payment {
-    /** We use the transaction_id from Midtrans as our primary key. */
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
     /** The invoice this transaction is for. */
-    @ManyToOne(() => Invoice, (invoice) => invoice.payments)
+    @OneToOne(() => Invoice, (invoice) => invoice.payment)
     invoice: Relation<Invoice>;
 
     @Column({
@@ -46,6 +45,9 @@ export class Payment {
     /** Store the full webhook response from the payment gateway for auditing. */
     @Column({ type: 'jsonb', nullable: true })
     gateway_response: object | null;
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    gateway_transaction_id: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
     va_number: string;

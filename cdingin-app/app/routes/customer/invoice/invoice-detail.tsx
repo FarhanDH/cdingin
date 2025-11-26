@@ -1,17 +1,17 @@
 import { Button, CircularProgress } from "@mui/material";
 import axios, { AxiosError } from "axios";
 import { ArrowRightIcon, ChevronRight, CreditCard } from "lucide-react";
+import bcaIcon from "public/banks/bca.png";
+import bniIcon from "public/banks/bni.png";
+import briIcon from "public/banks/bri.png";
+import mandiriIcon from "public/banks/mandiri.png";
+import permataIcon from "public/banks/permata.png";
+import cashIcon from "public/cash.png";
+import qrisIcon from "public/qris-icon.png";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import bcaIcon from "~/assets/banks/bca.png";
-import bniIcon from "~/assets/banks/bni.png";
-import briIcon from "~/assets/banks/bri.png";
-import mandiriIcon from "~/assets/banks/mandiri.png";
-import permataIcon from "~/assets/banks/permata.png";
-import cashIcon from "~/assets/cash.png";
-import qrisIcon from "~/assets/qris-icon.png";
 import { customToastStyle } from "~/common/custom-toast-style";
 import Header from "~/components/header";
 import { DateInfo } from "~/components/invoice/invoice-date";
@@ -275,16 +275,17 @@ export default function InvoiceDetailPage() {
     }, [orderId]);
 
     useEffect(() => {
-        if (invoice?.payments) {
-            // Cari pembayaran yang statusnya 'pending' dan belum expired
-            const findPendingPayment = invoice.payments.find((payment) => {
-                const isPending = payment.status === "pending";
-                if (!payment.expiryTime) return false;
-                const isNotExpired = new Date(payment.expiryTime) > new Date();
-                return isPending && isNotExpired;
-            });
+        if (invoice?.payment) {
+            const payment = invoice.payment;
+            const isPending = payment.status === "pending";
+            const isNotExpired =
+                payment.expiryTime && new Date(payment.expiryTime) > new Date();
 
-            setPendingPayment(findPendingPayment || null);
+            if (isPending && isNotExpired) {
+                setPendingPayment(payment);
+            } else {
+                setPendingPayment(null);
+            }
         }
     }, [invoice]);
 
@@ -345,19 +346,9 @@ export default function InvoiceDetailPage() {
                             {invoice.status === "paid" && (
                                 <TableCaption className="text-start">
                                     Bayar Pakai{" "}
-                                    {invoice.payments.find(
-                                        (payment) =>
-                                            payment.status === "success" ||
-                                            payment.status === "settlement"
-                                    )?.method === "cash"
+                                    {invoice.payment?.method === "cash"
                                         ? "Tunai"
-                                        : invoice.payments.find(
-                                              (payment) =>
-                                                  payment.status ===
-                                                      "success" ||
-                                                  payment.status ===
-                                                      "settlement"
-                                          )?.paymentChannel}
+                                        : invoice.payment?.paymentChannel}
                                 </TableCaption>
                             )}
                             <TableHeader className="bg-gray-100">

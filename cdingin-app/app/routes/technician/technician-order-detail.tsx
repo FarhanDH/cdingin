@@ -9,7 +9,7 @@ import "leaflet/dist/leaflet.css";
 import { AirVent, HomeIcon, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import noteFilled from "~/assets/note-filled.png";
+import noteFilled from "public/note-filled.png";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
 import Spinner from "~/components/ui/spinner";

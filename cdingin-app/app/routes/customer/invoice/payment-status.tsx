@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { Banknote, ChevronDown, Copy, InfoIcon, X } from "lucide-react";
+import failureLottie from "public/lottie/Failure error icon.json";
+import loadingLottie from "public/lottie/Loading Dots Blue.json";
+import loveLottie from "public/lottie/Love hand sign.json";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import failureLottie from "~/assets/lottie/Failure error icon.json";
-import loadingLottie from "~/assets/lottie/Loading Dots Blue.json";
-import loveLottie from "~/assets/lottie/Love hand sign.json";
 import { customToastStyle } from "~/common/custom-toast-style";
 import { formattedDate } from "~/common/utils";
 import Header from "~/components/header";
@@ -34,94 +34,196 @@ const PAYMENT_INSTRUCTIONS: Record<
 > = {
     qris: [
         {
-            title: "Cara bayar lewat E‑Wallet (OVO, ShopeePay, Dana, LinkAja)",
+            title: "Cara bayar lewat E-Wallet (GoPay, OVO, Dana, ShopeePay, LinkAja)",
             steps: [
-                "Buka aplikasi e‑wallet Anda (OVO / ShopeePay / Dana / LinkAja).",
-                "Pilih menu 'Scan QR' / 'Bayar dengan QR'.",
-                "Arahkan kamera ke QR code yang muncul di halaman ini (atau gunakan tangkapan layar QR).",
-                "Konfirmasi nominal dan selesaikan pembayaran.",
-                "Simpan bukti pembayaran jika diperlukan.",
+                "Buka aplikasi e-wallet pilihan Anda.",
+                "Pilih menu 'Scan QR' atau 'Bayar'.",
+                "Arahkan kamera ke QR Code yang tampil, atau pilih opsi 'Ambil dari Galeri' jika Anda menggunakan screenshot.",
+                "Periksa nama merchant dan nominal pembayaran.",
+                "Konfirmasi dan selesaikan pembayaran.",
             ],
         },
         {
-            title: "Cara bayar lewat Mobile Banking (BNI, BCA, Mandiri, dll.)",
+            title: "Cara bayar lewat Mobile Banking (BCA, Mandiri, BRI, BNI, dll.)",
             steps: [
                 "Buka aplikasi mobile banking Anda.",
-                "Pilih menu 'QRIS' / 'Bayar QR'.",
-                "Scan QR code dari halaman ini atau unggah gambarnya jika tersedia.",
-                "Konfirmasi data dan selesaikan pembayaran.",
+                "Cari tombol 'QRIS', 'QR', atau 'Scan'.",
+                "Scan QR Code yang tampil di layar, atau unggah gambar QR jika tersedia.",
+                "Pastikan nama merchant sesuai dan nominal benar.",
+                "Masukkan PIN untuk menyelesaikan pembayaran.",
             ],
         },
         {
-            title: "Catatan",
+            title: "Catatan Penting",
             steps: [
-                "Pastikan jumlah yang tertera sesuai (Rp ...).",
-                "QRIS berlaku sampai waktu kedaluwarsa yang ditampilkan.",
+                "Pastikan nominal pembayaran tepat {formattedAmountToIdrCurrency}.",
+                "QRIS hanya berlaku hingga waktu kedaluwarsa yang ditampilkan habis.",
+                "Simpan bukti pembayaran setelah transaksi berhasil.",
             ],
         },
     ],
+
     mandiri: [
+        // Mandiri Bill Payment biasanya menggunakan Kode Perusahaan + Kode Pelanggan
         {
-            title: "Transfer lewat Livin by Mandiri",
+            title: "Transfer lewat Livin' by Mandiri (Kuning)",
             steps: [
-                "Masuk ke Mandiri Online / m-Banking.",
-                "Pilih 'Bayar' → 'Multipayment' atau 'Pembayaran Tagihan'.",
-                "Pilih penyedia (Biller) lalu masukkan Kode Perusahaan: {biller_code}.",
-                "Masukkan Kode Pembayaran: {bill_key}.",
-                "Konfirmasi nominal dan selesaikan pembayaran.",
+                "Login ke aplikasi Livin' by Mandiri.",
+                "Pilih menu 'Bayar' (Pay).",
+                "Ketik di kolom pencarian penyedia jasa: {biller_code} (misal: Midtrans/Xendit) atau nama merchant.",
+                "Masukkan Kode Pembayaran / No. Virtual Account: {bill_key}.",
+                "Pastikan detail pembayaran benar, lalu tekan 'Lanjut'.",
+                "Masukkan PIN Livin' Anda.",
             ],
         },
         {
             title: "Transfer lewat ATM Mandiri",
             steps: [
-                "Masukkan kartu dan PIN pada ATM Mandiri.",
-                "Pilih 'Bayar/Beli' → 'Multipayment'.",
-                "Masukkan Kode Perusahaan: {biller_code} dan Kode Pembayaran: {bill_key}.",
-                "Periksa nama dan jumlah, konfirmasi untuk menyelesaikan.",
+                "Masukkan kartu ATM dan PIN Mandiri.",
+                "Pilih menu 'Bayar/Beli'.",
+                "Pilih 'Lainnya' > 'Lainnya' > 'Multi Payment'.",
+                "Masukkan Kode Perusahaan: {biller_code}, lalu tekan 'Benar'.",
+                "Masukkan Kode Pelanggan/Bayar: {bill_key}, lalu tekan 'Benar'.",
+                "Pilih tagihan yang muncul (jika ada pilihan angka 1, tekan 1), lalu 'Ya'.",
+                "Konfirmasi pembayaran dan simpan struk.",
+            ],
+        },
+        {
+            title: "Transfer lewat Internet Banking Mandiri",
+            steps: [
+                "Login ke Mandiri Internet Banking.",
+                "Pilih menu 'Bayar' > 'Multi Payment'.",
+                "Pilih penyedia jasa (Biller Code): {biller_code}.",
+                "Masukkan Kode Bayar: {bill_key}.",
+                "Centang tagihan yang muncul dan lanjutkan dengan token PIN.",
             ],
         },
     ],
+
     bca: [
         {
-            title: "Transfer lewat BCA (VA)",
+            title: "Transfer lewat m-BCA (BCA Mobile)",
             steps: [
-                "Buka m-BCA / KlikBCA.",
-                "Pilih 'Transfer' → 'Virtual Account'.",
+                "Buka aplikasi BCA Mobile dan pilih 'm-BCA'.",
+                "Pilih menu 'm-Transfer' > 'BCA Virtual Account'.",
                 "Masukkan nomor Virtual Account: {va_number}.",
-                "Konfirmasi nominal dan selesaikan pembayaran.",
+                "Klik 'Send'. Cek informasi yang muncul di layar.",
+                "Jika benar, masukkan PIN m-BCA dan pilih 'OK'.",
+            ],
+        },
+        {
+            title: "Transfer lewat ATM BCA",
+            steps: [
+                "Masukkan kartu ATM dan PIN BCA.",
+                "Pilih menu 'Transaksi Lainnya'.",
+                "Pilih 'Transfer' > 'Ke Rek BCA Virtual Account'.",
+                "Masukkan nomor Virtual Account: {va_number}.",
+                "Periksa detail pembayaran, lalu pilih 'Ya' untuk lanjut.",
+                "Simpan struk sebagai bukti pembayaran.",
+            ],
+        },
+        {
+            title: "Transfer lewat KlikBCA (Internet Banking)",
+            steps: [
+                "Login ke website KlikBCA Individual.",
+                "Pilih menu 'Transfer Dana' > 'Transfer ke BCA Virtual Account'.",
+                "Masukkan nomor Virtual Account: {va_number}.",
+                "Validasi detail pembayaran.",
+                "Masukkan respon KeyBCA (Appli 1) dan kirim.",
             ],
         },
     ],
+
     bri: [
         {
-            title: "Transfer lewat BRI (VA)",
+            title: "Transfer lewat aplikasi BRImo",
             steps: [
-                "Buka BRI Mobile / ATM BRI.",
-                "Pilih 'Pembayaran' atau 'Transfer' → 'Virtual Account'.",
+                "Login ke aplikasi BRImo.",
+                "Pilih menu 'Tagihan' atau 'BRIVA'.",
+                "Pilih 'Pembayaran Baru'.",
                 "Masukkan nomor Virtual Account: {va_number}.",
-                "Konfirmasi dan selesaikan pembayaran.",
+                "Klik 'Lanjutkan', periksa detail, lalu masukkan PIN BRImo.",
+            ],
+        },
+        {
+            title: "Transfer lewat ATM BRI",
+            steps: [
+                "Masukkan kartu ATM dan PIN BRI.",
+                "Pilih menu 'Transaksi Lain' > 'Pembayaran'.",
+                "Pilih menu 'Lainnya' > 'BRIVA'.",
+                "Masukkan Nomor Virtual Account: {va_number}.",
+                "Periksa data di layar, jika benar pilih 'Ya'.",
+                "Selesaikan transaksi dan simpan struk.",
             ],
         },
     ],
+
     bni: [
         {
-            title: "Transfer lewat BNI (VA)",
+            title: "Transfer lewat BNI Mobile Banking",
             steps: [
-                "Buka BNI Mobile / ATM BNI.",
-                "Pilih 'Pembayaran' → 'Virtual Account'.",
+                "Login ke aplikasi BNI Mobile Banking.",
+                "Pilih menu 'Pembayaran'.",
+                "Pilih 'BNI Virtual Account'.",
+                "Masukkan nomor Virtual Account: {va_number} pada menu 'Input Baru'.",
+                "Periksa tagihan yang muncul, lalu masukkan Password Transaksi.",
+            ],
+        },
+        {
+            title: "Transfer lewat ATM BNI",
+            steps: [
+                "Masukkan kartu ATM dan PIN BNI.",
+                "Pilih 'Menu Lain' > 'Transfer'.",
+                "Pilih 'Virtual Account Billing'.",
                 "Masukkan nomor Virtual Account: {va_number}.",
-                "Konfirmasi dan selesaikan pembayaran.",
+                "Konfirmasi pemotongan saldo, pastikan data benar.",
+                "Simpan struk transaksi.",
             ],
         },
     ],
+
+    permata: [
+        {
+            title: "Transfer lewat PermataMobile X",
+            steps: [
+                "Login ke aplikasi PermataMobile X.",
+                "Pilih menu 'Pembayaran Tagihan' (Bill Payment).",
+                "Pilih 'Virtual Account'.",
+                "Masukkan nomor Virtual Account: {va_number}.",
+                "Konfirmasi nominal dan masukkan Mobile PIN.",
+            ],
+        },
+        {
+            title: "Transfer lewat ATM Permata",
+            steps: [
+                "Masukkan kartu ATM dan PIN Permata.",
+                "Pilih 'Transaksi Lainnya' > 'Pembayaran'.",
+                "Pilih 'Pembayaran Lainnya' > 'Virtual Account'.",
+                "Masukkan nomor Virtual Account: {va_number}.",
+                "Pilih rekening debit dan konfirmasi pembayaran.",
+            ],
+        },
+        {
+            title: "Transfer dari Bank Lain (ATM Bersama/Prima)",
+            steps: [
+                "Pilih menu 'Transfer' > 'Ke Bank Lain'.",
+                "Masukkan kode bank Permata (013) diikuti nomor VA: 013{va_number}.",
+                "Masukkan nominal sesuai tagihan.",
+                "Selesaikan pembayaran.",
+            ],
+        },
+    ],
+
     generic_va: [
         {
-            title: "Transfer lewat Virtual Account",
+            title: "Transfer lewat ATM / Mobile Banking Lain",
             steps: [
-                "Buka aplikasi/mobile/ATM bank Anda.",
-                "Pilih menu 'Transfer' → 'Virtual Account' / 'Transfer ke rekening bank'.",
-                "Masukkan nomor Virtual Account: {va_number}.",
-                "Periksa nama & nominal, lalu selesaikan pembayaran.",
+                "Buka aplikasi mobile banking atau datangi ATM bank Anda.",
+                "Pilih menu 'Transfer' > 'Antar Bank' atau 'Ke Bank Lain'.",
+                "Pilih bank tujuan sesuai instruksi (Misal: BNI/Mandiri/Permata).",
+                "Masukkan Nomor Rekening Tujuan: {va_number}.",
+                "Masukkan jumlah pembayaran sesuai tagihan: {formattedAmountToIdrCurrency} (Penting: Jangan dibulatkan).",
+                "Konfirmasi data penerima dan selesaikan transfer.",
             ],
         },
     ],
@@ -131,19 +233,23 @@ function PaymentInstructionsSheet({
     open,
     onClose,
     payment,
-}: {
+}: Readonly<{
     open: boolean;
     onClose: () => void;
     payment: Payment;
-}) {
+}>) {
     if (!payment) return null;
 
     const methodKey = payment.qr_code_url
         ? "qris"
-        : (payment.bank as string) || "generic_va";
-
+        : payment.bank || "generic_va";
+    const formattedAmountToIdrCurrency = `Rp${Number(
+        payment.amount
+    ).toLocaleString("id-ID")}`;
     const instructions =
-        PAYMENT_INSTRUCTIONS[methodKey] || PAYMENT_INSTRUCTIONS.generic_va;
+        PAYMENT_INSTRUCTIONS[methodKey] ||
+        (PAYMENT_INSTRUCTIONS.generic_va &&
+            PAYMENT_INSTRUCTIONS.formattedAmountToIdrCurrency);
 
     const renderStep = (step: string) =>
         step
@@ -155,6 +261,10 @@ function PaymentInstructionsSheet({
             .replace(
                 "{bill_key}",
                 (payment.gateway_response as any)?.bill_key ?? ""
+            )
+            .replace(
+                "{formattedAmountToIdrCurrency}",
+                formattedAmountToIdrCurrency
             );
 
     return (
@@ -246,7 +356,7 @@ function CountdownTimer({
         if (timeLeft[interval] === undefined) return null;
         return (
             <div key={interval} className="flex flex-col items-center mx-1">
-                <span className="bg-secondary/10 text-gray-600 font-normal px-2 py-1 rounded-md min-w-[30px] text-center">
+                <span className="text-red-400 bg-red-50 p-1 font-bold rounded-md text-center">
                     {String(timeLeft[interval]).padStart(2, "0")}
                 </span>
             </div>
@@ -255,13 +365,18 @@ function CountdownTimer({
 
     return (
         <div>
-            <div className="flex items-start justify-between text-sm">
+            <div className="flex items-start justify-between text-base">
                 <div className="flex flex-col items-start">
-                    <span className="mr-2 text-gray-500">Selesaikan dalam</span>
+                    <span className="mr-2 text-gray-500">
+                        Selesaikan sebelum
+                    </span>
                 </div>
                 <div className="flex">
                     {timerComponents.filter(Boolean).map((component, index) => (
-                        <span key={index} className="flex items-center">
+                        <span
+                            key={index}
+                            className="flex items-center text-sm text-red-400 font-bold"
+                        >
                             {component}{" "}
                             {index <
                                 timerComponents.filter(Boolean).length - 1 &&
@@ -524,7 +639,7 @@ function PendingPaymentView({
                     loop={true}
                     autoplay
                     style={{ width: "50px" }}
-                    className="flex items-center -mt-4 -mb-4 w-70"
+                    className="flex items-center -mt-10 -mb-10 w-70"
                 />
                 <p className="text-sm">Sedang menunggu pembayaran anda...</p>
             </div>
@@ -677,7 +792,7 @@ export default function PaymentStatusPage() {
     };
 
     return (
-        <div className="bg-gray-50 pb-24 min-h-screen">
+        <div className="bg-gray-50 pb-24 ">
             <Header
                 title="Pembayaran"
                 isSticky
