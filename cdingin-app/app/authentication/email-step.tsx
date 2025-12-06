@@ -31,7 +31,7 @@ export default function EmailStep({
                     className="space-y-6"
                 >
                     <h1 className="text-[20px] font-bold text-[#222222] mb-2">
-                        Selamat datang di cdingin!
+                        Selamat datang di sidingin!
                     </h1>
                     <p className="text-[#666666] text-sm">
                         Masuk atau daftar hanya dalam beberapa langkah mudah.

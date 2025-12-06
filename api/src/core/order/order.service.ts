@@ -44,6 +44,7 @@ import {
 } from './dto/order.request';
 import { OrderResponse, toOrderResponse } from './dto/order.response';
 import { Order } from './entities/order.entity';
+import { GeocodingService } from '../geocoding/geocoding.service';
 
 const SERVICE_RADIUS_METERS = 200;
 
@@ -60,9 +61,54 @@ export class OrderService {
         private readonly dataSource: DataSource,
         private readonly httpService: HttpService,
         private readonly pusherService: PusherService,
+        private readonly geocodingService: GeocodingService,
     ) {}
 
     private readonly logger = new Logger(OrderService.name);
+
+    /**
+     * Ensures that an order has its address details populated.
+     * If an order is missing address details, it fetches them using the geocoding service
+     * and asynchronously updates the database entry.
+     * @param order - An Order entity.
+     * @returns A promise that resolves to the order with populated address details.
+     */
+    private async enrichOrderWithAddress(order: Order): Promise<Order> {
+        if (
+            order &&
+            !order.service_location_detail &&
+            order.latitude_service_location &&
+            order.longitude_service_location
+        ) {
+            try {
+                const addressDetail =
+                    await this.geocodingService.reverseGeocode(
+                        order.latitude_service_location,
+                        order.longitude_service_location,
+                    );
+                order.service_location_detail = addressDetail;
+
+                // Asynchronously update the database without blocking the response
+                this.orderRepository
+                    .update(order.id, {
+                        service_location_detail: addressDetail,
+                    })
+                    .catch((err) =>
+                        this.logger.error(
+                            `Failed to update order address in DB for order ${order.id}:`,
+                            err,
+                        ),
+                    );
+            } catch (err) {
+                this.logger.error(
+                    `Failed to geocode for order ${order.id}:`,
+                    err,
+                );
+                // If geocoding fails, we still return the order as is.
+            }
+        }
+        return order;
+    }
 
     /**
      * Creates a new order for a customer, including AC unit details, within a transaction.
@@ -143,16 +189,9 @@ export class OrderService {
             // Fetch address detail from Nominatim
             let serviceLocationDetail = null;
             try {
-                const { data } = await this.httpService.axiosRef.get(
-                    'https://nominatim.openstreetmap.org/reverse',
-                    {
-                        params: {
-                            lat: createOrderDto.serviceLocation.latitude,
-                            lon: createOrderDto.serviceLocation.longitude,
-                            format: 'json',
-                            'accept-language': 'id',
-                        },
-                    },
+                const data = await this.geocodingService.reverseGeocode(
+                    createOrderDto.serviceLocation.latitude,
+                    createOrderDto.serviceLocation.longitude,
                 );
                 serviceLocationDetail = data;
             } catch (err) {
@@ -255,7 +294,11 @@ export class OrderService {
                 },
             });
 
-            return toOrderResponse(completeOrder);
+            // Enrich before returning
+            const enrichedOrder =
+                await this.enrichOrderWithAddress(completeOrder);
+
+            return toOrderResponse(enrichedOrder);
         } catch (error) {
             // Rollback transaction
             await queryRunner.rollbackTransaction();
@@ -340,7 +383,10 @@ export class OrderService {
                     customer: true,
                 },
             });
-            return orders.map((order) => toOrderResponse(order));
+            const enrichedOrders = await Promise.all(
+                orders.map((order) => this.enrichOrderWithAddress(order)),
+            );
+            return enrichedOrders.map((order) => toOrderResponse(order));
         }
 
         const orders = await this.orderRepository.find({
@@ -358,7 +404,10 @@ export class OrderService {
                 customer: true,
             },
         });
-        return orders.map((order) => toOrderResponse(order));
+        const enrichedOrders = await Promise.all(
+            orders.map((order) => this.enrichOrderWithAddress(order)),
+        );
+        return enrichedOrders.map((order) => toOrderResponse(order));
     }
 
     async getAllForTechnician(
@@ -526,7 +575,10 @@ export class OrderService {
             },
         });
 
-        return orders.map((order) => toOrderResponse(order));
+        const enrichedOrders = await Promise.all(
+            orders.map((order) => this.enrichOrderWithAddress(order)),
+        );
+        return enrichedOrders.map((order) => toOrderResponse(order));
     }
 
     async getOneByIdForTechnician(
@@ -551,7 +603,9 @@ export class OrderService {
                     `Order with id ${orderId} not found`,
                 );
             }
-            return toOrderResponse(order);
+            const enrichedOrder = await this.enrichOrderWithAddress(order);
+
+            return toOrderResponse(enrichedOrder);
         } catch (error) {
             this.logger.error(error);
             throw new InternalServerErrorException(error.message);
@@ -582,6 +636,11 @@ export class OrderService {
             this.logger.warn(`Invoice with id ${orderId} not found`);
             throw new NotFoundException(`Invoice with id ${orderId} not found`);
         }
+
+        const enrichedOrder = await this.enrichOrderWithAddress(
+            invoiceById.invoice.order,
+        );
+        invoiceById.invoice.order = enrichedOrder;
 
         return toInvoiceResponseDto(invoiceById.invoice);
     }
@@ -700,7 +759,9 @@ export class OrderService {
                 },
             );
 
-            return toOrderResponse(order);
+            const enrichedOrder = await this.enrichOrderWithAddress(order);
+
+            return toOrderResponse(enrichedOrder);
         } catch (error) {
             this.logger.error(`Error updating order status: ${error.message}`);
             throw new InternalServerErrorException(error.message);
@@ -725,7 +786,10 @@ export class OrderService {
                 service_date: 'ASC',
             },
         });
-        return orders.map((order) => toOrderResponse(order));
+        const enrichedOrders = await Promise.all(
+            orders.map((order) => this.enrichOrderWithAddress(order)),
+        );
+        return enrichedOrders.map((order) => toOrderResponse(order));
     }
 
     /**
@@ -736,7 +800,7 @@ export class OrderService {
      */
     async getById(id: string): Promise<Order> {
         this.logger.debug(`OrderService.getById(id: ${id})`);
-        return await this.orderRepository.findOne({
+        const order = await this.orderRepository.findOne({
             where: { id },
             relations: {
                 ac_units: true,
@@ -744,6 +808,8 @@ export class OrderService {
                 technician: true,
             },
         });
+
+        return this.enrichOrderWithAddress(order);
     }
 
     /**
@@ -851,7 +917,9 @@ export class OrderService {
                     link: `/technician/notifications`,
                 },
             );
-            return toOrderResponse(order);
+            const enrichedOrder = await this.enrichOrderWithAddress(order);
+
+            return toOrderResponse(enrichedOrder);
         } catch (error) {
             this.logger.error(`Error canceling order: ${error.message}`);
             throw new InternalServerErrorException(error.message);
@@ -947,7 +1015,9 @@ export class OrderService {
                     link: `/notifications`,
                 },
             );
-            return toOrderResponse(order);
+            const enrichedOrder = await this.enrichOrderWithAddress(order);
+
+            return toOrderResponse(enrichedOrder);
         } catch (error) {
             this.logger.error(`Error canceling order: ${error.message}`);
             throw new InternalServerErrorException(error.message);
@@ -977,8 +1047,10 @@ export class OrderService {
             },
         });
 
+        const enrichedOrder = await this.enrichOrderWithAddress(order);
+
         // Return the order response
-        return toOrderResponse(order);
+        return toOrderResponse(enrichedOrder);
     }
 
     /**

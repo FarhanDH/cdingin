@@ -18,6 +18,7 @@ import { InvoiceModule } from './core/invoice/invoice.module';
 import { PaymentModule } from './core/payment/payment.module';
 import { EarningModule } from './core/earning/earning.module';
 import { PusherModule } from './core/pusher/pusher.module';
+import { GeocodingModule } from './core/geocoding/geocoding.module';
 
 @Module({
     imports: [
@@ -41,6 +42,7 @@ import { PusherModule } from './core/pusher/pusher.module';
         PaymentModule,
         EarningModule,
         PusherModule,
+        GeocodingModule,
     ],
     controllers: [AppController],
 })

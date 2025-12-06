@@ -127,9 +127,9 @@ export type OrderItem = {
         fullName: string;
     };
     invoiceId?: string;
+    totalUnits: number;
     amount?: number;
     paymentMethod?: string;
-    totalUnits: number;
     createdAt: Date;
     updatedAt: Date;
 };

@@ -10,6 +10,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { InvoiceModule } from '../invoice/invoice.module';
 import { HttpModule } from '@nestjs/axios';
 import { PusherModule } from '../pusher/pusher.module';
+import { GeocodingModule } from '../geocoding/geocoding.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { PusherModule } from '../pusher/pusher.module';
         UserModule,
         PushSubscriptionModule,
         PusherModule,
+        GeocodingModule,
         HttpModule,
         NotificationModule,
     ],

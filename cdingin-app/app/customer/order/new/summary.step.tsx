@@ -40,6 +40,7 @@ import {
 } from "~/components/ui/sheet";
 import Spinner from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
+import AcProblemsCard from "~/components/orders/detail/ac-problems-card";
 import type {
     AcUnitDetail,
     OrderFormData,
@@ -290,11 +291,14 @@ export default function SummaryStep({
                                             <h1 className="font-medium text-md text-gray-800">
                                                 Layanan / Keluhan
                                             </h1>
-                                            <p className="text-xs text-gray-800">
-                                                {formData.problems?.join(
-                                                    ", "
-                                                ) ||
-                                                    "Tipe layanan belum dipilih"}
+                                            <p className="text-xs ml-4 text-gray-800">
+                                                {formData.problems?.map(
+                                                    (problem, index) => (
+                                                        <li key={index}>
+                                                            {problem}
+                                                        </li>
+                                                    )
+                                                )}
                                             </p>
                                         </div>
                                     </div>

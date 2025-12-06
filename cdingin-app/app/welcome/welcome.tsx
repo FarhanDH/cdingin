@@ -14,7 +14,7 @@ export function Welcome() {
                     alt="Logo"
                     className="w-9"
                 />
-                <h1 className="text-2xl font-bold">cdingin</h1>
+                <h1 className="text-2xl font-bold">sidingin</h1>
             </div>
 
             {/* Hero image + text (centered) */}
@@ -25,7 +25,7 @@ export function Welcome() {
                     className="w-full max-w-md mb-6"
                 />
                 <h2 className="text-2xl font-bold mb-2">
-                    AC Gerah? Bikin Adem Lagi!
+                    Selamat datang di sidingin!
                 </h2>
                 <p className="font-light">
                     Cukup AC aja yang dingin, kamu jangan. Servis AC jadi

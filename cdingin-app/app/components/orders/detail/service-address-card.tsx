@@ -29,11 +29,11 @@ export default function ServiceAddressCard({
                                 order?.serviceLocation.address.address?.road ||
                                 order?.serviceLocation.address.address
                                     ?.village ||
-                                "Lokasi belum diisi"}{" "}
+                                "Mohon tunggu"}{" "}
                         </h1>
                         <p className="mt-1 text-sm text-gray-700 ">
                             {order.serviceLocation.address?.display_name ||
-                                "Lokasi belum diisi"}
+                                "Mohon tunggu"}
                         </p>
 
                         {order.serviceLocation.note && (
