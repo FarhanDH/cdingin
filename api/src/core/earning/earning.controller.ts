@@ -19,10 +19,13 @@ export class EarningController {
         @Request() request: RequestWithUser,
         @Query('date')
         date?: Date,
+        @Query('period')
+        period?: 'daily' | 'weekly' | 'monthly',
     ): Promise<ApiResponse<EarningResponse>> {
         const data = await this.earningService.getSummaryByDate(
             date,
             request.user.sub,
+            period,
         );
         return {
             message: 'Earning summary fetched successfully',

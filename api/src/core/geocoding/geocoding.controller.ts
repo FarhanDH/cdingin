@@ -13,6 +13,13 @@ import { JwtGuard } from '../auth/guards/jwt.guard';
 export class GeocodingController {
     constructor(private readonly geocodingService: GeocodingService) {}
 
+    /**
+     * Performs reverse geocoding to get an address from latitude and longitude coordinates.
+     * This acts as a proxy to the Nominatim API.
+     * @param lat - The latitude.
+     * @param lon - The longitude.
+     * @returns A promise that resolves to the address details.
+     */
     @UseGuards(JwtGuard)
     @Get('reverse')
     async reverseGeocode(@Query('lat') lat: number, @Query('lon') lon: number) {

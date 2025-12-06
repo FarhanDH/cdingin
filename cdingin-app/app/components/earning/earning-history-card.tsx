@@ -1,6 +1,8 @@
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
 import { Button } from "@mui/material";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import { AirVent, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import { getStatusLabel, type OrderItem } from "~/types/order.types";
@@ -16,6 +18,12 @@ export default function EarningHistoryCard({
         order.status
     );
     const navigate = useNavigate();
+
+    // Gunakan `updatedAt` untuk status selesai/batal, dan `serviceDate` untuk lainnya.
+    const relevantDate =
+        order.status === "completed" || order.status === "cancelled"
+            ? order.updatedAt
+            : order.serviceDate;
 
     const handleCardClick = () => {
         navigate(`/technician/order/${order.id}`);
@@ -76,6 +84,16 @@ export default function EarningHistoryCard({
                                     {statusText}
                                 </span>
                             </div>
+                        </div>
+                        {/* Relevant Date */}
+                        <div className="text-xs text-gray-500 text-start mt-2">
+                            {format(
+                                new Date(relevantDate),
+                                "d MMM yyyy, HH:mm",
+                                {
+                                    locale: id,
+                                }
+                            )}
                         </div>
                     </div>
                 </div>

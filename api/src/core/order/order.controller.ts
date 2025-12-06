@@ -85,27 +85,32 @@ export class OrderController {
 
     @UseGuards(JwtGuard, RolesGuard)
     @Roles(RoleEnum.TECHNICIAN)
-    @Get('technician')
     /**
-     * Fetches all orders for a technician.
+     * Fetches orders for the authenticated technician based on various filters.
      * @param request - The request object with the authenticated user.
      * @param serviceDate - The service date filter.
-     * @returns A promise that resolves to an API response containing an array of order responses.
+     * @param countOnly - If true, returns only the counts of orders.
+     * @param status - Filters orders by status ('completed', 'cancelled', 'missed').
+     * @param period - The time period to consider for the date filter ('daily', 'weekly', 'monthly').
+     * @returns A promise that resolves to an API response containing an array of orders or order counts.
      * @throws {@link NotFoundException} if the order with the given ID is not found.
      * @throws {@link BadRequestException} if the request is invalid.
      * @throws {@link InternalServerErrorException} if an error occurs while fetching the orders.
      */
+    @Get('technician')
     async getAllForTechnician(
         @Request() request: RequestWithUser,
         @Query('service-date') serviceDate: OrderDateFilter | Date,
         @Query('countOnly') countOnly?: boolean,
         @Query('status') status?: 'completed' | 'cancelled' | 'missed',
+        @Query('period') period?: 'daily' | 'weekly' | 'monthly',
     ): Promise<ApiResponse<OrderResponse[]>> {
         const data = await this.orderService.getAllForTechnician(
             request.user,
             serviceDate,
             status,
             countOnly,
+            period,
         );
         return {
             message: 'Orders fetched successfully',

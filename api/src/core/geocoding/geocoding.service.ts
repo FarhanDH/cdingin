@@ -7,6 +7,13 @@ export class GeocodingService {
     constructor(private readonly httpService: HttpService) {}
     private readonly logger = new Logger(GeocodingService.name);
 
+    /**
+     * Fetches address details from the Nominatim API based on latitude and longitude.
+     * It includes a custom User-Agent header as required by Nominatim's usage policy.
+     * @param lat - The latitude.
+     * @param lon - The longitude.
+     * @returns A promise that resolves with the geocoding result from Nominatim.
+     */
     async reverseGeocode(lat: number, lon: number): Promise<any> {
         const url = 'https://nominatim.openstreetmap.org/reverse';
         try {

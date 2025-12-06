@@ -1,7 +1,15 @@
 import { CircularProgress } from "@mui/material";
+import {
+    format,
+    startOfWeek,
+    endOfWeek,
+    endOfMonth,
+    startOfMonth,
+} from "date-fns";
+import { id } from "date-fns/locale";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { formattedDate } from "~/common/utils";
 import EarningHistoryCard from "~/components/earning/earning-history-card";
 import EarningTab, {
@@ -14,6 +22,8 @@ import cautionNote from "public/caution-note.png";
 import type { OrderItem } from "~/types/order.types";
 import type { Route } from "./+types/earning-history";
 
+type Period = "daily" | "weekly" | "monthly";
+
 export function meta(args: Route.MetaArgs) {
     return [
         { title: "Riwayat Pendapatan | Cdingin" },
@@ -21,6 +31,11 @@ export function meta(args: Route.MetaArgs) {
     ];
 }
 
+/**
+ * A component to display an empty state message when there are no orders in the history.
+ * @param {object} props - The component props.
+ * @param {EarningTabId} props.activeTab - The currently active tab to determine the message.
+ */
 const EmptyState = ({ activeTab }: { activeTab: EarningTabId }) => {
     const emptyStateContent = {
         completed: {
@@ -53,32 +68,62 @@ const EmptyState = ({ activeTab }: { activeTab: EarningTabId }) => {
     );
 };
 
+/**
+ * EarningHistory page component.
+ * Displays a list of orders (completed, cancelled, or missed) for a given date and period.
+ */
 export default function EarningHistory() {
     const { date: dateString } = useParams<{ date: string }>();
+    const [searchParams] = useSearchParams();
+    const period = (searchParams.get("period") as Period) || "daily";
     const [activeTab, setActiveTab] = useState<EarningTabId>("completed");
     const [ordersByDate, setOrdersByDate] = useState<OrderItem[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const date = new Date(dateString ?? "");
-    const dateFormat = formattedDate(date, {});
     const navigate = useNavigate();
+
+    /**
+     * Generates the page title based on the selected period and date.
+     * @returns A formatted string for the page title.
+     */
+    const getPageTitle = () => {
+        if (period === "weekly") {
+            const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+            const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+            return `${format(weekStart, "d MMM", {
+                locale: id,
+            })} - ${format(weekEnd, "d MMM yyyy", { locale: id })}`;
+        }
+        if (period === "monthly") {
+            return format(date, "MMMM yyyy", { locale: id });
+        }
+        // daily
+        return formattedDate(date, {});
+    };
+
+    const pageTitle = getPageTitle();
 
     useEffect(() => {
         setIsLoading(true);
-        if (!dateString) return;
         /**
-         * Fetches orders by date and status from the API.
+         * Fetches orders based on the selected date, status tab, and period.
          *
          * @remarks
          * If the API returns a 401 error, it will redirect to the login page.
          * If any other error occurs, it will be logged to the console.
          */
         const fetchOrderByDate = async () => {
+            if (!dateString) return;
             setIsLoading(true);
             try {
                 const response = await axios.get(
                     `${import.meta.env.VITE_API_URL}/orders/technician`,
                     {
-                        params: { "service-date": date, status: activeTab },
+                        params: {
+                            "service-date": date,
+                            status: activeTab,
+                            period: period,
+                        },
                         withCredentials: true,
                     }
                 );
@@ -96,12 +141,12 @@ export default function EarningHistory() {
             }
         };
         fetchOrderByDate();
-    }, [dateString, activeTab]);
+    }, [dateString, activeTab, period, navigate]);
 
     return (
         <div>
             <Header
-                title={dateFormat}
+                title={pageTitle}
                 isSticky={true}
                 showBack
                 className="bg-white w-full"

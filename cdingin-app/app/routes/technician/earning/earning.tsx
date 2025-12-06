@@ -1,6 +1,18 @@
 import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
 import WalletRoundedIcon from "@mui/icons-material/WalletRounded";
 import { Button, CircularProgress } from "@mui/material";
+import {
+    addMonths,
+    addWeeks,
+    format,
+    endOfMonth,
+    endOfWeek,
+    startOfWeek,
+    subMonths,
+    subWeeks,
+} from "date-fns";
+import { id } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "axios";
 import cautionNote from "public/caution-note.png";
 import failedNote from "public/failed-note.png";
@@ -15,6 +27,8 @@ import Header from "~/components/header";
 import type { EarningSummary } from "~/types/earning.types";
 import type { Route } from "./+types/earning";
 
+type Period = "daily" | "weekly" | "monthly";
+
 export function meta(args: Route.MetaArgs) {
     return [
         { title: "Pendapatan | Cdingin" },
@@ -22,13 +36,21 @@ export function meta(args: Route.MetaArgs) {
     ];
 }
 
+/**
+ * Earning page component for technicians.
+ * Displays a summary of earnings and order statistics for a selected period (daily, weekly, monthly).
+ */
 export default function Earning() {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [period, setPeriod] = useState<Period>("daily");
     const [earningData, setEarningData] = useState<EarningSummary | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
+        /**
+         * Fetches the earning summary from the API whenever the selected date or period changes.
+         */
         const fetchEarningSummary = async () => {
             setIsLoading(true);
             try {
@@ -38,7 +60,7 @@ export default function Earning() {
                 const response = await axios.get(
                     `${import.meta.env.VITE_API_URL}/earnings/summary`,
                     {
-                        params: { date: dateParam },
+                        params: { date: dateParam, period },
                         withCredentials: true,
                     }
                 );
@@ -55,7 +77,73 @@ export default function Earning() {
         };
 
         fetchEarningSummary();
-    }, [selectedDate]); // <- Run each time selectedDate changes
+    }, [selectedDate, period]); // <- Run each time selectedDate or period changes
+
+    /**
+     * Handles changing the time period (daily, weekly, monthly) and resets the date to today.
+     * @param newPeriod - The new period to set.
+     */
+    const handlePeriodChange = (newPeriod: Period) => {
+        setPeriod(newPeriod);
+        // Reset date to today when changing period to avoid confusion
+        setSelectedDate(new Date());
+    };
+
+    /**
+     * Renders the appropriate date selector UI based on the current period.
+     * @returns A JSX element for date selection.
+     */
+    const renderDateSelector = () => {
+        if (period === "daily") {
+            return (
+                <HorizontalDateScroller
+                    selectedDate={selectedDate}
+                    onDateSelect={setSelectedDate}
+                    numberOfDaysToShowFromNow={30}
+                />
+            );
+        }
+
+        const isWeekly = period === "weekly";
+        const prevDate = isWeekly
+            ? subWeeks(selectedDate, 1)
+            : subMonths(selectedDate, 1);
+        const nextDate = isWeekly
+            ? addWeeks(selectedDate, 1)
+            : addMonths(selectedDate, 1);
+
+        let periodLabel = "";
+        if (isWeekly) {
+            const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+            const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+            periodLabel = `${format(weekStart, "d MMM", {
+                locale: id,
+            })} - ${format(weekEnd, "d MMM yyyy", { locale: id })}`;
+        } else {
+            // monthly
+            periodLabel = format(selectedDate, "MMMM yyyy", { locale: id });
+        }
+
+        return (
+            <div className="flex items-center justify-between px-4 py-2">
+                <Button
+                    onClick={() => setSelectedDate(prevDate)}
+                    className="min-w-0 p-2 rounded-full"
+                >
+                    <ChevronLeft />
+                </Button>
+                <span className="font-semibold text-gray-800">
+                    {periodLabel}
+                </span>
+                <Button
+                    onClick={() => setSelectedDate(nextDate)}
+                    className="min-w-0 p-2 rounded-full"
+                >
+                    <ChevronRight />
+                </Button>
+            </div>
+        );
+    };
 
     if (isLoading) {
         return (
@@ -73,21 +161,29 @@ export default function Earning() {
                 showBorder={false}
                 className="bg-white w-full"
             >
-                {/* Date */}
-                <div className="bg-gray-50 pt-3">
-                    <h1 className="text-sm text-gray-900 font-medium text-center">{`${new Date(
-                        selectedDate
-                    ).toLocaleDateString("id-ID", {
-                        month: "long",
-                        year: "numeric",
-                    })}`}</h1>
-                    {/* Date Scroller */}
-                    <HorizontalDateScroller
-                        selectedDate={selectedDate}
-                        onDateSelect={setSelectedDate}
-                        numberOfDaysToShowFromNow={30}
-                    />
+                {/* Period Tabs */}
+                <div className="flex justify-center bg-gray-100 p-1 rounded-full mx-4">
+                    {(["daily", "weekly", "monthly"] as Period[]).map((p) => (
+                        <Button
+                            key={p}
+                            onClick={() => handlePeriodChange(p)}
+                            className={`flex-1 rounded-full normal-case !font-[Rubik] ${
+                                period === p
+                                    ? "bg-primary text-white shadow"
+                                    : "bg-transparent text-gray-600"
+                            }`}
+                        >
+                            {p === "daily"
+                                ? "Harian"
+                                : p === "weekly"
+                                ? "Mingguan"
+                                : "Bulanan"}
+                        </Button>
+                    ))}
                 </div>
+
+                {/* Date Selector */}
+                <div className="bg-gray-50 pt-1">{renderDateSelector()}</div>
             </Header>
 
             {/* Order Summary Card */}
@@ -181,7 +277,7 @@ export default function Earning() {
                 <Button
                     onClick={() => {
                         navigate(
-                            `/technician/earnings/histories/${selectedDate}`
+                            `/technician/earnings/histories/${selectedDate.toISOString()}?period=${period}`
                         );
                     }}
                     className="bg-primary text-white !font-[Rubik] normal-case rounded-full text-sm py-2.5 px-3 active:scale-95 mb-4 mx-4"

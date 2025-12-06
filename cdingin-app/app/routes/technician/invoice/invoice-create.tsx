@@ -20,6 +20,7 @@ import {
     Table,
     TableBody,
     TableCell,
+    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -28,6 +29,7 @@ import type { InvoiceItemForm } from "~/types/invoice.types";
 
 /**
  * A page for technicians to create and submit a new invoice for an order.
+ * It allows adding, editing, and removing line items before final submission.
  */
 export default function CreateInvoice() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -42,39 +44,58 @@ export default function CreateInvoice() {
         useState<boolean>(false);
 
     // --- LOGIC FOR MANAGING INVOICE ITEMS ---
+
+    /**
+     * Opens the dialog to add a new invoice item.
+     */
     const handleOpenAddDialog = () => {
         setEditingItem(null); // Pastikan mode 'add'
         setIsInputDialogOpen(true);
     };
 
+    /**
+     * Opens the dialog to edit an existing invoice item.
+     * @param item - The invoice item to be edited.
+     */
     const handleOpenEditDialog = (item: InvoiceItemForm) => {
         setEditingItem(item); // Set item yang akan diedit
         setIsInputDialogOpen(true);
     };
 
+    /**
+     * Saves a new or updated invoice item to the state.
+     * @param itemToSave - The item to be saved.
+     */
     const handleSaveItem = (itemToSave: InvoiceItemForm) => {
         // Cek apakah ini item baru atau item yang sudah ada
         const itemExists = items.some((item) => item.id === itemToSave.id);
 
         if (itemExists) {
-            // Update item yang sudah ada
+            // Update existing item
             setItems(
                 items.map((item) =>
                     item.id === itemToSave.id ? itemToSave : item
                 )
             );
         } else {
-            // Tambah item baru
+            // Add new item
             setItems([...items, itemToSave]);
         }
     };
 
+    /**
+     * Removes an invoice item from the list.
+     * @param id - The ID of the item to remove.
+     */
     const handleRemoveItem = (id: number) => {
         setItems(items.filter((item) => item.id !== id));
     };
 
     // --- CALCULATIONS & SUBMISSION ---
 
+    /**
+     * Calculates the total amount of the invoice based on its items.
+     */
     const totalAmount = useMemo(() => {
         return items.reduce(
             (sum, item) => sum + item.quantity * item.unitPrice,
@@ -224,6 +245,16 @@ export default function CreateInvoice() {
                                 ))
                             )}
                         </TableBody>
+                        <TableFooter>
+                            <TableRow>
+                                <TableCell colSpan={1} className="font-medium">
+                                    Total
+                                </TableCell>
+                                <TableCell className="text-right font-medium text-primary">
+                                    Rp{totalAmount.toLocaleString("id-ID")}
+                                </TableCell>
+                            </TableRow>
+                        </TableFooter>
                     </Table>
                 </div>
 
@@ -241,14 +272,6 @@ export default function CreateInvoice() {
 
             {/* Sticky Footer for Total and Submit Button */}
             <footer className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t p-4 space-y-3 rounded-t-3xl">
-                <div className="flex justify-between items-center">
-                    <span className="text-base font-semibold text-gray-800">
-                        Total tagihan
-                    </span>
-                    <span className="text-base font-bold text-primary">
-                        Rp{totalAmount.toLocaleString("id-ID")}
-                    </span>
-                </div>
                 <Button
                     onClick={() => setIsSheetConfirmationOpen(true)}
                     disabled={isSubmitting || items.length <= 0}

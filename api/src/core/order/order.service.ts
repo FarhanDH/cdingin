@@ -8,7 +8,15 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { addDays, endOfDay, startOfDay } from 'date-fns';
+import {
+    addDays,
+    endOfDay,
+    endOfMonth,
+    endOfWeek,
+    startOfDay,
+    startOfMonth,
+    startOfWeek,
+} from 'date-fns';
 import {
     Between,
     DataSource,
@@ -415,9 +423,10 @@ export class OrderService {
         serviceDate?: OrderDateFilter | Date,
         status?: 'completed' | 'cancelled' | 'missed',
         countOnly?: boolean,
+        period: 'daily' | 'weekly' | 'monthly' = 'daily',
     ): Promise<OrderResponse[]> {
         this.logger.debug(
-            `OrderService.getAllForTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)}, status: ${status})`,
+            `OrderService.getAllForTechnician(user: ${JSON.stringify(user)}, serviceDate: ${JSON.stringify(serviceDate)}, status: ${status}, period: ${period})`,
         );
 
         let whereClause: FindOptionsWhere<Order> | FindOptionsWhere<Order>[] =
@@ -484,9 +493,20 @@ export class OrderService {
             serviceDate !== OrderDateFilter.TOMORROW &&
             serviceDate !== OrderDateFilter.UPCOMING
         ) {
-            const todayStart = startOfDay(serviceDate);
-            const todayEnd = endOfDay(serviceDate);
-            whereClause.service_date = Between(todayStart, todayEnd);
+            let startDate: Date;
+            let endDate: Date;
+
+            if (period === 'weekly') {
+                startDate = startOfWeek(serviceDate, { weekStartsOn: 1 });
+                endDate = endOfWeek(serviceDate, { weekStartsOn: 1 });
+            } else if (period === 'monthly') {
+                startDate = startOfMonth(serviceDate);
+                endDate = endOfMonth(serviceDate);
+            } else {
+                startDate = startOfDay(serviceDate);
+                endDate = endOfDay(serviceDate);
+            }
+            whereClause.service_date = Between(startDate, endDate);
         } else {
             // For today, tomorrow, upcoming, we only show not completed/cancelled orders
             switch (serviceDate) {
@@ -518,24 +538,34 @@ export class OrderService {
         }
 
         if (status) {
+            // If the status is completed or cancelled, the date filter should apply to `updated_at`.
+            // Otherwise, it applies to `service_date`.
+            const dateColumn =
+                status === 'completed' || status === 'cancelled'
+                    ? 'updated_at'
+                    : 'service_date';
+
+            const dateFilterValue = whereClause.service_date;
+            delete whereClause.service_date; // Remove service_date to avoid conflict
+
             if (status === 'completed') {
                 whereClause = {
                     ...whereClause,
+                    [dateColumn]: dateFilterValue,
                     status: OrderStatusEnum.COMPLETED,
                     technician: { id: user.sub },
                 };
             } else if (status === 'cancelled') {
                 whereClause = {
                     ...whereClause,
+                    [dateColumn]: dateFilterValue,
                     status: OrderStatusEnum.CANCELLED,
-                    technician: { id: user.sub },
                 };
             } else if (status === 'missed') {
-                const baseDateFilter = whereClause.service_date;
                 whereClause = [
                     // Orders assigned to the technician but not completed/cancelled
                     {
-                        service_date: baseDateFilter,
+                        service_date: dateFilterValue,
                         technician: { id: user.sub },
                         status: Not(
                             In([
@@ -546,7 +576,7 @@ export class OrderService {
                     },
                     // Pending orders for the date without a technician
                     {
-                        service_date: baseDateFilter,
+                        service_date: dateFilterValue,
                         technician: IsNull(),
                         status: OrderStatusEnum.PENDING,
                     },
