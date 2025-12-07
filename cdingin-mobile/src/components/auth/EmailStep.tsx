@@ -56,7 +56,7 @@ export default function EmailStep({ onSubmit, error, loading }: EmailStepProps) 
 
                 <Button
                     onPress={handleSubmit(onSubmit)}
-                    disabled={!isEmailValid || loading} className="w-full mt-2 h-[48.5px]"
+                    disabled={!isEmailValid || loading} className="w-full mt-2 h-[48.5px] active:scale-95"
                 >
                     Lanjut
                 </Button>

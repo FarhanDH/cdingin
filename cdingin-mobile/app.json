@@ -28,7 +28,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Izinkan Sidingin mengakses lokasi Anda untuk menentukan titik lokasi servis."
+        }
+      ]
     ]
   }
 }

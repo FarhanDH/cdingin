@@ -41,14 +41,14 @@ export default function Welcome({ onNavigateAuth }: WelcomeProps) {
                 <View className="w-full flex-col gap-4 mb-4">
                     <Button
                         onPress={onNavigateAuth}
-                        className="w-full rounded-full bg-primary h-[48.5px]"
+                        className="w-full rounded-full active:scale-95 bg-primary h-[48.5px] text-base"
                     >
                         Masuk
                     </Button>
                     <Button
                         variant="outline"
                         onPress={onNavigateAuth}
-                        className="w-full rounded-full border-[1.5px] border-[#006C7F] h-[48.5px]"
+                        className="w-full rounded-full active:scale-95 border-[1.5px] border-[#006C7F] h-[48.5px]"
                     >
                         Belum Ada Akun? Daftar Dulu
                     </Button>

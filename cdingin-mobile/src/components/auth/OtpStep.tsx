@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, Alert, Linking, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Linking, Text, TextInput, Vibration, View } from "react-native";
 import { Button } from "../ui/Button";
 
 type OtpStepProps = {
@@ -39,6 +39,12 @@ export default function OtpStep({
         setSeconds(59);
     }, [email]);
 
+    useEffect(() => {
+        if (error) {
+            Vibration.vibrate();
+        }
+    }, [error]);
+
     const handleOpenEmail = async () => {
         const url = "https://mail.google.com/mail/mu/mp/679/#";
         const supported = await Linking.canOpenURL(url);
@@ -67,7 +73,7 @@ export default function OtpStep({
                         <View className="mb-4">
                             <Text className="mb-2 font-medium text-gray-700">OTP <Text className="text-destructive">*</Text></Text>
                             <TextInput
-                                className={`w-full border-b pb-2 text-lg font-medium tracking-[10px] ${error ? "border-destructive text-destructive" : "border-[#a7a7a7] text-black"} focus:outline-none focus:border-[#222222]`}
+                                className={`w-full border-b pb-2 text-lg font-medium tracking-[10px] ${error ? "border-b-destructive text-destructive" : "border-[#a7a7a7] text-black"} focus:outline-none focus:border-[#222222]`}
                                 placeholder="••••"
                                 placeholderTextColor="#a7a7a7"
                                 onBlur={onBlur}

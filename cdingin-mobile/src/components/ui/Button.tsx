@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, TouchableOpacityProps, ActivityIndicator } from "react-native";
+import { ActivityIndicator, Pressable, Text, TouchableOpacityProps } from "react-native";
 import { cn } from "../../lib/utils";
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -19,7 +19,7 @@ export function Button({
     textClassName,
     ...props
 }: ButtonProps) {
-    const baseStyles = "flex-row items-center justify-center rounded-full font-semibold active:scale-95";
+    const baseStyles = "flex-row justify-center items-center rounded-full";
 
     const variants = {
         primary: "bg-primary",
@@ -49,7 +49,7 @@ export function Button({
     // Web Primary: usually a blue/cyan. Let's assume blue-500 or check tailwind config.
 
     return (
-        <TouchableOpacity
+        <Pressable
             activeOpacity={1}
             className={cn(
                 baseStyles,
@@ -70,6 +70,6 @@ export function Button({
                     </Text>
                 ) : children
             )}
-        </TouchableOpacity>
+        </Pressable>
     );
 }
