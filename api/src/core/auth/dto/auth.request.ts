@@ -9,6 +9,6 @@ export class VerifyOtpRequest {
   @IsEmail({}, { message: 'Email tidak valid' })
   email: string;
 
-  @IsNumberString({}, { message: 'OTP salah atau sudah kadaluarsa' })
+  @IsNumberString({}, { message: 'OTP salah atau sudah kedaluwarsa' })
   otp: string;
 }

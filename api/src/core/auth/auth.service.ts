@@ -21,7 +21,7 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly pushSubscriptionService: PushSubscriptionService,
-    ) {}
+    ) { }
 
     private readonly logger = new Logger(AuthService.name);
 
@@ -132,7 +132,7 @@ export class AuthService {
             this.logger.warn(
                 `Failed OTP verification for email: ${request.email}`,
             );
-            throw new UnauthorizedException('OTP salah atau sudah kadaluarsa');
+            throw new UnauthorizedException('OTP salah atau sudah kedaluwarsa');
         }
 
         // Mark the found OTP as used to prevent reuse.
@@ -146,9 +146,9 @@ export class AuthService {
         // Otherwise, mark isNewUser as true.
         return otpToken.user.is_profile_completed
             ? {
-                  isNewUser: false,
-                  user: { ...toUserResponse(otpToken.user), tokens },
-              }
+                isNewUser: false,
+                user: { ...toUserResponse(otpToken.user), tokens },
+            }
             : { isNewUser: true };
     }
 
