@@ -144,32 +144,13 @@ You can now open your browser and navigate to the frontend URL to use the applic
 
 ---
 
-## 📝 API Endpoints Overview
-
-The backend provides a RESTful API to support the application's functionality. Key endpoints include:
-
-| Method  | Endpoint                          | Role       | Description                                      |
-| :------ | :-------------------------------- | :--------- | :----------------------------------------------- |
-| `POST`  | `/email/send-otp`                 | Public     | Sends an OTP to the user's email/phone.          |
-| `POST`  | `/auth/verify-otp`                | Public     | Verifies OTP and logs in or starts registration. |
-| `POST`  | `/auth/register-customer-profile` | Public     | Completes the profile for a new customer.        |
-| `POST`  | `/orders`                         | Customer   | Creates a new service order.                     |
-| `GET`   | `/orders`                         | Customer   | Gets a list of the customer's own orders.        |
-| `GET`   | `/orders/:id`                     | Customer   | Gets the details of a specific customer order.   |
-| `POST`  | `/orders/:id/cancel`              | Customer   | Cancels an order with a specific reason.         |
-| `GET`   | `/technician/orders`              | Technician | Gets a list of orders for the technician.        |
-| `GET`   | `/technician/orders/:id`          | Technician | Gets the details of any specific order.          |
-| `POST`  | `/technician/orders/:id/cancel`   | Technician | Cancels an order with a specific reason.         |
-| `PATCH` | `/orders/:id/status`              | Technician | Updates the status of an order.                  |
-| `GET`   | `/schedules/availability`         | Customer   | Gets daily booking capacity for the calendar.    |
-
 ---
 
 ## 🗺️ Roadmap (Future Features)
 
 `cdingin` is an evolving project. Here are some features planned for the future:
 
-- [ ] Push notifications for order status updates.
+- [v] Push notifications for order status updates.
 - [ ] Real-time technician location tracking on a map.
 - [ ] In-app chat between customer and technician.
 - [ ] Customer reviews and technician ratings.
